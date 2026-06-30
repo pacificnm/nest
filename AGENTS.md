@@ -33,16 +33,17 @@ automatic transcript snapshot, but you must still save an explicit summary.
 ## During work
 
 - Prefer existing Nest conventions in `core/crates/nest-*`, `modules/crates/nest-*`, and `docs/nest-*`.
-- Keep changes scoped; `nest-core` stays small and dependency-light.
+- Respect layer boundaries: **core** must not depend on modules or apps. See [docs/architecture.md](docs/architecture.md).
 - Use `NestError` / `NestResult` from `nest-error`.
 
 ## Read order
 
-1. `docs/plan/` — implementation plans
-2. MCP project memory
-3. MCP knowledge base (Rust/egui APIs)
-4. MCP context memory (resume prior work)
-5. `docs/nest-<crate>/` and source under `crates/`
+1. [docs/architecture.md](docs/architecture.md) — layering and dependency rules
+2. `docs/plan/` — implementation plans
+3. MCP project memory
+4. MCP knowledge base (Rust/egui APIs)
+5. MCP context memory (resume prior work)
+6. `docs/nest-<crate>/` and source under `core/crates/`, `modules/crates/`, `apps/crates/`
 
 ## Re-index
 

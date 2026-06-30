@@ -31,7 +31,23 @@ nest/
 
 **Rule:** `core/` holds the framework contract. `modules/` holds optional adapters and integrations. `apps/` holds shipping products that compose both.
 
-## Architecture
+See [docs/architecture.md](docs/architecture.md) for layering and dependency rules.
+
+## Layering
+
+```text
+Apps  →  Modules  →  Core
+```
+
+| Layer | Depends on | Must not depend on |
+|-------|------------|-------------------|
+| **Core** (`core/crates/`) | Core only | Modules, apps |
+| **Modules** (`modules/crates/`) | Core | Apps |
+| **Apps** (`apps/crates/`) | Core, modules | — |
+
+This scales as the workspace grows: contributors can tell at a glance where new functionality belongs.
+
+## Runtime stack (core)
 
 ```text
 nest-core          primitives (AppBuilder, Module, services, lifecycle)
@@ -39,9 +55,9 @@ nest-core          primitives (AppBuilder, Module, services, lifecycle)
 nest-app           host-agnostic container (metadata, startup/shutdown)
     ↓
 nest-cli / nest-tui / nest-gui   presentation hosts
-    ↓
-modules (nest-airtable, nest-data-sqlite, …)   optional integrations
 ```
+
+Modules (`nest-airtable`, `nest-data-sqlite`, …) plug into the container; apps compose hosts + modules.
 
 Hosts own CLI parsing, event loops, logging initialization, and config file loading.
 
