@@ -48,9 +48,9 @@ Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`.
 
 End-user products in **separate repositories**. An app chooses a host (`nest-cli`, `nest-gui`, …), enables modules, and adds commands, views, or domain logic.
 
-Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync), checked out in this monorepo at `apps/airtable-sync/` (git submodule). Planned: `kiwi`, `finch`.
+Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync). Planned: `kiwi`, `finch`.
 
-Typical layout: `crates/core`, `crates/cli`, `crates/gui` in the product repo. Nest crates via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest), or `path` patch when developing inside the nest monorepo submodule layout.
+Typical layout: `crates/core`, `crates/cli`, `crates/gui` in the product repo. Nest crates via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest), or `path` patch in `.cargo/config.toml` when the product repo sits beside a local nest checkout (see [apps/README.md](../apps/README.md)).
 
 Apps may depend on any core crate and any module they need. Core and modules must never depend back on an app. **No product source code belongs in the nest monorepo.**
 

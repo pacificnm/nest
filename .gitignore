@@ -1,6 +1,4 @@
 /target/
-apps/*/target/
-apps/*/logs/
 core/crates/*/logs/
 **/*.rs.bk
 Cargo.lock
