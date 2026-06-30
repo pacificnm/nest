@@ -1,0 +1,30 @@
+[package]
+name = "nest-file-csv"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CSV import/export for the Nest framework"
+
+[dependencies]
+csv = "1"
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error" }
+nest-file = { path = "../nest-file" }
+nest-validation = { path = "../nest-validation", optional = true }
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1"
+
+[features]
+default = []
+validate = ["dep:nest-validation"]
+
+[dev-dependencies]
+nest-file = { path = "../nest-file" }
+nest-validation = { path = "../nest-validation" }
+serde = { version = "1", features = ["derive"] }
+tempfile = "3"
+
+[package.metadata.cargo-all-features]
+# tests enable validate via `cargo test -p nest-file-csv --features validate`

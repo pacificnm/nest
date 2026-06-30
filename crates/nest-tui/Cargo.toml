@@ -1,0 +1,29 @@
+[package]
+name = "nest-tui"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Terminal UI host for Nest applications (Ratatui)"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "env"] }
+crossterm = "0.28"
+nest-app = { path = "../nest-app" }
+nest-config = { path = "../nest-config" }
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error", features = ["serde"] }
+nest-logging = { path = "../nest-logging" }
+nest-task-runtime = { path = "../nest-task-runtime", optional = true }
+ratatui = "0.29"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt"], optional = true }
+tracing = "0.1"
+
+[features]
+default = []
+async = ["dep:nest-task-runtime", "dep:tokio"]
+
+[dev-dependencies]
+tempfile = "3"

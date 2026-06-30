@@ -1,6 +1,6 @@
 # Getting started
 
-This guide walks through building a minimal application using nest-core directly. In production, `nest-app` will wrap this flow with an egui main loop.
+This guide walks through building a minimal application using nest-core directly. In production, `nest-gui` wraps this flow with an egui main loop.
 
 ## Add the dependency
 

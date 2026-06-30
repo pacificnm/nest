@@ -1,0 +1,15 @@
+  2026-06-30T18:01:42.361700Z  INFO nest_app::lifecycle: app startup, app.name: finch, app.version: "", app.environment: "development"
+    at crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T18:01:42.361769Z  INFO nest_app::lifecycle: app shutdown, app.name: finch
+    at crates/nest-app/src/lifecycle.rs:45
+
+  2026-06-30T18:01:42.362079Z  WARN nest_config::loader: no configuration file found in default search paths, config.app_name: finch
+    at crates/nest-config/src/loader.rs:93
+
+  2026-06-30T18:01:42.362173Z  INFO nest_app::lifecycle: app startup, app.name: finch, app.version: "", app.environment: "development"
+    at crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T18:01:42.362185Z  INFO nest_app::lifecycle: app shutdown, app.name: finch
+    at crates/nest-app/src/lifecycle.rs:45
+

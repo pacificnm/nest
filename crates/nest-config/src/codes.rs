@@ -1,0 +1,6 @@
+//! Stable error code constants for configuration errors.
+
+pub use nest_error::codes::{
+    NEST_CONFIG_NOT_FOUND, NEST_CONFIG_PARSE_FAILED, NEST_CONFIG_READ_FAILED,
+    NEST_CONFIG_SECTION_INVALID, NEST_CONFIG_SECTION_MISSING, NEST_CONFIG_UNSUPPORTED_FORMAT,
+};

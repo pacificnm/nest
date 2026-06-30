@@ -133,4 +133,59 @@ impl LoggingConfig {
     pub fn has_json_file(&self) -> bool {
         self.targets.contains(&LogTarget::JsonFile)
     }
+
+    /// Removes console output from the target list.
+    pub fn without_console(mut self) -> Self {
+        self.targets.retain(|target| *target != LogTarget::Console);
+        self
+    }
+
+    /// Sensible CLI defaults: console output, info level, env override on.
+    pub fn for_cli(app_name: impl Into<String>) -> Self {
+        Self::new(app_name).with_console()
+    }
+
+    /// Sensible TUI defaults: file logging only (never stdout during raw-mode UI).
+    pub fn for_tui(app_name: impl Into<String>) -> Self {
+        Self::new(app_name).with_file("./logs")
+    }
+
+    /// Sensible GUI defaults: file logging only (console deferred to future log viewer).
+    pub fn for_gui(app_name: impl Into<String>) -> Self {
+        Self::new(app_name).with_file("./logs")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn for_cli_enables_console() {
+        let config = LoggingConfig::for_cli("my-app");
+        assert_eq!(config.app_name, "my-app");
+        assert!(config.has_console());
+        assert_eq!(config.level, LogLevel::Info);
+        assert!(config.env_override);
+    }
+
+    #[test]
+    fn for_tui_uses_file_only() {
+        let config = LoggingConfig::for_tui("finch");
+        assert!(!config.has_console());
+        assert!(config.has_file());
+    }
+
+    #[test]
+    fn for_gui_uses_file_only() {
+        let config = LoggingConfig::for_gui("kiwi");
+        assert!(!config.has_console());
+        assert!(config.has_file());
+    }
+
+    #[test]
+    fn without_console_strips_console_target() {
+        let config = LoggingConfig::for_cli("my-app").without_console();
+        assert!(!config.has_console());
+    }
 }

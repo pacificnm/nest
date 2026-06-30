@@ -2,16 +2,23 @@
 resolver = "2"
 members = [
     "crates/nest-core",
+    "crates/nest-app",
     "crates/nest-data",
     "crates/nest-data-sqlite",
     "crates/nest-design",
     "crates/nest-error",
+    "crates/nest-file",
+    "crates/nest-file-csv",
+    "crates/nest-cli",
+    "crates/nest-config",
     "crates/nest-http",
     "crates/nest-http-client",
     "crates/nest-logging",
     "crates/nest-task",
     "crates/nest-task-runtime",
     "crates/nest-theme",
+    "crates/nest-tui",
+    "crates/nest-gui",
     "crates/nest-validation",
 ]
 

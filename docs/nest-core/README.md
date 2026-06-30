@@ -66,6 +66,7 @@ Every optional capability (themes, validation, logging, plugins, tasks, etc.) in
 - [nest-core v1 implementation plan](../plan/nest-core-v1.md)
 - [nest-validation](../nest-validation/README.md) — optional validation module
 - [nest-data](../nest-data/README.md) — optional data layer module
+- [nest-file](../nest-file/README.md) — sync file I/O service
 - [nest-task](../nest-task/README.md) — task execution contracts
 - [nest-task-runtime](../nest-task-runtime/README.md) — Tokio task manager module
 - [nest-http](../nest-http/README.md) — shared HTTP contracts

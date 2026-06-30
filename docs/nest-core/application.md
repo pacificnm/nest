@@ -2,6 +2,8 @@
 
 nest-core models application setup as a **build phase** followed by a **runtime phase**. Configuration happens on `AppBuilder`; runtime access goes through `AppContext` inside `BuiltApp`.
 
+[`nest-app`](../nest-app/README.md) orchestrates the standard container on top of these primitives: metadata, bootstrap validation, and traced startup/shutdown. Host crates (`nest-cli`, `nest-tui`, `nest-gui`) execute the container and own presentation concerns (CLI parsing, event loops, logging init).
+
 ## Application flow
 
 ```mermaid
@@ -19,7 +21,7 @@ sequenceDiagram
     Builder->>Built: Arc AppContext + lifecycle handlers
     Code->>Built: startup()
     Built->>Ctx: on_startup for each handler
-    Note over Code: Main loop (nest-app / egui)
+    Note over Code: Main loop (nest-gui / egui)
     Code->>Built: shutdown()
     Built->>Ctx: on_shutdown for each handler
 ```
@@ -124,18 +126,22 @@ built.shutdown()?;
 
 Calls `on_shutdown` on each handler, in registration order.
 
-### Typical usage with nest-app (future)
+### Typical usage with nest-app and nest-gui
 
 ```rust
-// nest-app will wrap this pattern:
-let mut built = AppBuilder::new()
+use nest_app::NestApp;
+use nest_gui::GuiApp;
+
+let mut app = NestApp::builder("kiwi")
     .module(UiModule)
     .build()?;
 
-built.startup()?;
-// run egui main loop with built.context.clone()
-built.shutdown()?;
+app.startup()?;
+// nest-gui runs the egui main loop with app.context_arc()
+app.shutdown()?;
 ```
+
+Hosts may also build the container in application `main` and pass it via `GuiApp::from_nest_app(app)`.
 
 ## AppContext
 

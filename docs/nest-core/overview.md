@@ -57,7 +57,7 @@ flowchart TB
     end
 
     subgraph consumers [Downstream crates]
-        nest_app[nest-app]
+        nest_gui[nest-gui]
         nest_ui[nest-ui]
         nest_tasks[nest-tasks]
         nest_plugins[nest-plugins]
@@ -86,7 +86,7 @@ flowchart TB
 
 | Feature | Planned crate |
 |---------|---------------|
-| egui window and event loop | `nest-app` |
+| egui window and event loop | `nest-gui` |
 | UI components | `nest-ui` |
 | Background tasks, Tokio | `nest-tasks` |
 | Event bus implementation | `nest-events` |

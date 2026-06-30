@@ -1,0 +1,16 @@
+[package]
+name = "nest-file"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Sync file I/O service for the Nest framework"
+
+[dependencies]
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error" }
+tracing = "0.1"
+
+[dev-dependencies]
+tempfile = "3"

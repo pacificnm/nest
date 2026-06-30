@@ -9,6 +9,7 @@
 ```rust
 use nest_logging::prelude::*;
 
+// Host apps call init() — e.g. nest-cli does this automatically via CliApp.
 init(
     LoggingConfig::new("kiwi")
         .with_console()
@@ -38,3 +39,4 @@ tracing::info!(target: "nest_data", "query executed");
 
 - [Implementation plan](../plan/nest-logging-v1.md)
 - [nest-error logging hooks](../nest-error/logging-hooks.md)
+- [nest-cli](../nest-cli/README.md) — CLI host initializes logging via `CliApp::with_logging`

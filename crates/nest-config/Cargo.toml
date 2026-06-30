@@ -1,0 +1,22 @@
+[package]
+name = "nest-config"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Configuration loading for the Nest framework"
+
+[dependencies]
+nest-error = { path = "../nest-error" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", optional = true }
+toml = "0.8"
+tracing = "0.1"
+
+[features]
+default = []
+json = ["dep:serde_json"]
+
+[dev-dependencies]
+tempfile = "3"

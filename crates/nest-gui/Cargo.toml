@@ -1,0 +1,30 @@
+[package]
+name = "nest-gui"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Desktop GUI host for Nest applications (eframe/egui)"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "env"] }
+eframe = { version = "0.31", default-features = true }
+egui = "0.31"
+nest-app = { path = "../nest-app" }
+nest-config = { path = "../nest-config" }
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error", features = ["serde"] }
+nest-logging = { path = "../nest-logging" }
+nest-theme = { path = "../nest-theme" }
+nest-task-runtime = { path = "../nest-task-runtime", optional = true }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt"], optional = true }
+tracing = "0.1"
+
+[features]
+default = []
+async = ["dep:nest-task-runtime", "dep:tokio"]
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,456 +1,123 @@
 # Nest Framework
 
-## Vision & Architecture (Draft)
-
-### Overview
-
-Nest is a modular application framework built on top of **Rust** and **egui** for developing modern desktop applications.
-
-Rather than being a GUI library itself, Nest provides the application architecture that sits above egui. It supplies the infrastructure commonly found in mature frameworks such as WPF, Qt, ASP.NET Core, Flutter, and Spring while embracing Rust's philosophy of composability and zero-cost abstractions.
-
-The primary design goal is:
+Nest is a modular application framework for Rust. Applications opt into small, focused crates instead of inheriting a monolithic stack. The core defines contracts (modules, services, lifecycle); optional crates add configuration, data access, validation, file I/O, HTTP, tasks, and presentation hosts.
 
 > **Only compile and load the functionality your application actually needs.**
 
-Nest should be equally suitable for a small utility, a business application, or a full desktop IDE such as Kiwi.
-
----
-
-# Core Principles
-
-## Modular First
-
-Every major feature lives in its own crate.
-
-Applications should opt into functionality instead of inheriting a large framework.
+## Architecture
 
 ```text
-nest-core
-nest-design
-nest-app
-nest-ui
-nest-forms
-nest-validation
-nest-data
-nest-routing
-nest-theme
-nest-commands
-nest-events
-nest-state
-nest-settings
-nest-plugins
-nest-docking
-nest-notifications
-nest-tasks
-nest-auth
-nest-files
-nest-git
-nest-ai
+nest-core          primitives (AppBuilder, Module, services, lifecycle)
+    ↓
+nest-app           host-agnostic container (metadata, startup/shutdown)
+    ↓
+nest-cli / nest-tui / nest-gui   presentation hosts
 ```
+
+Hosts own CLI parsing, event loops, logging initialization, and config file loading. Feature crates register services via `nest-core` modules.
 
 ---
 
-## Lightweight Core
+## Modules
 
-The framework core should remain intentionally small.
+### Application
 
-Its responsibility is to define contracts—not implement features.
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-core** | Module system, `AppBuilder`, service registry, `AppContext`, and synchronous lifecycle hooks. | [docs](docs/nest-core/README.md) |
+| **nest-app** | Wraps `nest-core` with `NestApp`, metadata, bootstrap validation, and traced startup/shutdown. | [docs](docs/nest-app/README.md) |
 
-Responsibilities include:
+### Hosts
 
-* Module system
-* Application lifecycle
-* Service registry / dependency injection
-* Application context
-* Event definitions
-* Error handling
-* Trait definitions
-* Version information
-* Feature registration
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-cli** | Command-line host: clap parsing, config/logging init, command dispatch, exit codes. | [docs](docs/nest-cli/README.md) |
+| **nest-tui** | Terminal UI host: Ratatui event loop, file-only logging, config merge. | [docs](docs/nest-tui/README.md) |
+| **nest-gui** | Desktop GUI host: eframe/egui main loop, window options, file-only logging. | [docs](docs/nest-gui/README.md) |
 
-Example:
+### Foundation
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-error** | Shared `NestError` model, stable `NEST_*` codes, and UI-ready `NestErrorReport`. | [docs](docs/nest-error/README.md) |
+| **nest-config** | TOML/JSON config loading, search paths, and `ConfigService` for section access. | [docs](docs/nest-config/README.md) |
+| **nest-logging** | Tracing-based logging for hosts: console, file, rotation, module filters. | [docs](docs/nest-logging/README.md) |
+
+### Data
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-data** | Database-agnostic contracts: repositories, transactions, migrations, connection lifecycle. | [docs](docs/nest-data/README.md) |
+| **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
+
+### HTTP
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-http** | Shared HTTP types: methods, status, headers, request/response, auth/retry contracts. | [docs](docs/nest-http/README.md) |
+| **nest-http-client** | Async reqwest client behind `HttpClientService` and `HttpClientModule`. | [docs](docs/nest-http-client/README.md) |
+
+### Tasks
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-task** | Task contracts: handles, progress, cancellation, and events (no runtime). | [docs](docs/nest-task/README.md) |
+| **nest-task-runtime** | Tokio-backed `TaskRuntime` and `TaskManagerService` for scheduling `nest-task` work. | [docs](docs/nest-task-runtime/README.md) |
+
+### Files
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-file** | Scoped sync file I/O via `FileService` and `FileModule`. | [docs](docs/nest-file/README.md) |
+| **nest-file-csv** | CSV import/export: parsing, mapping, validation, and reporting over `nest-file`. | [docs](docs/nest-file-csv/README.md) |
+
+### Design & theme
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-design** | Design token schema and built-in theme definitions (no runtime or UI deps). | [docs](docs/nest-design/README.md) |
+| **nest-theme** | Runtime theme loading, validation, and `ThemeService` lifecycle. | [docs](docs/nest-theme/README.md) |
+
+### Validation
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-validation** | UI-agnostic validators, `Validate` trait, and `ValidatorRegistry` via `ValidationModule`. | [docs](docs/nest-validation/README.md) |
+
+---
+
+## Quick start
 
 ```rust
-trait Module {
-    fn configure(&self, app: &mut AppBuilder);
-}
-
-trait Service {}
-
-struct AppContext;
-```
-
-The core should have very few dependencies.
-
----
-
-## Batteries Included, But Optional
-
-Every capability beyond the core is implemented as a module.
-
-Examples include:
-
-* Docking
-* Forms
-* Validation
-* Database support
-* Plugin loading
-* Themes
-* Notifications
-* Background tasks
-* Git integration
-* AI integration
-* Terminal integration
-
-Applications simply include the modules they require.
-
----
-
-# Framework Layout
-
-```text
-Nest Workspace
-│
-├── nest-core
-├── nest-design
-├── nest-app
-├── nest-ui
-├── nest-forms
-├── nest-validation
-├── nest-data
-├── nest-routing
-├── nest-theme
-├── nest-commands
-├── nest-events
-├── nest-state
-├── nest-settings
-├── nest-plugins
-├── nest-docking
-├── nest-notifications
-├── nest-tasks
-├── nest-auth
-├── nest-files
-├── nest-git
-├── nest-ai
-└── ...
-```
-
----
-
-# Module Responsibilities
-
-## nest-app
-
-Application startup.
-
-```rust
-App::new()
-    .module(UiModule)
-    .module(ThemeModule)
-    .run();
-```
-
----
-
-## nest-ui
-
-Reusable interface components.
-
-Examples:
-
-* Buttons
-* Toolbars
-* Tables
-* Tree Views
-* Tabs
-* Splitters
-* Property Grid
-* Dialogs
-* Status Bar
-* Menus
-* Navigation Controls
-
----
-
-## nest-forms
-
-Provides a complete form framework.
-
-Features:
-
-* Form layouts
-* Labels
-* Automatic field generation
-* Dirty tracking
-* Save / Cancel workflow
-* Keyboard navigation
-* Validation integration
-
----
-
-## nest-validation
-
-Independent validation library.
-
-Validation should be reusable across:
-
-* Desktop UI
-* REST APIs
-* CLI tools
-* Background services
-
-Example:
-
-```rust
-#[derive(Validate)]
-struct Person {
-    #[required]
-    name: String,
-
-    #[email]
-    email: String
-}
-```
-
----
-
-## nest-data
-
-Database abstraction.
-
-Support multiple providers through adapters.
-
-Potential providers:
-
-* SQLite
-* PostgreSQL
-* MySQL
-* SQL Server
-* SeaORM
-* Diesel
-* sqlx
-
-Applications only compile the providers they use.
-
----
-
-## nest-docking
-
-Dockable interface framework.
-
-Supports:
-
-* Panels
-* Floating windows
-* Tab groups
-* Layout persistence
-* Split views
-* Workspace management
-
-Ideal for applications such as:
-
-* IDEs
-* Database tools
-* Log viewers
-* Monitoring applications
-
----
-
-## nest-commands
-
-Global command system.
-
-Supports:
-
-* Command palette
-* Keyboard shortcuts
-* Context menus
-* Toolbar actions
-* Searchable commands
-
----
-
-## nest-settings
-
-Application configuration.
-
-Examples:
-
-* User preferences
-* Theme
-* Window layouts
-* Workspace settings
-* Recent files
-
----
-
-## nest-notifications
-
-Central notification system.
-
-Supports:
-
-* Toast notifications
-* Progress
-* Alerts
-* Background job updates
-
----
-
-## nest-tasks
-
-Background work manager.
-
-Supports:
-
-* Async tasks
-* Progress reporting
-* Cancellation
-* Scheduling
-
----
-
-## nest-plugins
-
-Plugin architecture.
-
-Plugins register themselves with the application.
-
-Example:
-
-```rust
-pub struct GitPlugin;
-
-impl Plugin for GitPlugin {
-    fn register(&self, app: &mut AppBuilder) {
-        app.register_panel(GitPanel);
-        app.register_commands();
-        app.register_services();
+use nest_gui::{GuiApp, GuiView};
+use nest_core::AppContext;
+use nest_error::NestResult;
+use nest_theme::ThemeModule;
+
+struct MainView;
+
+impl GuiView for MainView {
+    fn ui(&mut self, ui: &mut egui::Ui, _ctx: &AppContext) -> NestResult<()> {
+        ui.heading("Hello, Nest");
+        Ok(())
     }
 }
-```
 
----
-
-# Unified Registration Model
-
-Everything in Nest should register through the same builder.
-
-Examples:
-
-```rust
-app.register_service::<GitService>();
-
-app.register_panel::<GitPanel>();
-
-app.register_command::<OpenRepository>();
-
-app.register_theme::<DarkTheme>();
-
-app.register_validator::<EmailValidator>();
-
-app.register_database::<SqliteProvider>();
-```
-
-This keeps the framework predictable and extensible.
-
----
-
-# Application Builder
-
-Small applications:
-
-```rust
-App::new()
-    .module(UiModule)
-    .run();
-```
-
-Larger applications:
-
-```rust
-App::new()
-    .module(UiModule)
-    .module(ThemeModule)
-    .module(DockingModule)
-    .module(DataModule)
-    .module(GitModule)
-    .module(AiModule)
-    .module(TerminalModule)
-    .module(PluginModule)
-    .run();
-```
-
-Applications should only include the modules they require.
-
----
-
-# Automatic Forms (Future)
-
-Nest should eventually support automatic form generation.
-
-Example:
-
-```rust
-#[derive(NestForm)]
-struct Customer {
-
-    #[required]
-    name: String,
-
-    #[email]
-    email: String,
-
-    #[range(18,120)]
-    age: u32,
+fn main() {
+    GuiApp::new("my-app")
+        .module(ThemeModule::default())
+        .view(MainView)
+        .run();
 }
 ```
 
-Generating a form should be as simple as:
-
-```rust
-ui.form(&mut customer);
-```
-
-Automatically providing:
-
-* Labels
-* Controls
-* Validation
-* Error messages
-* Dirty tracking
-* Keyboard navigation
-* Save state
-* Responsive layout
+For a pre-built container and shared modules across hosts, see [nest-app](docs/nest-app/README.md).
 
 ---
 
-# Long-Term Vision
+## Development / agent tools
 
-Nest is intended to become the missing application framework for the Rust desktop ecosystem.
-
-It should provide the architectural foundation that egui intentionally leaves to application developers.
-
-Rather than replacing egui, Nest complements it by supplying:
-
-* Application architecture
-* State management
-* Forms
-* Validation
-* Navigation
-* Plugins
-* Data access
-* Theming
-* Docking
-* Background services
-* Notifications
-* Developer productivity
-
-
-# Development / Agent tools
-
-Local MCP servers (Cursor) provide semantic search over project docs,
-reference manuals (Rust, egui), and persistent agent context:
+Local MCP servers (Cursor) provide semantic search over project docs, reference manuals (Rust, egui), and persistent agent context:
 
 - [`tools/MCP-SETUP.md`](tools/MCP-SETUP.md) — PostgreSQL, Python venv, Cursor MCP, hooks
 - [`AGENTS.md`](AGENTS.md) — agent workflow and memory usage
@@ -464,21 +131,3 @@ cp .env.example .env   # set OPENAI_API_KEY
 ./scripts/index-memory.sh
 ./scripts/index-knowledge.sh   # requires ~/nest-knowledge
 ```
-
----
-
-# Philosophy
-
-Nest should remain:
-
-* Modular
-* Lightweight
-* Extensible
-* Strongly typed
-* Cross-platform
-* High performance
-* Keyboard-first
-* Plugin-oriented
-* Developer friendly
-
-The goal is to make building sophisticated Rust desktop applications feel as productive as using mature frameworks in other ecosystems, while preserving Rust's focus on performance, safety, and composability.
