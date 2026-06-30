@@ -1,0 +1,19 @@
+[package]
+name = "nest-task-runtime"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tokio-backed task runtime for the Nest framework"
+
+[dependencies]
+async-trait = "0.1"
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error" }
+nest-task = { path = "../nest-task" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "test-util"] }

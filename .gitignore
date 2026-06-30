@@ -1,0 +1,8 @@
+/target/
+**/*.rs.bk
+Cargo.lock
+.venv/
+.env
+tools/__pycache__/
+tools/knowledge.toml
+.cursor/memory-gate-state.json

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "nest-memory": {
+      "command": "/home/jaimie/nest/.venv/bin/python",
+      "args": ["/home/jaimie/nest/tools/mcp_memory_server.py"],
+      "cwd": "/home/jaimie/nest"
+    },
+    "nest-context-memory": {
+      "command": "/home/jaimie/nest/.venv/bin/python",
+      "args": ["/home/jaimie/nest/tools/mcp_context_memory_server.py"],
+      "cwd": "/home/jaimie/nest"
+    },
+    "nest-knowledge": {
+      "command": "/home/jaimie/nest/.venv/bin/python",
+      "args": ["/home/jaimie/nest/tools/mcp_knowledge_server.py"],
+      "cwd": "/home/jaimie/nest"
+    }
+  }
+}

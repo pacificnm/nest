@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/memory_session_start.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/memory_pre_tool_use.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/memory_post_tool_use.sh"
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": ".cursor/hooks/memory_after_mcp.sh"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": ".cursor/hooks/memory_pre_compact.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/memory_stop.sh",
+        "loop_limit": 2
+      }
+    ]
+  }
+}

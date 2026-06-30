@@ -1,0 +1,2 @@
+-- Deprecated: use tools/setup_database.sql instead.
+--   sudo -u postgres psql nest_memory -f tools/setup_database.sql

@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/nest-core",
+    "crates/nest-data",
+    "crates/nest-data-sqlite",
+    "crates/nest-design",
+    "crates/nest-error",
+    "crates/nest-http",
+    "crates/nest-http-client",
+    "crates/nest-logging",
+    "crates/nest-task",
+    "crates/nest-task-runtime",
+    "crates/nest-theme",
+    "crates/nest-validation",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/pacificnm/nest"

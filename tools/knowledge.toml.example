@@ -1,0 +1,36 @@
+# Example knowledge base config. scripts/index-knowledge.sh generates tools/knowledge.toml.
+#
+#   ./scripts/index-knowledge.sh
+#
+# Override the manuals root:
+#   NEST_KNOWLEDGE=~/nest-knowledge ./scripts/index-knowledge.sh
+
+[[collections]]
+name = "rust-book"
+source = "/home/USER/nest-knowledge/rust/rust-book/src"
+extensions = ["md"]
+
+[[collections]]
+name = "rust-by-example"
+source = "/home/USER/nest-knowledge/rust/rust-by-example/src"
+extensions = ["md"]
+
+[[collections]]
+name = "rust-reference"
+source = "/home/USER/nest-knowledge/rust/rust-reference/src"
+extensions = ["md"]
+
+[[collections]]
+name = "egui"
+source = "/home/USER/nest-knowledge/egui/crates/egui/src"
+extensions = ["rs", "md"]
+
+[[collections]]
+name = "eframe"
+source = "/home/USER/nest-knowledge/egui/crates/eframe/src"
+extensions = ["rs", "md"]
+
+[[collections]]
+name = "egui-docs"
+source = "/home/USER/nest-knowledge/egui/docs"
+extensions = ["md"]

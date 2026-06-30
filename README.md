@@ -26,6 +26,7 @@ Applications should opt into functionality instead of inheriting a large framewo
 
 ```text
 nest-core
+nest-design
 nest-app
 nest-ui
 nest-forms
@@ -111,6 +112,7 @@ Applications simply include the modules they require.
 Nest Workspace
 │
 ├── nest-core
+├── nest-design
 ├── nest-app
 ├── nest-ui
 ├── nest-forms
@@ -444,18 +446,24 @@ Rather than replacing egui, Nest complements it by supplying:
 * Notifications
 * Developer productivity
 
----
 
-# Relationship to Kiwi
+# Development / Agent tools
 
-Kiwi is envisioned as the flagship application built on Nest.
+Local MCP servers (Cursor) provide semantic search over project docs,
+reference manuals (Rust, egui), and persistent agent context:
 
-This serves two purposes:
+- [`tools/MCP-SETUP.md`](tools/MCP-SETUP.md) — PostgreSQL, Python venv, Cursor MCP, hooks
+- [`AGENTS.md`](AGENTS.md) — agent workflow and memory usage
 
-1. Nest is continuously validated by building a complex, real-world application.
-2. Kiwi benefits from reusable, well-tested infrastructure rather than custom application-specific code.
+Quick start after PostgreSQL + `nest_memory` database:
 
-Other applications—including Finch and future tools—can leverage the same framework, demonstrating that Nest is a general-purpose platform rather than one built solely for a single IDE.
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt
+cp .env.example .env   # set OPENAI_API_KEY
+./scripts/setup-memory.sh
+./scripts/index-memory.sh
+./scripts/index-knowledge.sh   # requires ~/nest-knowledge
+```
 
 ---
 

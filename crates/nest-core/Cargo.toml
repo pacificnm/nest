@@ -1,0 +1,13 @@
+[package]
+name = "nest-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core contracts for the Nest modular desktop application framework"
+
+[dependencies]
+nest-error = { path = "../nest-error" }
+
+[dev-dependencies]

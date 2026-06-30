@@ -1,0 +1,21 @@
+[package]
+name = "nest-data-sqlite"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SQLite provider for the Nest data layer"
+
+[dependencies]
+nest-core = { path = "../nest-core" }
+nest-data = { path = "../nest-data" }
+nest-error = { path = "../nest-error" }
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+
+[features]
+default = ["sync"]
+sync = ["rusqlite"]
+
+[dev-dependencies]
+nest-data = { path = "../nest-data" }

@@ -1,0 +1,38 @@
+---
+description: Mandatory Nest MCP memory workflow — search project/context memory before work, save after every response
+alwaysApply: true
+---
+
+# Nest memory (mandatory)
+
+Hooks enforce this workflow. Do not skip it.
+
+## Before any implementation work
+
+1. **`search_project_memory`** (`nest-memory`) — plans, crate boundaries, decisions.
+2. **`search_context_memory`** or **`list_context_memory`** (`nest-context-memory`) with
+   `session_key` = current git branch (or `branch:conversation`).
+
+Until both run, **preToolUse blocks** edits, shell commands, and other non-memory tools.
+
+## After every agent response
+
+Call **`save_context_memory`** with:
+
+- Summary of what changed this turn
+- Files touched
+- Decisions, blockers, open questions
+- Verification commands and results
+
+The **stop** hook issues a follow-up if you forget. Use the same `session_key` every time.
+
+## Before compaction
+
+Call **`save_context_memory`** with a full checkpoint. **preCompact** also auto-snapshots
+the transcript, but an explicit agent save is still required.
+
+## Optional
+
+**`search_knowledge_base`** (`nest-knowledge`) when using Rust, egui, or eframe APIs.
+
+See [AGENTS.md](../../AGENTS.md) and [tools/MCP-SETUP.md](../../tools/MCP-SETUP.md).

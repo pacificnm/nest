@@ -1,0 +1,18 @@
+[package]
+name = "nest-theme"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Runtime theme loading, validation, and lifecycle for the Nest framework"
+
+[dependencies]
+nest-core = { path = "../nest-core" }
+nest-design = { path = "../nest-design" }
+nest-error = { path = "../nest-error" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+[dev-dependencies]

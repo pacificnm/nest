@@ -1,0 +1,25 @@
+[package]
+name = "nest-validation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "UI-agnostic validation for the Nest framework"
+
+[dependencies]
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error" }
+regex = { version = "1", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+default = []
+regex = ["dep:regex"]
+serde = ["dep:serde"]
+
+[dev-dependencies]
+regex = "1"
+
+[package.metadata.cargo-all-features]
+# tests enable regex via `cargo test -p nest-validation --features regex`
