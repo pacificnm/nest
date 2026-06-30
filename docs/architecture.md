@@ -1,11 +1,11 @@
 # Nest repository architecture
 
-Nest is organized in three layers. Each layer has a fixed place in the tree and fixed dependency rules.
+Nest is organized in three layers. **This repository** contains only **core** and **modules**. **Apps** are separate Git repositories.
 
 ## Layers
 
 ```text
-Apps          apps/<product>/    shipping products (airtable-sync, kiwi, …)
+Apps          separate repos     shipping products (airtable-sync, kiwi, …)
   │
   ▼
 Modules       modules/crates/    optional integrations (nest-airtable, nest-data-sqlite, …)
@@ -20,7 +20,7 @@ Within **core**, the runtime stack flows:
 nest-core → nest-app → nest-cli / nest-tui / nest-gui
 ```
 
-Hosts own presentation (CLI parsing, event loops, logging init). Modules register services into the Nest container. Apps wire hosts, modules, and product-specific code together.
+Hosts own presentation (CLI parsing, event loops, logging init). Modules register services into the Nest container. Apps wire hosts, modules, and product-specific code together — in their **own repos**, not here.
 
 ## Dependency rules
 
@@ -28,9 +28,7 @@ Hosts own presentation (CLI parsing, event loops, logging init). Modules registe
 |-------|---------------|-------------------|
 | **Core** | Other core crates | Modules, apps |
 | **Modules** | Core | Apps, other modules (avoid unless necessary) |
-| **Apps** | Core, modules | — |
-
-These rules keep the framework stable as the workspace grows from a dozen crates to fifty or more. They also make it obvious where new code belongs.
+| **Apps** | Core, modules (via git/path) | — |
 
 ### Core
 
@@ -44,27 +42,17 @@ Adapters and integrations that wrap external systems. A module implements Nest's
 
 Examples: `nest-airtable`, `nest-data-sqlite`. Planned: `nest-github`, `nest-postgres`, `nest-kubernetes`.
 
-Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`, never on paths under `apps/`.
+Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`.
 
 ### Apps
 
-End-user products. An app chooses a host (`nest-cli`, `nest-gui`, …), enables modules, and adds commands, views, or domain logic specific to that product.
+End-user products in **separate repositories**. An app chooses a host (`nest-cli`, `nest-gui`, …), enables modules, and adds commands, views, or domain logic.
 
-Examples: [airtable-sync](../apps/airtable-sync/) ([pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync)), `kiwi`, `finch` (planned).
+Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync). Planned: `kiwi`, `finch`.
 
-Each product folder holds its crates under `crates/` — e.g. `apps/airtable-sync/crates/core`, `apps/airtable-sync/crates/cli`, `apps/airtable-sync/crates/gui` (planned).
+Typical layout: `crates/core`, `crates/cli`, `crates/gui` under the product repo root. Nest crates are pulled via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest) (or `path` patch for local dev).
 
-Apps may depend on any core crate and any module they need. Core and modules must never depend back on an app.
-
-### App folder isolation
-
-Everything product-specific stays inside `apps/<product>/`:
-
-- Source crates under `apps/<product>/crates/`
-- Binaries and build cache under `apps/<product>/target/` (via each app's `build` script)
-- Local config, logs, and runtime files in that app folder — not the repo root
-
-The root `target/` is for framework development (`cargo test --workspace`, core crate work). Day-to-day app work uses `./apps/<product>/build` so the root stays clean.
+Apps may depend on any core crate and any module they need. Core and modules must never depend back on an app. **No product source code belongs in the nest monorepo.**
 
 ## Where does new code go?
 
@@ -73,17 +61,20 @@ The root `target/` is for framework development (`cargo test --workspace`, core 
 | Module system, service registry, lifecycle | `core/crates/nest-core` |
 | New host (HTTP server, etc.) | `core/crates/nest-*` |
 | Third-party API or database adapter | `modules/crates/nest-*` |
-| Product-specific commands, UI, workflows | `apps/<product>/crates/` (e.g. `apps/airtable-sync/crates/core`) |
+| Product-specific commands, UI, workflows | **Separate product repo** (see [apps/README.md](../apps/README.md)) |
 | Small demo or spike | `examples/` (not in workspace until promoted) |
 
-When unsure: if it must ship with every Nest consumer, it is **core**. If it is optional and wraps something outside Nest, it is a **module**. If it is a product someone runs, it is an **app**.
+When unsure: if it must ship with every Nest consumer, it is **core**. If it is optional and wraps something outside Nest, it is a **module**. If it is a product someone runs, it is an **app** — in its own repository.
 
 ## Workspace dependencies
 
-Cross-layer paths are centralized in the root [`Cargo.toml`](../Cargo.toml) under `[workspace.dependencies]`. Crates reference siblings with `{ workspace = true }` so moves between layers do not require wide path churn.
+Cross-layer paths for **core** and **modules** are centralized in the root [`Cargo.toml`](../Cargo.toml) under `[workspace.dependencies]`. Crates reference siblings with `{ workspace = true }`.
+
+The root workspace `members` list includes **only** `core/crates/*` and `modules/crates/*`.
 
 ## Related docs
 
 - [README](../README.md) — crate catalog
+- [apps/README.md](../apps/README.md) — external product repositories
 - [nest-core](nest-core/README.md) — `AppBuilder`, modules, services
 - [nest-app](nest-app/README.md) — application container

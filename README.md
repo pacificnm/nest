@@ -1,6 +1,6 @@
 # Nest Framework
 
-Nest is a modular application framework for Rust. Applications opt into small, focused crates instead of inheriting a monolithic stack. The repository separates **core framework** crates from optional **integration modules** and **applications**.
+Nest is a modular application framework for Rust. Applications opt into small, focused crates instead of inheriting a monolithic stack. This repository contains the **framework** (`core/`) and optional **integration modules** (`modules/`). Shipping products live in **separate repositories**.
 
 > **Only compile and load the functionality your application actually needs.**
 
@@ -24,13 +24,10 @@ nest/
 │   ├── nest-airtable
 │   ├── nest-data-sqlite
 │   └── nest-github, nest-postgres, ... (planned)
-├── apps/                   # End-user products (one folder per app)
-│   └── airtable-sync/
-│       └── crates/         # core, cli, gui, …
 └── tools/
 ```
 
-**Rule:** `core/` holds the framework contract. `modules/` holds optional adapters and integrations. `apps/` holds shipping products that compose both.
+**Rule:** `core/` holds the framework contract. `modules/` holds optional adapters and integrations. **Applications are separate repos** (e.g. [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync)) — they are not part of this tree.
 
 See [docs/architecture.md](docs/architecture.md) for layering and dependency rules.
 
@@ -44,7 +41,7 @@ Apps  →  Modules  →  Core
 |-------|------------|-------------------|
 | **Core** (`core/crates/`) | Core only | Modules, apps |
 | **Modules** (`modules/crates/`) | Core | Apps |
-| **Apps** (`apps/<product>/`) | Core, modules | — |
+| **Apps** (separate repos) | Core, modules | — |
 
 This scales as the workspace grows: contributors can tell at a glance where new functionality belongs.
 
@@ -142,13 +139,15 @@ Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubern
 
 ---
 
-## Applications (`apps/`)
+## Applications (separate repositories)
 
-| App | Summary |
-|-----|---------|
-| **[airtable-sync](apps/airtable-sync/README.md)** | Sync data with Airtable — `tables` and `list` commands via `nest-airtable`. |
+Products compose Nest hosts and modules in their **own GitHub repos** — not in this monorepo. See [apps/README.md](apps/README.md).
 
-Planned: `airtable-sync-gui`, `kiwi`, `finch`, …
+| Product | Repository | Summary |
+|---------|------------|---------|
+| **airtable-sync** | [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) | Sync data with Airtable — `tables` and `list` via `nest-airtable`. |
+
+Planned: `kiwi`, `finch`, …
 
 ---
 

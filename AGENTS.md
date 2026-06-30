@@ -43,7 +43,7 @@ automatic transcript snapshot, but you must still save an explicit summary.
 3. MCP project memory
 4. MCP knowledge base (Rust/egui APIs)
 5. MCP context memory (resume prior work)
-6. `docs/nest-<crate>/` and source under `core/crates/`, `modules/crates/`, `apps/<product>/crates/`
+6. `docs/nest-<crate>/` and source under `core/crates/` and `modules/crates/` (apps are separate repos — see `apps/README.md`)
 
 ## Re-index
 

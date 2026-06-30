@@ -1,59 +1,44 @@
 # Nest applications
 
-Each product is **self-contained** under `apps/<product>/`. The repo root and `core/` stay framework-only — no app binaries, logs, or local config at the root.
+**Applications do not live in this repository.**
+
+The Nest monorepo contains only the **framework** (`core/crates/`) and **integration modules** (`modules/crates/`). Shipping products are separate Git repositories that depend on [pacificnm/nest](https://github.com/pacificnm/nest).
+
+## Products
+
+| Product | Repository |
+|---------|------------|
+| **airtable-sync** | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
+
+Planned: `kiwi`, `finch`, …
+
+## Typical product layout
 
 ```text
-apps/
-└── airtable-sync/
-    ├── README.md
-    ├── build                 # build/run helper (local target/)
-    ├── config.example.toml
-    ├── config.toml           # local only (gitignored)
-    ├── logs/                 # local only (gitignored)
-    ├── target/               # binaries + build cache (gitignored)
-    └── crates/
-        ├── core/
-        ├── cli/
-        └── gui/              # planned
+<product-repo>/
+├── Cargo.toml              # workspace; nest crates via git (or path patch locally)
+├── build
+├── config.example.toml
+├── target/                 # gitignored
+└── crates/
+    ├── core/
+    ├── cli/
+    └── gui/                # optional
 ```
 
-## What lives in the app folder
+## Dependency rule
 
-| Item | Location |
-|------|----------|
-| Product crates | `crates/core`, `crates/cli`, `crates/gui`, … |
-| Release/debug binaries | `target/debug/`, `target/release/` |
-| App config | `config.toml` (copy from `config.example.toml`) |
-| Log files | `logs/` (when `[logging]` uses `./logs`) |
-| Product README & examples | app root |
+Products depend on Nest **core** and **modules** only. Nothing in `core/` or `modules/` may depend on a product.
 
-## What stays out of the app folder
+See [docs/architecture.md](../docs/architecture.md).
 
-| Item | Location |
-|------|----------|
-| Framework crates | `core/crates/` |
-| Shared integrations | `modules/crates/` |
-| Framework docs | `docs/` |
-| Workspace `Cargo.toml` | repo root (lists members only) |
+## Local development with a sibling Nest checkout
 
-## Building an app
+In the product repo, add `.cargo/config.toml`:
 
-Always use the app's `build` script so artifacts land under that app's `target/`:
-
-```bash
-./apps/airtable-sync/build build
-./apps/airtable-sync/build release
-./apps/airtable-sync/build run -- tables
+```toml
+[patch."https://github.com/pacificnm/nest.git"]
+nest-cli = { path = "../nest/core/crates/nest-cli" }
+nest-airtable = { path = "../nest/modules/crates/nest-airtable" }
+# … other nest crates as needed
 ```
-
-`run` executes from the app directory and picks up `config.toml` there automatically.
-
-Avoid `cargo build -p airtable-sync-cli` from the repo root unless you intentionally want the shared root `target/`.
-
-## Adding a new app
-
-1. Create `apps/<name>/crates/{core,cli,...}`
-2. Add `build`, `config.example.toml`, `.gitignore` (`target/`, `logs/`, `config.toml`)
-3. Register crate paths in root [`Cargo.toml`](../Cargo.toml) `members`
-
-**Dependency rule:** apps depend on `core/` and `modules/` only. See [docs/architecture.md](../docs/architecture.md).
