@@ -2,9 +2,9 @@
 
 Host-agnostic application container for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-app`](../../crates/nest-app)
+**Crate path:** [`core/crates/nest-app`](../../core/crates/nest-app)
 
-`nest-app` wraps [`nest_core::AppBuilder`](../../crates/nest-core/src/builder.rs) with metadata and lifecycle orchestration. Host crates execute the container; they do not replace it.
+`nest-app` wraps [`nest_core::AppBuilder`](../../core/crates/nest-core/src/builder.rs) with metadata and lifecycle orchestration. Host crates execute the container; they do not replace it.
 
 ## Quick start
 

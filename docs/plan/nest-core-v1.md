@@ -118,7 +118,7 @@ pub use version::{NEST_VERSION, nest_version};
 
 ## Core Types
 
-### 1. Error handling — [`error.rs`](../../crates/nest-core/src/error.rs)
+### 1. Error handling — [`error.rs`](../../core/crates/nest-core/src/error.rs)
 
 Single error enum for core operations. Keep variants minimal and actionable:
 
@@ -148,7 +148,7 @@ Modules may wrap their own errors into `ModuleError` / `LifecycleError` strings 
 
 ---
 
-### 2. Service contract — [`traits/service.rs`](../../crates/nest-core/src/traits/service.rs)
+### 2. Service contract — [`traits/service.rs`](../../core/crates/nest-core/src/traits/service.rs)
 
 ```rust
 /// Marker: types registered in the service registry.
@@ -164,7 +164,7 @@ impl<T: Send + Sync + 'static> Service for T {}
 
 ---
 
-### 3. ServiceRegistry — [`registry.rs`](../../crates/nest-core/src/registry.rs)
+### 3. ServiceRegistry — [`registry.rs`](../../core/crates/nest-core/src/registry.rs)
 
 Internal storage: `HashMap<TypeId, Box<dyn Service>>` is wrong (no downcast). Use **`HashMap<TypeId, Box<dyn Any + Send + Sync>>`** with typed insert/get.
 
@@ -189,7 +189,7 @@ impl ServiceRegistry {
 
 ---
 
-### 4. AppContext — [`context.rs`](../../crates/nest-core/src/context.rs)
+### 4. AppContext — [`context.rs`](../../core/crates/nest-core/src/context.rs)
 
 Thin facade over `ServiceRegistry` for use during runtime and lifecycle hooks:
 
@@ -212,7 +212,7 @@ impl AppContext {
 
 ---
 
-### 5. AppBuilder — [`builder.rs`](../../crates/nest-core/src/builder.rs)
+### 5. AppBuilder — [`builder.rs`](../../core/crates/nest-core/src/builder.rs)
 
 Fluent builder used during module configuration. Owns mutable state; produces frozen `AppContext` on `build()`.
 
@@ -267,7 +267,7 @@ Full panel/command registries live in `nest-commands`, `nest-ui`, etc., but they
 
 ---
 
-### 6. Module trait — [`module.rs`](../../crates/nest-core/src/module.rs)
+### 6. Module trait — [`module.rs`](../../core/crates/nest-core/src/module.rs)
 
 ```rust
 pub trait Module: Send + Sync + 'static {
@@ -291,7 +291,7 @@ impl Module for LoggingModule {
 
 ---
 
-### 7. Lifecycle — [`lifecycle.rs`](../../crates/nest-core/src/lifecycle.rs)
+### 7. Lifecycle — [`lifecycle.rs`](../../core/crates/nest-core/src/lifecycle.rs)
 
 Sync hooks only:
 
@@ -312,7 +312,7 @@ pub trait Lifecycle: Send + 'static {
 
 ---
 
-### 8. Extension traits — [`traits/`](../../crates/nest-core/src/traits/)
+### 8. Extension traits — [`traits/`](../../core/crates/nest-core/src/traits/)
 
 Define empty or minimal contracts so optional crates share types without coupling:
 
@@ -330,7 +330,7 @@ Define empty or minimal contracts so optional crates share types without couplin
 
 ---
 
-### 9. Version — [`version.rs`](../../crates/nest-core/src/version.rs)
+### 9. Version — [`version.rs`](../../core/crates/nest-core/src/version.rs)
 
 ```rust
 pub const NEST_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -401,7 +401,7 @@ Within crate (not new top-level markdown files unless requested):
 ## Implementation Phases
 
 ### Phase 1 — Scaffold (day 1)
-- Root workspace `Cargo.toml` with `crates/nest-core`
+- Root workspace `Cargo.toml` with `core/crates/nest-core`
 - `nest-core/Cargo.toml` with `thiserror`
 - `lib.rs` module tree + `version.rs`
 

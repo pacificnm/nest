@@ -2,7 +2,7 @@
 
 ## Context
 
-[nest-core](../../crates/nest-core) previously owned a temporary `NestError` enum. **nest-error** is now the single owner of error shape and reporting. `nest-logging` is out of scope — only integration hooks are defined.
+[nest-core](../../core/crates/nest-core) previously owned a temporary `NestError` enum. **nest-error** is now the single owner of error shape and reporting. `nest-logging` is out of scope — only integration hooks are defined.
 
 **Rule:**
 - **nest-error** owns error shape and `NestErrorReport`
@@ -27,7 +27,7 @@ flowchart LR
 ## Crate layout
 
 ```
-crates/nest-error/src/
+core/crates/nest-error/src/
 ├── lib.rs
 ├── kind.rs
 ├── error.rs

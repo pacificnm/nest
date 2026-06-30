@@ -2,7 +2,7 @@
 
 UI-agnostic validation for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-validation`](../../crates/nest-validation)
+**Crate path:** [`core/crates/nest-validation`](../../core/crates/nest-validation)
 
 ## Role
 

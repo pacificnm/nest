@@ -9,8 +9,8 @@ description = "Task execution contracts for the Nest framework"
 
 [dependencies]
 async-trait = "0.1"
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
 tracing = "0.1"
 serde = { version = "1", features = ["derive"], optional = true }
 

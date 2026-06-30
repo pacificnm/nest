@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Shared HTTP contracts for the Nest framework"
 
 [dependencies]
-nest-error = { path = "../nest-error" }
+nest-error = { workspace = true  }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 

@@ -2,7 +2,7 @@
 
 Terminal UI host for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-tui`](../../crates/nest-tui)
+**Crate path:** [`core/crates/nest-tui`](../../core/crates/nest-tui)
 
 `nest-tui` owns terminal lifecycle, startup option parsing, and the Ratatui event loop. It does not own CSV, HTTP, data, validation, or logging logic beyond host initialization.
 

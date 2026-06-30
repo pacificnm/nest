@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn load_and_register_from_toml() {
         let path =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../themes/nest-dark.toml");
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../themes/nest-dark.toml");
         let service = ThemeService::new();
         let id = service.load_and_register(&path).unwrap();
         assert_eq!(id.as_str(), "nest-dark");

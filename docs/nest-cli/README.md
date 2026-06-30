@@ -2,7 +2,7 @@
 
 Command-line host for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-cli`](../../crates/nest-cli)
+**Crate path:** [`core/crates/nest-cli`](../../core/crates/nest-cli)
 
 ## Quick start
 

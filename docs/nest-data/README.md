@@ -2,7 +2,7 @@
 
 Database-agnostic data contracts for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-data`](../../crates/nest-data)
+**Crate path:** [`core/crates/nest-data`](../../core/crates/nest-data)
 
 ## Role
 

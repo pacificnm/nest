@@ -8,6 +8,6 @@ repository.workspace = true
 description = "Core contracts for the Nest modular desktop application framework"
 
 [dependencies]
-nest-error = { path = "../nest-error" }
+nest-error = { workspace = true  }
 
 [dev-dependencies]

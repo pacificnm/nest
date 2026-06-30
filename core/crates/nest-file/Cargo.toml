@@ -8,8 +8,8 @@ repository.workspace = true
 description = "Sync file I/O service for the Nest framework"
 
 [dependencies]
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
 tracing = "0.1"
 
 [dev-dependencies]

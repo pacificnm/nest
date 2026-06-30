@@ -2,7 +2,7 @@
 
 Airtable REST API client for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-airtable`](../../crates/nest-airtable)
+**Crate path:** [`modules/crates/nest-airtable`](../../modules/crates/nest-airtable)
 
 Provides [`AirtableClient`] for listing and updating records with Airtable-specific offset pagination, batch chunking (10 records per request), and rate-limit retry handling. Uses [`nest_http_client::HttpClientService`] for transport.
 

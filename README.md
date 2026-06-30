@@ -1,8 +1,35 @@
 # Nest Framework
 
-Nest is a modular application framework for Rust. Applications opt into small, focused crates instead of inheriting a monolithic stack. The core defines contracts (modules, services, lifecycle); optional crates add configuration, data access, validation, file I/O, HTTP, tasks, and presentation hosts.
+Nest is a modular application framework for Rust. Applications opt into small, focused crates instead of inheriting a monolithic stack. The repository separates **core framework** crates from optional **integration modules** and **applications**.
 
 > **Only compile and load the functionality your application actually needs.**
+
+## Repository layout
+
+```text
+nest/
+├── Cargo.toml              # Workspace
+├── README.md
+├── docs/
+├── examples/
+├── core/crates/            # Framework (stable, reviewed)
+│   ├── nest-core, nest-app, nest-cli, nest-tui, nest-gui
+│   ├── nest-config, nest-error, nest-logging
+│   ├── nest-task, nest-task-runtime
+│   ├── nest-file, nest-file-csv
+│   ├── nest-http, nest-http-client
+│   ├── nest-data, nest-validation, nest-design, nest-theme
+│   └── ...
+├── modules/crates/         # Optional integrations
+│   ├── nest-airtable
+│   ├── nest-data-sqlite
+│   └── nest-github, nest-postgres, ... (planned)
+├── apps/crates/            # End-user applications
+│   ├── airtable-sync-cli, kiwi, finch, ... (planned)
+└── tools/
+```
+
+**Rule:** `core/` holds the framework contract. `modules/` holds optional adapters and integrations. `apps/` holds shipping products that compose both.
 
 ## Architecture
 
@@ -12,13 +39,15 @@ nest-core          primitives (AppBuilder, Module, services, lifecycle)
 nest-app           host-agnostic container (metadata, startup/shutdown)
     ↓
 nest-cli / nest-tui / nest-gui   presentation hosts
+    ↓
+modules (nest-airtable, nest-data-sqlite, …)   optional integrations
 ```
 
-Hosts own CLI parsing, event loops, logging initialization, and config file loading. Feature crates register services via `nest-core` modules.
+Hosts own CLI parsing, event loops, logging initialization, and config file loading.
 
 ---
 
-## Modules
+## Core crates (`core/crates/`)
 
 ### Application
 
@@ -43,12 +72,11 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 | **nest-config** | TOML/JSON config loading, search paths, and `ConfigService` for section access. | [docs](docs/nest-config/README.md) |
 | **nest-logging** | Tracing-based logging for hosts: console, file, rotation, module filters. | [docs](docs/nest-logging/README.md) |
 
-### Data
+### Data contracts
 
 | Crate | Summary | Docs |
 |-------|---------|------|
 | **nest-data** | Database-agnostic contracts: repositories, transactions, migrations, connection lifecycle. | [docs](docs/nest-data/README.md) |
-| **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
 
 ### HTTP
 
@@ -56,7 +84,6 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-http** | Shared HTTP types: methods, status, headers, request/response, auth/retry contracts. | [docs](docs/nest-http/README.md) |
 | **nest-http-client** | Async reqwest client behind `HttpClientService` and `HttpClientModule`. | [docs](docs/nest-http-client/README.md) |
-| **nest-airtable** | Airtable REST client: offset pagination, batch updates, Bearer auth, rate-limit retry. | [docs](docs/nest-airtable/README.md) |
 
 ### Tasks
 
@@ -87,6 +114,23 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 
 ---
 
+## Integration modules (`modules/crates/`)
+
+| Crate | Summary | Docs |
+|-------|---------|------|
+| **nest-airtable** | Airtable REST client: offset pagination, batch updates, Bearer auth, rate-limit retry. | [docs](docs/nest-airtable/README.md) |
+| **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
+
+Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubernetes`, …
+
+---
+
+## Applications (`apps/crates/`)
+
+End-user products compose core hosts with selected modules. Planned: `airtable-sync-core`, `airtable-sync-cli`, `airtable-sync-gui`, `kiwi`, `finch`, …
+
+---
+
 ## Quick start
 
 ```rust
@@ -112,7 +156,7 @@ fn main() {
 }
 ```
 
-For a pre-built container and shared modules across hosts, see [nest-app](docs/nest-app/README.md).
+Workspace dependencies use `{ workspace = true }` — paths are defined in the root [`Cargo.toml`](Cargo.toml).
 
 ---
 

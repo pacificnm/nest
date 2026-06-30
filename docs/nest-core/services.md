@@ -117,4 +117,4 @@ fn git_service_returns_repo() {
 }
 ```
 
-For integration tests with modules and lifecycle, see the tests in [`builder.rs`](../../crates/nest-core/src/builder.rs).
+For integration tests with modules and lifecycle, see the tests in [`builder.rs`](../../core/crates/nest-core/src/builder.rs).

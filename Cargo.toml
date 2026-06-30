@@ -1,26 +1,26 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/nest-core",
-    "crates/nest-app",
-    "crates/nest-airtable",
-    "crates/nest-data",
-    "crates/nest-data-sqlite",
-    "crates/nest-design",
-    "crates/nest-error",
-    "crates/nest-file",
-    "crates/nest-file-csv",
-    "crates/nest-cli",
-    "crates/nest-config",
-    "crates/nest-http",
-    "crates/nest-http-client",
-    "crates/nest-logging",
-    "crates/nest-task",
-    "crates/nest-task-runtime",
-    "crates/nest-theme",
-    "crates/nest-tui",
-    "crates/nest-gui",
-    "crates/nest-validation",
+    "core/crates/nest-core",
+    "core/crates/nest-app",
+    "core/crates/nest-cli",
+    "core/crates/nest-tui",
+    "core/crates/nest-gui",
+    "core/crates/nest-config",
+    "core/crates/nest-error",
+    "core/crates/nest-logging",
+    "core/crates/nest-task",
+    "core/crates/nest-task-runtime",
+    "core/crates/nest-file",
+    "core/crates/nest-file-csv",
+    "core/crates/nest-http",
+    "core/crates/nest-http-client",
+    "core/crates/nest-data",
+    "core/crates/nest-validation",
+    "core/crates/nest-design",
+    "core/crates/nest-theme",
+    "modules/crates/nest-airtable",
+    "modules/crates/nest-data-sqlite",
 ]
 
 [workspace.package]
@@ -28,3 +28,22 @@ edition = "2021"
 rust-version = "1.75"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/pacificnm/nest"
+
+[workspace.dependencies]
+nest-app = { path = "core/crates/nest-app" }
+nest-config = { path = "core/crates/nest-config" }
+nest-core = { path = "core/crates/nest-core" }
+nest-data = { path = "core/crates/nest-data" }
+nest-design = { path = "core/crates/nest-design" }
+nest-error = { path = "core/crates/nest-error" }
+nest-file = { path = "core/crates/nest-file" }
+nest-file-csv = { path = "core/crates/nest-file-csv" }
+nest-http = { path = "core/crates/nest-http" }
+nest-http-client = { path = "core/crates/nest-http-client" }
+nest-logging = { path = "core/crates/nest-logging" }
+nest-task = { path = "core/crates/nest-task" }
+nest-task-runtime = { path = "core/crates/nest-task-runtime" }
+nest-theme = { path = "core/crates/nest-theme" }
+nest-validation = { path = "core/crates/nest-validation" }
+nest-airtable = { path = "modules/crates/nest-airtable" }
+nest-data-sqlite = { path = "modules/crates/nest-data-sqlite" }

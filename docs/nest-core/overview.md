@@ -97,7 +97,7 @@ flowchart TB
 ## Source layout
 
 ```
-crates/nest-core/src/
+core/crates/nest-core/src/
 ├── lib.rs          # Public re-exports and crate docs
 ├── builder.rs      # AppBuilder, BuiltApp
 ├── context.rs      # AppContext

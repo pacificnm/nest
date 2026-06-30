@@ -2,7 +2,7 @@
 
 `nest-design` owns the shared design token schema and built-in theme definitions for Nest. It has no runtime logic and no dependency on `nest-core` or UI libraries.
 
-**Crate path:** [`crates/nest-design`](../../crates/nest-design)
+**Crate path:** [`core/crates/nest-design`](../../core/crates/nest-design)
 
 ## Quick start
 

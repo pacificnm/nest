@@ -10,12 +10,12 @@ description = "Terminal UI host for Nest applications (Ratatui)"
 [dependencies]
 clap = { version = "4", features = ["derive", "env"] }
 crossterm = "0.28"
-nest-app = { path = "../nest-app" }
-nest-config = { path = "../nest-config" }
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error", features = ["serde"] }
-nest-logging = { path = "../nest-logging" }
-nest-task-runtime = { path = "../nest-task-runtime", optional = true }
+nest-app = { workspace = true  }
+nest-config = { workspace = true  }
+nest-core = { workspace = true  }
+nest-error = { workspace = true, features = ["serde"]  }
+nest-logging = { workspace = true  }
+nest-task-runtime = { workspace = true, optional = true  }
 ratatui = "0.29"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt"], optional = true }

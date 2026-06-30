@@ -2,7 +2,7 @@
 
 Desktop GUI host for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-gui`](../../crates/nest-gui)
+**Crate path:** [`core/crates/nest-gui`](../../core/crates/nest-gui)
 
 `nest-gui` owns eframe startup, the egui frame loop, and window options. It does not own CSV, HTTP, data, validation, or logging logic beyond host initialization.
 

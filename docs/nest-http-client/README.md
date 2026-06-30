@@ -2,7 +2,7 @@
 
 Async HTTP client for consuming external APIs in the Nest framework.
 
-**Crate path:** [`crates/nest-http-client`](../../crates/nest-http-client)
+**Crate path:** [`core/crates/nest-http-client`](../../core/crates/nest-http-client)
 
 ## Quick start
 
@@ -73,7 +73,7 @@ impl ExampleApiClient {
 }
 ```
 
-See [`ExampleApiClient`](../../crates/nest-http-client/src/example.rs) in the crate.
+See [`ExampleApiClient`](../../core/crates/nest-http-client/src/example.rs) in the crate.
 
 ## Logging and errors
 

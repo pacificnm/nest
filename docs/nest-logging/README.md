@@ -2,7 +2,7 @@
 
 `nest-logging` is optional tracing-based logging infrastructure for Nest **host applications** (Kiwi, Nest CLI, etc.). Feature crates use `tracing` and `nest-error` only — they do not depend on this crate.
 
-**Crate path:** [`crates/nest-logging`](../../crates/nest-logging)
+**Crate path:** [`core/crates/nest-logging`](../../core/crates/nest-logging)
 
 ## Quick start
 

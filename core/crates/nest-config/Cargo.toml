@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Configuration loading for the Nest framework"
 
 [dependencies]
-nest-error = { path = "../nest-error" }
+nest-error = { workspace = true  }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", optional = true }
 toml = "0.8"

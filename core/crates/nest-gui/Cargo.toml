@@ -11,13 +11,13 @@ description = "Desktop GUI host for Nest applications (eframe/egui)"
 clap = { version = "4", features = ["derive", "env"] }
 eframe = { version = "0.31", default-features = true }
 egui = "0.31"
-nest-app = { path = "../nest-app" }
-nest-config = { path = "../nest-config" }
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error", features = ["serde"] }
-nest-logging = { path = "../nest-logging" }
-nest-theme = { path = "../nest-theme" }
-nest-task-runtime = { path = "../nest-task-runtime", optional = true }
+nest-app = { workspace = true  }
+nest-config = { workspace = true  }
+nest-core = { workspace = true  }
+nest-error = { workspace = true, features = ["serde"]  }
+nest-logging = { workspace = true  }
+nest-theme = { workspace = true  }
+nest-task-runtime = { workspace = true, optional = true  }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt"], optional = true }
 tracing = "0.1"

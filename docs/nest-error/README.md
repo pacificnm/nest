@@ -2,7 +2,7 @@
 
 `nest-error` is the shared error foundation for the [Nest framework](../../README.md). Every Nest crate returns `NestResult<T>` and uses the structured [`NestError`](overview.md) type.
 
-**Crate path:** [`crates/nest-error`](../../crates/nest-error)
+**Crate path:** [`core/crates/nest-error`](../../core/crates/nest-error)
 
 ## Quick start
 

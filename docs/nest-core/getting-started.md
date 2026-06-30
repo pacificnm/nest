@@ -6,7 +6,7 @@ This guide walks through building a minimal application using nest-core directly
 
 ```toml
 [dependencies]
-nest-core = { path = "../crates/nest-core" }
+nest-core = { path = "../core/crates/nest-core" }
 ```
 
 ## 1. Define services

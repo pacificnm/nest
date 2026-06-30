@@ -2,7 +2,7 @@
 
 Tokio-backed task runtime for the Nest framework.
 
-**Crate path:** [`crates/nest-task-runtime`](../../crates/nest-task-runtime)
+**Crate path:** [`core/crates/nest-task-runtime`](../../core/crates/nest-task-runtime)
 
 ## Quick start
 

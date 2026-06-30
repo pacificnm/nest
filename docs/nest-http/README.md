@@ -2,7 +2,7 @@
 
 Shared HTTP contracts for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-http`](../../crates/nest-http)
+**Crate path:** [`core/crates/nest-http`](../../core/crates/nest-http)
 
 ## Role
 

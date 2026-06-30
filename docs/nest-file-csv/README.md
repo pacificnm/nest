@@ -2,7 +2,7 @@
 
 CSV import and export for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-file-csv`](../../crates/nest-file-csv)
+**Crate path:** [`core/crates/nest-file-csv`](../../core/crates/nest-file-csv)
 
 Depends on [`nest-file`](../nest-file/README.md) for all file I/O.
 

@@ -16,3 +16,27 @@
   2026-06-30T18:01:42.356644Z  INFO nest_app::lifecycle: app shutdown, app.name: kiwi
     at crates/nest-app/src/lifecycle.rs:45
 
+  2026-06-30T20:26:19.867032Z  INFO nest_app::lifecycle: app startup, app.name: kiwi, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T20:26:19.867105Z  INFO nest_app::lifecycle: app shutdown, app.name: kiwi
+    at core/crates/nest-app/src/lifecycle.rs:45
+
+  2026-06-30T20:26:19.867746Z  INFO nest_app::lifecycle: app startup, app.name: kiwi, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T20:26:19.867818Z  INFO nest_app::lifecycle: app shutdown, app.name: kiwi
+    at core/crates/nest-app/src/lifecycle.rs:45
+
+  2026-06-30T20:27:05.940448Z  INFO nest_app::lifecycle: app startup, app.name: kiwi, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T20:27:05.940524Z  INFO nest_app::lifecycle: app shutdown, app.name: kiwi
+    at core/crates/nest-app/src/lifecycle.rs:45
+
+  2026-06-30T20:27:05.941060Z  INFO nest_app::lifecycle: app startup, app.name: kiwi, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:25
+
+  2026-06-30T20:27:05.941104Z  INFO nest_app::lifecycle: app shutdown, app.name: kiwi
+    at core/crates/nest-app/src/lifecycle.rs:45
+

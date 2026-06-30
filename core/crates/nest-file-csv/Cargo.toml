@@ -9,10 +9,10 @@ description = "CSV import/export for the Nest framework"
 
 [dependencies]
 csv = "1"
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
-nest-file = { path = "../nest-file" }
-nest-validation = { path = "../nest-validation", optional = true }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
+nest-file = { workspace = true  }
+nest-validation = { workspace = true, optional = true  }
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 
@@ -21,8 +21,8 @@ default = []
 validate = ["dep:nest-validation"]
 
 [dev-dependencies]
-nest-file = { path = "../nest-file" }
-nest-validation = { path = "../nest-validation" }
+nest-file = { workspace = true  }
+nest-validation = { workspace = true  }
 serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 

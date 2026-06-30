@@ -2,7 +2,7 @@
 
 SQLite provider for the Nest data layer.
 
-**Crate path:** [`crates/nest-data-sqlite`](../../crates/nest-data-sqlite)
+**Crate path:** [`modules/crates/nest-data-sqlite`](../../modules/crates/nest-data-sqlite)
 
 ## Quick start
 
@@ -36,7 +36,7 @@ Register additional connections in your own modules via `DataService::register_c
 
 ## Migrations
 
-Migrations use the `_nest_migrations` table. Define migrations with [`nest_data::SqlMigration`](../../crates/nest-data/src/migration.rs) or custom `Migration` impls.
+Migrations use the `_nest_migrations` table. Define migrations with [`nest_data::SqlMigration`](../../core/crates/nest-data/src/migration.rs) or custom `Migration` impls.
 
 ```rust
 nest_data::SqlMigration::new(
@@ -61,7 +61,7 @@ impl Repository<Note, NoteId> for NotesRepository {
 }
 ```
 
-See [`NotesRepository`](../../crates/nest-data-sqlite/src/notes.rs) for a full example.
+See [`NotesRepository`](../../modules/crates/nest-data-sqlite/src/notes.rs) for a full example.
 
 ## Features
 

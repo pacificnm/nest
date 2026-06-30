@@ -2,7 +2,7 @@
 
 Sync file I/O for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-file`](../../crates/nest-file)
+**Crate path:** [`core/crates/nest-file`](../../core/crates/nest-file)
 
 ## Quick start
 

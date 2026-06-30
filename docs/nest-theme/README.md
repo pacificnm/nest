@@ -1,8 +1,8 @@
 # nest-theme Documentation
 
-`nest-theme` owns theme lifecycle: loading, validation, registration, and active theme state. It registers [`ThemeService`](../../crates/nest-theme/src/service.rs) via [`ThemeModule`](../../crates/nest-theme/src/module.rs) into `nest-core`'s service registry. `nest-core` stays theme-agnostic.
+`nest-theme` owns theme lifecycle: loading, validation, registration, and active theme state. It registers [`ThemeService`](../../core/crates/nest-theme/src/service.rs) via [`ThemeModule`](../../core/crates/nest-theme/src/module.rs) into `nest-core`'s service registry. `nest-core` stays theme-agnostic.
 
-**Crate path:** [`crates/nest-theme`](../../crates/nest-theme)
+**Crate path:** [`core/crates/nest-theme`](../../core/crates/nest-theme)
 
 ## Quick start
 

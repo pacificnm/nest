@@ -2,7 +2,7 @@
 
 `nest-core` is the foundation crate of the [Nest framework](../../README.md). It defines the minimum application architecture: module configuration, explicit singleton service registration, typed service lookup, synchronous lifecycle hooks, and extension-point traits for optional crates.
 
-**Crate path:** [`crates/nest-core`](../../crates/nest-core)
+**Crate path:** [`core/crates/nest-core`](../../core/crates/nest-core)
 
 ## Quick start
 

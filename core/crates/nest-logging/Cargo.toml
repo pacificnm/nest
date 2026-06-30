@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Optional tracing-based logging infrastructure for Nest host applications"
 
 [dependencies]
-nest-error = { path = "../nest-error" }
+nest-error = { workspace = true  }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"] }
 tracing-appender = "0.2"

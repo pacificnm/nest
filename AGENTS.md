@@ -32,7 +32,7 @@ automatic transcript snapshot, but you must still save an explicit summary.
 
 ## During work
 
-- Prefer existing Nest conventions in `crates/nest-*` and `docs/nest-*`.
+- Prefer existing Nest conventions in `core/crates/nest-*`, `modules/crates/nest-*`, and `docs/nest-*`.
 - Keep changes scoped; `nest-core` stays small and dependency-light.
 - Use `NestError` / `NestResult` from `nest-error`.
 

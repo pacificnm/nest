@@ -62,7 +62,7 @@ mod tests {
     use nest_design::themes::light;
 
     fn themes_dir() -> std::path::PathBuf {
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../themes")
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../themes")
     }
 
     #[test]

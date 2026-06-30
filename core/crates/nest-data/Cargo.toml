@@ -8,8 +8,8 @@ repository.workspace = true
 description = "Database-agnostic data contracts for the Nest framework"
 
 [dependencies]
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
 async-trait = { version = "0.1", optional = true }
 
 [features]

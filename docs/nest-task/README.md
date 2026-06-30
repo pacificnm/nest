@@ -2,7 +2,7 @@
 
 Task execution contracts for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-task`](../../crates/nest-task)
+**Crate path:** [`core/crates/nest-task`](../../core/crates/nest-task)
 
 ## Role
 

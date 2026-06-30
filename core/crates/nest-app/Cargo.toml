@@ -8,9 +8,9 @@ repository.workspace = true
 description = "Host-agnostic application container for the Nest framework"
 
 [dependencies]
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
 tracing = "0.1"
 
 [dev-dependencies]
-nest-validation = { path = "../nest-validation" }
+nest-validation = { workspace = true  }

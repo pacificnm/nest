@@ -9,9 +9,9 @@ description = "Tokio-backed task runtime for the Nest framework"
 
 [dependencies]
 async-trait = "0.1"
-nest-core = { path = "../nest-core" }
-nest-error = { path = "../nest-error" }
-nest-task = { path = "../nest-task" }
+nest-core = { workspace = true  }
+nest-error = { workspace = true  }
+nest-task = { workspace = true  }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 tracing = "0.1"
 

@@ -2,9 +2,9 @@
 
 Configuration loading for the [Nest framework](../../README.md).
 
-**Crate path:** [`crates/nest-config`](../../crates/nest-config)
+**Crate path:** [`core/crates/nest-config`](../../core/crates/nest-config)
 
-`nest-config` loads, parses, and exposes application configuration. It does not depend on `nest-core`; hosts register [`ConfigService`](../../crates/nest-config/src/service.rs) into the Nest service registry after loading.
+`nest-config` loads, parses, and exposes application configuration. It does not depend on `nest-core`; hosts register [`ConfigService`](../../core/crates/nest-config/src/service.rs) into the Nest service registry after loading.
 
 ## Quick start
 
