@@ -24,11 +24,11 @@ nest/
 │   ├── nest-airtable
 │   ├── nest-data-sqlite
 │   └── nest-github, nest-postgres, ... (planned)
-├── apps/                   # Index only (README) — products are external repos
+├── apps/                   # Local product clones (gitignored — see apps/README.md)
 └── tools/
 ```
 
-**Rule:** `core/` holds the framework contract. `modules/` holds optional adapters. **Products are separate GitHub repos** — not checked out under `apps/`. See [apps/README.md](apps/README.md).
+**Rule:** `core/` holds the framework contract. `modules/` holds optional adapters. **`apps/` is for local product checkouts only** — ignored by nest git, never committed.
 
 See [docs/architecture.md](docs/architecture.md) for layering and dependency rules.
 
@@ -140,13 +140,13 @@ Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubern
 
 ---
 
-## Applications (external repositories)
+## Applications (`apps/`)
 
-Products are **not in this repo**. They live in their own GitHub repositories and depend on Nest via `git`. See [apps/README.md](apps/README.md).
+Products live in **separate repositories**. For local Pacific NM development, clone them into `apps/<name>/` — nest git ignores those directories. See [apps/README.md](apps/README.md).
 
-| Product | Repository | Summary |
-|---------|------------|---------|
-| **airtable-sync** | [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) | Airtable sync CLI (`tables`, `list`) via `nest-airtable`. |
+| Local path (gitignored) | Repository | Summary |
+|-------------------------|------------|---------|
+| `apps/airtable-sync/` | [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) | Airtable sync CLI (`tables`, `list`) via `nest-airtable`. |
 
 Planned: `kiwi`, `finch`, …
 

@@ -1,45 +1,44 @@
 # Nest applications
 
-**Applications do not live in this repository.** There is no `apps/<product>/` checkout in the Nest framework tree.
+The `apps/` folder is for **local product checkouts only**. Nest git **ignores everything here except this README** — product source is never committed to the framework repo.
 
-Products are **separate Git repositories** that depend on [pacificnm/nest](https://github.com/pacificnm/nest) via `git` (or local `path` patch). Clone them wherever you like — typically as a **sibling** of your nest checkout:
+Clone a product repo into `apps/<name>/` for side-by-side development with `core/` and `modules/`:
 
 ```text
-~/projects/
-├── nest/                 # this repo — framework only
-└── airtable-sync/        # product repo
+nest/
+├── core/crates/
+├── modules/crates/
+└── apps/
+    ├── README.md           # tracked by nest
+    └── airtable-sync/      # git clone — ignored by nest
 ```
+
+## Setup
+
+```bash
+git clone https://github.com/pacificnm/airtable-sync.git apps/airtable-sync
+```
+
+Framework consumers who do not need Pacific NM products can skip this entirely — `apps/` stays empty (or absent).
 
 ## Pacific NM products
 
-| Product | Repository |
-|---------|------------|
-| **airtable-sync** | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
+| Local path | Repository |
+|------------|------------|
+| `apps/airtable-sync/` | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
 
 Planned: `kiwi`, `finch`, …
 
-## Local development (nest + product side by side)
-
-Clone both repos, then in the **product** repo add `.cargo/config.toml`:
-
-```toml
-[patch."https://github.com/pacificnm/nest.git"]
-nest-cli = { path = "../nest/core/crates/nest-cli" }
-nest-airtable = { path = "../nest/modules/crates/nest-airtable" }
-# … other nest crates as needed
-```
-
-Adjust `../nest` if your layout differs.
-
-## Build airtable-sync
+## Build (example)
 
 ```bash
-git clone https://github.com/pacificnm/airtable-sync.git
-cd airtable-sync
+cd apps/airtable-sync
 cp config.example.toml config.toml
 export AIRTABLE_TOKEN="pat..."
 ./build build
 ./build run -- tables
 ```
+
+The product repo's `.cargo/config.toml` path-patches Nest crates from this layout (`../../core/…`, `../../modules/…`).
 
 **Dependency rule:** products depend on Nest core and modules only. See [docs/architecture.md](../docs/architecture.md).

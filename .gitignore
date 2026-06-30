@@ -1,5 +1,8 @@
 /target/
 core/crates/*/logs/
+# Local product checkouts — never part of the Nest framework repo
+apps/*
+!apps/README.md
 **/*.rs.bk
 Cargo.lock
 .venv/
