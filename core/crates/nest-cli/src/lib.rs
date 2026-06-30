@@ -254,4 +254,27 @@ mod tests {
             .try_run_with(["test-app", "echo", "hi"])
             .unwrap();
     }
+
+    #[test]
+    fn help_includes_registered_subcommand_and_long_about() {
+        let app = CliApp::new("test-app")
+            .with_long_about("Test App\n\nA test application.")
+            .command(EchoCommand);
+        let help = app
+            .registry
+            .build_clap_command("test-app", app.about, app.long_about)
+            .render_long_help()
+            .to_string();
+        assert!(help.contains("Test App"));
+        assert!(help.contains("echo"));
+    }
+
+    #[test]
+    fn help_flag_returns_ok_without_running_command() {
+        let _guard = integration_test_lock();
+        CliApp::new("test-app")
+            .command(EchoCommand)
+            .try_run_with(["test-app", "--help"])
+            .unwrap();
+    }
 }

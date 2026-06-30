@@ -83,13 +83,13 @@ pub fn attach_global_args(cmd: clap::Command) -> clap::Command {
         Arg::new(arg::JSON)
             .long("json")
             .action(ArgAction::SetTrue)
-            .help("Emit JSON error output"),
+            .help("Emit JSON output (errors and supported commands such as config show)"),
     )
     .arg(
         Arg::new(arg::QUIET)
             .long("quiet")
             .action(ArgAction::SetTrue)
-            .help("Suppress non-error output"),
+            .help("Suppress non-essential output (warnings, human-readable summaries); JSON output is still emitted when --json is set"),
     )
     .arg(
         Arg::new(arg::VERBOSE)

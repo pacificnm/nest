@@ -44,6 +44,10 @@ pub fn build_logging_config(
         }
     }
 
+    if globals.quiet && !globals.verbose && globals.log_level.is_none() {
+        config.level = LogLevel::Warn;
+    }
+
     if let Some(log_file) = &globals.log_file {
         let parent = log_file.parent().filter(|path| !path.as_os_str().is_empty());
         if let Some(directory) = parent {

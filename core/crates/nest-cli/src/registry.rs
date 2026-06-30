@@ -42,12 +42,22 @@ impl CommandRegistry {
     }
 
     /// Builds the root clap command.
-    pub fn build_clap_command(&self, app_name: &'static str) -> Command {
-        let mut root = crate::globals::attach_global_args(
-            Command::new(app_name)
-                .subcommand_required(true)
-                .arg_required_else_help(true),
-        );
+    pub fn build_clap_command(
+        &self,
+        app_name: &'static str,
+        about: Option<&'static str>,
+        long_about: Option<&'static str>,
+    ) -> Command {
+        let mut root = Command::new(app_name)
+            .subcommand_required(true)
+            .arg_required_else_help(true);
+        if let Some(about) = about {
+            root = root.about(about);
+        }
+        if let Some(long_about) = long_about {
+            root = root.long_about(long_about);
+        }
+        let mut root = crate::globals::attach_global_args(root);
 
         for command in &self.sync_commands {
             let sub = Command::new(command.name()).about(command.about());

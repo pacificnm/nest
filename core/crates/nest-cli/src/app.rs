@@ -17,6 +17,8 @@ use crate::command::AsyncCliCommand;
 /// Command-line host for Nest applications.
 pub struct CliApp {
     pub(crate) app_name: Option<&'static str>,
+    pub(crate) about: Option<&'static str>,
+    pub(crate) long_about: Option<&'static str>,
     pub(crate) nest_app: Option<NestApp>,
     pub(crate) logging: Option<LoggingConfig>,
     pub(crate) log_level_from_args: bool,
@@ -29,6 +31,8 @@ impl CliApp {
     pub fn new(app_name: &'static str) -> Self {
         Self {
             app_name: Some(app_name),
+            about: None,
+            long_about: None,
             nest_app: None,
             logging: None,
             log_level_from_args: false,
@@ -41,6 +45,8 @@ impl CliApp {
     pub fn from_nest_app(nest_app: NestApp) -> Self {
         Self {
             app_name: None,
+            about: None,
+            long_about: None,
             nest_app: Some(nest_app),
             logging: None,
             log_level_from_args: false,
@@ -65,6 +71,18 @@ impl CliApp {
     /// When true, `--log-level` overrides config file and defaults.
     pub fn with_log_level_from_args(mut self, enabled: bool) -> Self {
         self.log_level_from_args = enabled;
+        self
+    }
+
+    /// Sets the short description shown in help output.
+    pub fn with_about(mut self, about: &'static str) -> Self {
+        self.about = Some(about);
+        self
+    }
+
+    /// Sets the long description shown in help output (supports multiple lines).
+    pub fn with_long_about(mut self, long_about: &'static str) -> Self {
+        self.long_about = Some(long_about);
         self
     }
 
@@ -110,5 +128,31 @@ impl CliApp {
     {
         let args: Vec<OsString> = args.into_iter().map(Into::into).collect();
         run_pipeline(self, args)
+    }
+
+    /// Renders the long `--help` text for this application.
+    pub fn render_long_help(&self) -> NestResult<String> {
+        let name = self
+            .app_name
+            .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
+        Ok(self
+            .registry
+            .build_clap_command(name, self.about, self.long_about)
+            .render_long_help()
+            .to_string())
+    }
+
+    /// Renders the long `--help` text for a top-level command group.
+    pub fn render_group_long_help(&self, group: &str) -> NestResult<String> {
+        let name = self
+            .app_name
+            .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
+        let mut root = self
+            .registry
+            .build_clap_command(name, self.about, self.long_about);
+        let sub = root.find_subcommand_mut(group).ok_or_else(|| {
+            nest_error::NestError::command(format!("unknown command group: {group}"))
+        })?;
+        Ok(sub.render_long_help().to_string())
     }
 }

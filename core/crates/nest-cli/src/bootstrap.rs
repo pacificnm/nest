@@ -23,8 +23,10 @@ use nest_task_runtime::{RuntimeConfig, TaskRuntime, TaskRuntimeModule, TASK_RUNT
 pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
     let static_name = cli_app_name(&app);
     let app_name = static_name.to_string();
+    let about = app.about;
+    let long_about = app.long_about;
     let registry = app.registry;
-    let clap_cmd = registry.build_clap_command(static_name);
+    let clap_cmd = registry.build_clap_command(static_name, about, long_about);
 
     let str_args: Vec<String> = args
         .iter()
@@ -32,7 +34,14 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
         .collect();
     let arg_refs: Vec<&str> = str_args.iter().map(String::as_str).collect();
 
-    let matches = clap_cmd.try_get_matches_from(arg_refs).map_err(clap_to_nest_error)?;
+    let matches = match clap_cmd.try_get_matches_from(arg_refs) {
+        Ok(matches) => matches,
+        Err(error) if is_clap_help_or_version(&error) => {
+            error.print().expect("failed to write clap help or version");
+            return Ok(());
+        }
+        Err(error) => return Err(clap_to_nest_error(error)),
+    };
 
     let globals = CliGlobals::from_matches(&matches);
 
@@ -172,6 +181,15 @@ fn dispatch_command(
     Err(
         NestError::command(format!("unknown subcommand: {name}"))
             .with_code(NEST_CLI_USAGE),
+    )
+}
+
+fn is_clap_help_or_version(error: &clap::Error) -> bool {
+    matches!(
+        error.kind(),
+        clap::error::ErrorKind::DisplayHelp
+            | clap::error::ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
+            | clap::error::ErrorKind::DisplayVersion
     )
 }
 
