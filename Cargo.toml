@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/nest-core",
     "crates/nest-app",
+    "crates/nest-airtable",
     "crates/nest-data",
     "crates/nest-data-sqlite",
     "crates/nest-design",

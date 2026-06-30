@@ -1,0 +1,26 @@
+[package]
+name = "nest-airtable"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Airtable REST API client for the Nest framework"
+
+[dependencies]
+nest-config = { path = "../nest-config" }
+nest-core = { path = "../nest-core" }
+nest-error = { path = "../nest-error" }
+nest-http = { path = "../nest-http", features = ["serde"] }
+nest-http-client = { path = "../nest-http-client" }
+nest-task = { path = "../nest-task" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["time"] }
+tracing = "0.1"
+
+[dev-dependencies]
+nest-config = { path = "../nest-config" }
+nest-core = { path = "../nest-core" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wiremock = "0.6"

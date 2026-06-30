@@ -134,3 +134,21 @@ pub const NEST_APP_ALREADY_STARTED: &str = "NEST_APP_ALREADY_STARTED";
 
 /// Application container was not started.
 pub const NEST_APP_NOT_STARTED: &str = "NEST_APP_NOT_STARTED";
+
+/// Airtable API token environment variable was not set.
+pub const NEST_AIRTABLE_TOKEN_MISSING: &str = "NEST_AIRTABLE_TOKEN_MISSING";
+
+/// Airtable logical table name was not found in configuration.
+pub const NEST_AIRTABLE_TABLE_NOT_FOUND: &str = "NEST_AIRTABLE_TABLE_NOT_FOUND";
+
+/// Airtable API request failed.
+pub const NEST_AIRTABLE_REQUEST_FAILED: &str = "NEST_AIRTABLE_REQUEST_FAILED";
+
+/// Airtable API rate limit exceeded.
+pub const NEST_AIRTABLE_RATE_LIMITED: &str = "NEST_AIRTABLE_RATE_LIMITED";
+
+/// Airtable API response was invalid or unexpected.
+pub const NEST_AIRTABLE_INVALID_RESPONSE: &str = "NEST_AIRTABLE_INVALID_RESPONSE";
+
+/// Airtable batch request exceeded the endpoint record limit.
+pub const NEST_AIRTABLE_BATCH_LIMIT_EXCEEDED: &str = "NEST_AIRTABLE_BATCH_LIMIT_EXCEEDED";
