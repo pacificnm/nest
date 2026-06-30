@@ -1,44 +1,51 @@
 # Nest applications
 
-**Applications do not live in this repository.**
+Product apps are **separate Git repositories**, cloned into `apps/<product>/` as **git submodules**. They are not part of the Nest framework workspace (`core/` + `modules/` only).
 
-The Nest monorepo contains only the **framework** (`core/crates/`) and **integration modules** (`modules/crates/`). Shipping products are separate Git repositories that depend on [pacificnm/nest](https://github.com/pacificnm/nest).
+## Setup
+
+After cloning nest:
+
+```bash
+git submodule update --init apps/airtable-sync
+```
+
+Or clone with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/pacificnm/nest.git
+```
 
 ## Products
 
-| Product | Repository |
-|---------|------------|
-| **airtable-sync** | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
+| Path | Repository |
+|------|------------|
+| `apps/airtable-sync/` | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
 
 Planned: `kiwi`, `finch`, …
 
-## Typical product layout
+## Build airtable-sync
 
-```text
-<product-repo>/
-├── Cargo.toml              # workspace; nest crates via git (or path patch locally)
-├── build
-├── config.example.toml
-├── target/                 # gitignored
-└── crates/
-    ├── core/
-    ├── cli/
-    └── gui/                # optional
+From the app directory (uses local Nest via `.cargo/config.toml` patch when inside this monorepo):
+
+```bash
+cd apps/airtable-sync
+cp config.example.toml config.toml
+export AIRTABLE_TOKEN="pat..."
+./build build
+./build run -- tables
 ```
 
-## Dependency rule
+Or from repo root:
 
-Products depend on Nest **core** and **modules** only. Nothing in `core/` or `modules/` may depend on a product.
-
-See [docs/architecture.md](../docs/architecture.md).
-
-## Local development with a sibling Nest checkout
-
-In the product repo, add `.cargo/config.toml`:
-
-```toml
-[patch."https://github.com/pacificnm/nest.git"]
-nest-cli = { path = "../nest/core/crates/nest-cli" }
-nest-airtable = { path = "../nest/modules/crates/nest-airtable" }
-# … other nest crates as needed
+```bash
+./apps/airtable-sync/build run -- tables
 ```
+
+## Adding another app
+
+```bash
+git submodule add https://github.com/pacificnm/<product>.git apps/<product>
+```
+
+**Dependency rule:** products depend on Nest core and modules only. See [docs/architecture.md](../docs/architecture.md).

@@ -1,0 +1,3 @@
+[submodule "apps/airtable-sync"]
+	path = apps/airtable-sync
+	url = https://github.com/pacificnm/airtable-sync.git
