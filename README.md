@@ -24,8 +24,9 @@ nest/
 │   ├── nest-airtable
 │   ├── nest-data-sqlite
 │   └── nest-github, nest-postgres, ... (planned)
-├── apps/crates/            # End-user applications
-│   ├── airtable-sync-cli, kiwi, finch, ... (planned)
+├── apps/                   # End-user products (one folder per app)
+│   └── airtable-sync/
+│       └── crates/         # core, cli, gui, …
 └── tools/
 ```
 
@@ -43,7 +44,7 @@ Apps  →  Modules  →  Core
 |-------|------------|-------------------|
 | **Core** (`core/crates/`) | Core only | Modules, apps |
 | **Modules** (`modules/crates/`) | Core | Apps |
-| **Apps** (`apps/crates/`) | Core, modules | — |
+| **Apps** (`apps/<product>/`) | Core, modules | — |
 
 This scales as the workspace grows: contributors can tell at a glance where new functionality belongs.
 
@@ -141,9 +142,13 @@ Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubern
 
 ---
 
-## Applications (`apps/crates/`)
+## Applications (`apps/`)
 
-End-user products compose core hosts with selected modules. Planned: `airtable-sync-core`, `airtable-sync-cli`, `airtable-sync-gui`, `kiwi`, `finch`, …
+| App | Summary |
+|-----|---------|
+| **[airtable-sync](apps/airtable-sync/README.md)** | Sync data with Airtable — `tables` and `list` commands via `nest-airtable`. |
+
+Planned: `airtable-sync-gui`, `kiwi`, `finch`, …
 
 ---
 

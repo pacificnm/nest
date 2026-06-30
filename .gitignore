@@ -1,4 +1,6 @@
 /target/
+apps/*/target/
+apps/*/logs/
 **/*.rs.bk
 Cargo.lock
 .venv/

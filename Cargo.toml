@@ -21,6 +21,8 @@ members = [
     "core/crates/nest-theme",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
+    "apps/airtable-sync/crates/core",
+    "apps/airtable-sync/crates/cli",
 ]
 
 [workspace.package]
@@ -31,6 +33,7 @@ repository = "https://github.com/pacificnm/nest"
 
 [workspace.dependencies]
 nest-app = { path = "core/crates/nest-app" }
+nest-cli = { path = "core/crates/nest-cli" }
 nest-config = { path = "core/crates/nest-config" }
 nest-core = { path = "core/crates/nest-core" }
 nest-data = { path = "core/crates/nest-data" }
