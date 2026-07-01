@@ -6,7 +6,7 @@ Shared HTTP contracts for the [Nest framework](../../README.md).
 
 ## Role
 
-nest-http defines the **shared HTTP language**. It does not perform networking — see `nest-http-client` (consume) and future `nest-http-server` (serve).
+nest-http defines the **shared HTTP language**. It does not perform networking — see [`nest-http-client`](../nest-http-client/README.md) (consume) and [`nest-http-serve`](../nest-http-serve/README.md) (serve).
 
 | Type | Purpose |
 |------|---------|
@@ -33,6 +33,9 @@ Enable `serde` for `ApiResponse`, pagination, and JSON metadata fields.
 
 ```
 nest-error  ←  nest-http  ←  nest-http-client
+                    ↑
+                    │
+              nest-http-serve
 ```
 
 nest-http does **not** depend on nest-core, reqwest, or Tokio.
@@ -40,3 +43,4 @@ nest-http does **not** depend on nest-core, reqwest, or Tokio.
 ## Related
 
 - [nest-http-client](../nest-http-client/README.md) — async reqwest client
+- [nest-http-serve](../nest-http-serve/README.md) — HTTP host for serving APIs and SPAs

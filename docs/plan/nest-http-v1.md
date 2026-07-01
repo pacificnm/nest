@@ -38,5 +38,5 @@ Shared HTTP contracts (`nest-http`) and async reqwest client (`nest-http-client`
 
 ## Follow-up
 
-- `nest-http-server` + axum for nest-serve
+- ~~`nest-http-server` + axum for nest-serve~~ → [`nest-http-serve`](../nest-http-serve/README.md) (v0.1)
 - `AsyncRuntimeService` in nest-tasks

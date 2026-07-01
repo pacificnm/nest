@@ -1,0 +1,48 @@
+{
+  "streams": [
+    {
+      "codec_type": "video",
+      "codec_name": "h264",
+      "width": 1920,
+      "height": 1080,
+      "bit_rate": "8000000",
+      "tags": {}
+    },
+    {
+      "codec_type": "audio",
+      "codec_name": "aac",
+      "channels": 6,
+      "channel_layout": "5.1",
+      "tags": {
+        "language": "eng",
+        "title": "English 5.1"
+      }
+    },
+    {
+      "codec_type": "audio",
+      "codec_name": "ac3",
+      "channels": 2,
+      "channel_layout": "stereo",
+      "tags": {
+        "language": "spa",
+        "title": "Spanish Stereo"
+      }
+    },
+    {
+      "codec_type": "subtitle",
+      "codec_name": "subrip",
+      "tags": {
+        "language": "eng",
+        "title": "English"
+      },
+      "disposition": {
+        "default": 0,
+        "forced": 1
+      }
+    }
+  ],
+  "format": {
+    "format_name": "matroska,webm",
+    "duration": "7027.008000"
+  }
+}

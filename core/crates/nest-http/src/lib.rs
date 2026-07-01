@@ -2,7 +2,7 @@
 //!
 //! nest-http defines the shared HTTP language: methods, status codes, headers,
 //! request/response types, auth/retry contracts, and errors. It does not perform
-//! networking — see `nest-http-client` and future `nest-http-server`.
+//! networking — see `nest-http-client` and `nest-http-serve`.
 
 #![deny(missing_docs)]
 #![allow(clippy::result_large_err)]

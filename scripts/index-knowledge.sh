@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-KNOWLEDGE="${NEST_KNOWLEDGE:-${HOME}/nest-knowledge}"
+KNOWLEDGE="${NEST_KNOWLEDGE:-/data/nest-knowledge}"
 PYTHON="${ROOT}/.venv/bin/python"
 CFG="${ROOT}/tools/knowledge.toml"
 
@@ -14,7 +14,7 @@ fi
 
 if [[ ! -d "$KNOWLEDGE" ]]; then
   echo "ERROR: knowledge directory not found: ${KNOWLEDGE}" >&2
-  echo "Clone manuals into ~/nest-knowledge or set NEST_KNOWLEDGE." >&2
+  echo "Clone manuals into /data/nest-knowledge or set NEST_KNOWLEDGE." >&2
   exit 1
 fi
 

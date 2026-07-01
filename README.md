@@ -17,12 +17,15 @@ nest/
 │   ├── nest-config, nest-error, nest-logging
 │   ├── nest-task, nest-task-runtime
 │   ├── nest-file, nest-file-csv
-│   ├── nest-http, nest-http-client
+│   ├── nest-http, nest-http-client, nest-http-serve, nest-media
 │   ├── nest-data, nest-validation, nest-design, nest-theme
 │   └── ...
 ├── modules/crates/         # Optional integrations
 │   ├── nest-airtable
 │   ├── nest-data-sqlite
+│   ├── nest-media-library
+│   ├── nest-tmdb
+│   ├── nest-transcode
 │   └── nest-github, nest-postgres, ... (planned)
 ├── apps/                   # Local product clones (gitignored — see apps/README.md)
 └── tools/
@@ -99,6 +102,8 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-http** | Shared HTTP types: methods, status, headers, request/response, auth/retry contracts. | [docs](docs/nest-http/README.md) |
 | **nest-http-client** | Async reqwest client behind `HttpClientService` and `HttpClientModule`. | [docs](docs/nest-http-client/README.md) |
+| **nest-http-serve** | Reusable HTTP host: routing, JSON, static files, SPA fallback, CORS. | [docs](docs/nest-http-serve/README.md) |
+| **nest-media** | Media domain models and provider traits (movies v0.1). | [docs](docs/nest-media/README.md) |
 
 ### Tasks
 
@@ -135,8 +140,11 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-airtable** | Airtable REST client: offset pagination, batch updates, Bearer auth, rate-limit retry. | [docs](docs/nest-airtable/README.md) |
 | **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
+| **nest-media-library** | Media library scanning and indexing via `FileService` and injected providers. | [docs](docs/nest-media-library/README.md) |
+| **nest-tmdb** | TMDB metadata provider implementing `nest-media::MetadataProvider`. | [docs](docs/nest-tmdb/README.md) |
+| **nest-transcode** | FFprobe media inspection implementing `nest-media::MediaInspector`. | [docs](docs/nest-transcode/README.md) |
 
-Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubernetes`, …
+Planned: `nest-github`, `nest-git`, `nest-postgres`, `nest-docker`, `nest-kubernetes`, `nest-transcode`, …
 
 ---
 

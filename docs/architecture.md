@@ -34,13 +34,13 @@ Hosts own presentation (CLI parsing, event loops, logging init). Modules registe
 
 Framework contracts, hosts, and shared infrastructure. Changes here are reviewed carefully because every app and module builds on them.
 
-Examples: `nest-core`, `nest-app`, `nest-cli`, `nest-config`, `nest-http-client`, `nest-data`.
+Examples: `nest-core`, `nest-app`, `nest-cli`, `nest-config`, `nest-http-client`, `nest-http-serve`, `nest-media`, `nest-data`.
 
 ### Modules
 
 Adapters and integrations that wrap external systems. A module implements Nest's `Module` trait and registers services; it does not own a main loop or product UX.
 
-Examples: `nest-airtable`, `nest-data-sqlite`. Planned: `nest-github`, `nest-postgres`, `nest-kubernetes`.
+Examples: `nest-airtable`, `nest-data-sqlite`, `nest-tmdb`, `nest-transcode`. Planned: `nest-github`, `nest-postgres`, `nest-kubernetes`.
 
 Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`.
 
