@@ -14,6 +14,8 @@ mod batch;
 mod client;
 mod config;
 mod error;
+mod meta;
+mod meta_types;
 mod module;
 mod pager;
 mod retry;
@@ -21,7 +23,13 @@ mod types;
 
 pub use batch::AirtableBatch;
 pub use client::AirtableClient;
-pub use config::{AirtableConfig, AirtableConfigBuilder, AirtableTableConfig};
+pub use meta_types::{
+    is_computed_field_type, AirtableBaseSchema, AirtableFieldSchema, AirtableTableSchema,
+};
+pub use config::{
+    looks_like_secret, resolve_airtable_token, AirtableConfig, AirtableConfigBuilder,
+    AirtableTableConfig, DEFAULT_META_API_URL,
+};
 pub use module::{AirtableModule, AIRTABLE_MODULE_ID};
 pub use pager::AirtablePager;
 pub use retry::{AirtableRateLimitHook, AirtableRetryPolicy};
@@ -213,5 +221,37 @@ primary_key_field = "Asset ID"
             err.code(),
             Some(codes::NEST_AIRTABLE_TABLE_NOT_FOUND)
         );
+    }
+
+    #[tokio::test]
+    async fn get_base_schema_returns_tables() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/meta/bases/appTEST/tables"))
+            .and(header("authorization", "Bearer pat-test"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "tables": [{
+                    "id": "tblASSETS",
+                    "name": "Assets",
+                    "primaryFieldId": "fldKEY",
+                    "fields": [{
+                        "id": "fldKEY",
+                        "name": "Name",
+                        "type": "singleLineText"
+                    }]
+                }]
+            })))
+            .mount(&server)
+            .await;
+
+        let config = AirtableConfig::builder("appTEST", "pat-test")
+            .meta_api_url(format!("{}/meta", server.uri()))
+            .table("assets", "tblASSETS", None)
+            .build()
+            .unwrap();
+        let client = test_app(config);
+        let schema = client.get_base_schema().await.unwrap();
+        assert_eq!(schema.tables.len(), 1);
+        assert_eq!(schema.tables[0].id, "tblASSETS");
     }
 }

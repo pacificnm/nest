@@ -196,7 +196,7 @@ impl AirtableClient {
         Ok(url)
     }
 
-    async fn get_json<T>(&self, url: &str, operation: &str) -> NestResult<T>
+    pub(crate) async fn get_json<T>(&self, url: &str, operation: &str) -> NestResult<T>
     where
         T: DeserializeOwned,
     {
