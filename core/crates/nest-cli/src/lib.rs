@@ -14,6 +14,7 @@ mod bootstrap;
 mod command;
 mod exit;
 mod globals;
+mod host_info;
 mod logging;
 mod module;
 mod registry;
@@ -23,6 +24,7 @@ pub use app::CliApp;
 pub use command::CliCommand;
 pub use exit::CliExitCode;
 pub use globals::CliGlobals;
+pub use host_info::CliHostInfo;
 pub use module::{CliModule, CLI_MODULE_ID};
 
 #[cfg(feature = "async")]
@@ -262,7 +264,7 @@ mod tests {
             .command(EchoCommand);
         let help = app
             .registry
-            .build_clap_command("test-app", app.about, app.long_about)
+            .build_clap_command("test-app", app.about, app.long_about, app.version)
             .render_long_help()
             .to_string();
         assert!(help.contains("Test App"));
@@ -275,6 +277,16 @@ mod tests {
         CliApp::new("test-app")
             .command(EchoCommand)
             .try_run_with(["test-app", "--help"])
+            .unwrap();
+    }
+
+    #[test]
+    fn version_flag_returns_ok_when_configured() {
+        let _guard = integration_test_lock();
+        CliApp::new("test-app")
+            .with_version("9.9.9")
+            .command(EchoCommand)
+            .try_run_with(["test-app", "--version"])
             .unwrap();
     }
 }

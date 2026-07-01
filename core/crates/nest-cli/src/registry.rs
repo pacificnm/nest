@@ -47,10 +47,14 @@ impl CommandRegistry {
         app_name: &'static str,
         about: Option<&'static str>,
         long_about: Option<&'static str>,
+        version: Option<&'static str>,
     ) -> Command {
         let mut root = Command::new(app_name)
             .subcommand_required(true)
             .arg_required_else_help(true);
+        if let Some(version) = version {
+            root = root.version(version);
+        }
         if let Some(about) = about {
             root = root.about(about);
         }

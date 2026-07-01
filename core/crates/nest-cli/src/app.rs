@@ -19,6 +19,7 @@ pub struct CliApp {
     pub(crate) app_name: Option<&'static str>,
     pub(crate) about: Option<&'static str>,
     pub(crate) long_about: Option<&'static str>,
+    pub(crate) version: Option<&'static str>,
     pub(crate) nest_app: Option<NestApp>,
     pub(crate) logging: Option<LoggingConfig>,
     pub(crate) log_level_from_args: bool,
@@ -33,6 +34,7 @@ impl CliApp {
             app_name: Some(app_name),
             about: None,
             long_about: None,
+            version: None,
             nest_app: None,
             logging: None,
             log_level_from_args: false,
@@ -47,6 +49,7 @@ impl CliApp {
             app_name: None,
             about: None,
             long_about: None,
+            version: None,
             nest_app: Some(nest_app),
             logging: None,
             log_level_from_args: false,
@@ -71,6 +74,12 @@ impl CliApp {
     /// When true, `--log-level` overrides config file and defaults.
     pub fn with_log_level_from_args(mut self, enabled: bool) -> Self {
         self.log_level_from_args = enabled;
+        self
+    }
+
+    /// Sets the application version used for `--version`, lifecycle logs, and host metadata.
+    pub fn with_version(mut self, version: &'static str) -> Self {
+        self.version = Some(version);
         self
     }
 
@@ -137,7 +146,7 @@ impl CliApp {
             .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
         Ok(self
             .registry
-            .build_clap_command(name, self.about, self.long_about)
+            .build_clap_command(name, self.about, self.long_about, self.version)
             .render_long_help()
             .to_string())
     }
@@ -149,7 +158,7 @@ impl CliApp {
             .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
         let mut root = self
             .registry
-            .build_clap_command(name, self.about, self.long_about);
+            .build_clap_command(name, self.about, self.long_about, self.version);
         let sub = root.find_subcommand_mut(group).ok_or_else(|| {
             nest_error::NestError::command(format!("unknown command group: {group}"))
         })?;

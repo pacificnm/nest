@@ -3,7 +3,7 @@
 use std::ffi::OsString;
 
 use nest_app::{AppBootstrapper, AppMetadata};
-use nest_config::{ConfigDocument, ConfigLoader, ConfigService};
+use nest_config::{ConfigDocument, ConfigLoader, ConfigService, ConfigSource, LoadedConfig};
 use nest_core::{AppBuilder, AppContext, Module, ModuleId, NestResult};
 use nest_error::NestError;
 use nest_logging::LoggingConfig;
@@ -12,6 +12,7 @@ use crate::app::CliApp;
 use crate::codes::NEST_CLI_USAGE;
 use crate::exit::CliExitCode;
 use crate::globals::CliGlobals;
+use crate::host_info::CliHostInfo;
 use crate::logging::build_logging_config;
 use crate::module::CliModule;
 use crate::render::render_error;
@@ -25,8 +26,9 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
     let app_name = static_name.to_string();
     let about = app.about;
     let long_about = app.long_about;
+    let version = app.version;
     let registry = app.registry;
-    let clap_cmd = registry.build_clap_command(static_name, about, long_about);
+    let clap_cmd = registry.build_clap_command(static_name, about, long_about, version);
 
     let str_args: Vec<String> = args
         .iter()
@@ -48,7 +50,8 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
     if let Some(mut nest_app) = app.nest_app.take() {
         let document = load_config_document(
             &app_name,
-            globals.config_path.clone(),
+            &globals,
+            &matches,
             Some(nest_app.context()),
         )?;
         init_host_logging(
@@ -65,7 +68,7 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
         return result;
     }
 
-    let loaded = ConfigLoader::file_or_search(&app_name, globals.config_path.clone()).load()?;
+    let loaded = load_bootstrap_config(&app_name, &globals, &matches)?;
     let document = loaded.document.clone();
 
     init_host_logging(
@@ -79,6 +82,10 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
     let mut builder = AppBuilder::new();
     builder.register_service(ConfigService::new(loaded))?;
     builder.register_service(globals.clone())?;
+    builder.register_service(CliHostInfo {
+        name: app_name.clone(),
+        version: version.map(str::to_string),
+    })?;
 
     let modules = app.modules;
     #[cfg(feature = "async")]
@@ -91,8 +98,12 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
         builder = builder.module(DynModule(module));
     }
 
-    let mut nest_app =
-        AppBootstrapper::build(AppMetadata::new(&app_name), builder.build()?)?;
+    let mut metadata = AppMetadata::new(&app_name);
+    if let Some(version) = version {
+        metadata = metadata.with_version(version);
+    }
+
+    let mut nest_app = AppBootstrapper::build(metadata, builder.build()?)?;
     nest_app.startup()?;
 
     let result = dispatch_command(&registry, nest_app.context(), &matches);
@@ -125,7 +136,8 @@ fn cli_app_name(app: &CliApp) -> &'static str {
 
 fn load_config_document(
     app_name: &str,
-    config_path: Option<std::path::PathBuf>,
+    globals: &CliGlobals,
+    matches: &clap::ArgMatches,
     ctx: Option<&AppContext>,
 ) -> NestResult<ConfigDocument> {
     if let Some(ctx) = ctx {
@@ -134,8 +146,36 @@ fn load_config_document(
         }
     }
 
-    let loaded = ConfigLoader::file_or_search(app_name, config_path).load()?;
-    Ok(loaded.document)
+    Ok(load_bootstrap_config(app_name, globals, matches)?.document)
+}
+
+fn load_bootstrap_config(
+    app_name: &str,
+    globals: &CliGlobals,
+    matches: &clap::ArgMatches,
+) -> NestResult<LoadedConfig> {
+    if is_config_init(matches) {
+        if let Some(path) = &globals.config_path {
+            if !path.exists() {
+                return Ok(LoadedConfig {
+                    document: ConfigDocument::empty(),
+                    source: ConfigSource::File(path.clone()),
+                    path: Some(path.clone()),
+                });
+            }
+        }
+    }
+
+    ConfigLoader::file_or_search(app_name, globals.config_path.clone()).load()
+}
+
+fn is_config_init(matches: &clap::ArgMatches) -> bool {
+    matches.subcommand().is_some_and(|(name, config_matches)| {
+        name == "config"
+            && config_matches
+                .subcommand()
+                .is_some_and(|(subcommand, _)| subcommand == "init")
+    })
 }
 
 fn init_host_logging(
