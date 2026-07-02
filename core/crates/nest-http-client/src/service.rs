@@ -34,9 +34,9 @@ impl HttpClientService {
             builder = builder.user_agent(user_agent);
         }
 
-        let client = builder
-            .build()
-            .map_err(|error| nest_error::NestError::network(error.to_string()).with_source(error))?;
+        let client = builder.build().map_err(|error| {
+            nest_error::NestError::network(error.to_string()).with_source(error)
+        })?;
 
         Ok(Self { client, config })
     }
@@ -77,7 +77,9 @@ impl HttpClientService {
         if let Some(retry) = &self.config.retry {
             self.send_with_retry(request, retry).await
         } else {
-            self.send_once(&request).await.map_err(http_error_to_nest_error)
+            self.send_once(&request)
+                .await
+                .map_err(http_error_to_nest_error)
         }
     }
 
@@ -169,11 +171,10 @@ impl HttpClientService {
     where
         T: DeserializeOwned,
     {
-        serde_json::from_slice(&response.body)
-            .map_err(|error| {
-                http_error_to_nest_error(
-                    HttpError::decode(format!("failed to decode JSON: {error}")).with_url(url),
-                )
-            })
+        serde_json::from_slice(&response.body).map_err(|error| {
+            http_error_to_nest_error(
+                HttpError::decode(format!("failed to decode JSON: {error}")).with_url(url),
+            )
+        })
     }
 }

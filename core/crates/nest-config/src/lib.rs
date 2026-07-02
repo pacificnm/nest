@@ -178,7 +178,8 @@ mod tests {
     #[cfg(feature = "json")]
     #[test]
     fn parse_json_root_object() {
-        let document = ConfigDocument::parse_json(r#"{ "logging": { "level": "debug" } }"#).unwrap();
+        let document =
+            ConfigDocument::parse_json(r#"{ "logging": { "level": "debug" } }"#).unwrap();
         #[derive(Deserialize)]
         struct LoggingSection {
             level: String,

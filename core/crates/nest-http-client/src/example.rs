@@ -62,7 +62,11 @@ mod tests {
             .module(HttpClientModule::default())
             .build()
             .unwrap();
-        let http = built.context.service::<HttpClientService>().unwrap().clone();
+        let http = built
+            .context
+            .service::<HttpClientService>()
+            .unwrap()
+            .clone();
         let client = ExampleApiClient::new(http, server.uri());
 
         let customer = client.get_customer("123").await.unwrap();

@@ -13,9 +13,9 @@ impl ValidatorName for EmailValidator {
 
 impl Validator<str> for EmailValidator {
     fn validate(&self, value: &str, ctx: &ValidationContext) -> Vec<ValidationIssue> {
-        let valid = value
-            .split_once('@')
-            .is_some_and(|(local, domain)| !local.is_empty() && !domain.is_empty() && domain.contains('.'));
+        let valid = value.split_once('@').is_some_and(|(local, domain)| {
+            !local.is_empty() && !domain.is_empty() && domain.contains('.')
+        });
         if valid {
             vec![]
         } else {

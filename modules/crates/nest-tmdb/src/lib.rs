@@ -46,6 +46,7 @@ mod provider;
 pub mod prelude;
 
 pub use client::TmdbClient;
+pub use codes::NEST_TMDB_API_KEY_MISSING;
 pub use config::{
     resolve_api_key, TmdbConfig, TmdbConfigBuilder, DEFAULT_API_KEY_ENV, DEFAULT_BASE_URL,
     DEFAULT_IMAGE_BASE_URL, DEFAULT_LANGUAGE,
@@ -54,7 +55,7 @@ pub use error::{tmdb_to_media_error, TmdbError, TmdbErrorKind, TmdbResult};
 pub use images::{artwork_for_movie_with_base, ImageSize, TmdbImageService};
 pub use mapper::{external_id_for_movie, parse_movie_external_id};
 pub use module::{TmdbModule, TMDB_MODULE_ID};
-pub use provider::TmdbMetadataProvider;
+pub use provider::{MovieFetchResult, TmdbMetadataProvider};
 
 pub use nest_error::{NestError, NestResult};
 pub use nest_media::{MetadataProvider, MovieMetadata, MovieSearchQuery, MovieSearchResult};
@@ -211,5 +212,66 @@ mod tests {
         assert_eq!(metadata.cast[0].name, "Sigourney Weaver");
         assert_eq!(metadata.crew[0].role, "Director");
         assert_eq!(metadata.external_ids.imdb_id.as_deref(), Some("tt0078748"));
+    }
+
+    #[tokio::test]
+    async fn fetch_movie_includes_artwork_paths() {
+        let server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/configuration"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "images": {
+                    "base_url": "https://image.tmdb.org/t/p/",
+                    "poster_sizes": ["w500"],
+                    "backdrop_sizes": ["w1280"]
+                }
+            })))
+            .mount(&server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/movie/348"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "id": 348,
+                "title": "Alien",
+                "original_title": "Alien",
+                "overview": "Summary",
+                "release_date": "1979-05-25",
+                "runtime": 117,
+                "poster_path": "/poster.jpg",
+                "backdrop_path": "/backdrop.jpg",
+                "genres": [{ "id": 27, "name": "Horror" }]
+            })))
+            .mount(&server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/movie/348/credits"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "cast": [],
+                "crew": []
+            })))
+            .mount(&server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/movie/348/external_ids"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "imdb_id": "tt0078748",
+                "tmdb_id": 348
+            })))
+            .mount(&server)
+            .await;
+
+        let provider = test_provider(test_config(&server.uri()));
+        let fetch = provider
+            .fetch_movie(ExternalMediaId::new("tmdb:348"))
+            .await
+            .unwrap();
+
+        assert_eq!(fetch.metadata.title, "Alien");
+        assert_eq!(fetch.poster_path.as_deref(), Some("/poster.jpg"));
+        assert_eq!(fetch.backdrop_path.as_deref(), Some("/backdrop.jpg"));
     }
 }

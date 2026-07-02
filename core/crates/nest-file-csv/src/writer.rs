@@ -48,9 +48,11 @@ pub(crate) fn write_records(
         };
 
         if let Err(error) = writer.write_record(&values) {
-            report.issues.push(
-                CsvRowIssue::new(row_number, NEST_CSV_WRITE_FAILED, error.to_string()),
-            );
+            report.issues.push(CsvRowIssue::new(
+                row_number,
+                NEST_CSV_WRITE_FAILED,
+                error.to_string(),
+            ));
             continue;
         }
         report.rows_written += 1;
@@ -71,9 +73,11 @@ pub(crate) fn write_typed<T: Serialize>(
     for (index, row) in rows.iter().enumerate() {
         let row_number = index + 1;
         if let Err(error) = writer.serialize(row) {
-            report.issues.push(
-                CsvRowIssue::new(row_number, NEST_CSV_WRITE_FAILED, error.to_string()),
-            );
+            report.issues.push(CsvRowIssue::new(
+                row_number,
+                NEST_CSV_WRITE_FAILED,
+                error.to_string(),
+            ));
             continue;
         }
         report.rows_written += 1;
@@ -102,10 +106,7 @@ fn flush_writer(
         .flush()
         .map_err(|error| CsvError::write(error.to_string()).with_path(path))?;
 
-    let buffer = writer
-        .get_ref()
-        .get_ref()
-        .clone();
+    let buffer = writer.get_ref().get_ref().clone();
     let content = String::from_utf8(buffer)
         .map_err(|error| CsvError::write(error.to_string()).with_path(path))?;
 

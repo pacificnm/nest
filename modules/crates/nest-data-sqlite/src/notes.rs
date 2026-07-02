@@ -35,9 +35,8 @@ impl NotesRepository {
 impl Repository<Note, NoteId> for NotesRepository {
     fn get(&self, id: NoteId) -> DataResult<Option<Note>> {
         self.db.with_connection(|conn| {
-            let mut stmt = sqlite_result(conn.prepare(
-                "SELECT id, title, body FROM notes WHERE id = ?1",
-            ))?;
+            let mut stmt =
+                sqlite_result(conn.prepare("SELECT id, title, body FROM notes WHERE id = ?1"))?;
             let mut rows = sqlite_result(stmt.query([id.0]))?;
             if let Some(row) = sqlite_result(rows.next())? {
                 Ok(Some(Note {
@@ -101,7 +100,10 @@ impl Repository<Note, NoteId> for NotesRepository {
             ))
         })?;
         if rows == 0 {
-            return Err(DataError::not_found(format!("note not found: {}", entity.id.0)));
+            return Err(DataError::not_found(format!(
+                "note not found: {}",
+                entity.id.0
+            )));
         }
         Ok(entity)
     }

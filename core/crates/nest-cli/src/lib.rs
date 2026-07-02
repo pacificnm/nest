@@ -139,11 +139,7 @@ mod tests {
         let original = std::env::current_dir().unwrap();
         std::env::set_current_dir(dir.path()).unwrap();
 
-        fs::write(
-            "config.toml",
-            "[logging]\nlevel = \"warn\"\n",
-        )
-        .unwrap();
+        fs::write("config.toml", "[logging]\nlevel = \"warn\"\n").unwrap();
 
         let output = CliApp::new("test-app")
             .command(ConfigShowCommand)
@@ -230,11 +226,7 @@ mod tests {
             ))
             .module(CsvModule)
             .command(ValidateCsvCommand)
-            .try_run_with([
-                "csv-tool",
-                "validate-csv",
-                "data.csv",
-            ])
+            .try_run_with(["csv-tool", "validate-csv", "data.csv"])
             .unwrap();
     }
 

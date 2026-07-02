@@ -63,10 +63,7 @@ pub fn looks_like_secret(value: &str) -> bool {
 ///
 /// Resolution order: non-empty `token`, literal `token_env` value (secret heuristic),
 /// then `std::env::var` using `token_env` or [`DEFAULT_TOKEN_ENV`].
-pub fn resolve_airtable_token(
-    token: Option<&str>,
-    token_env: Option<&str>,
-) -> NestResult<String> {
+pub fn resolve_airtable_token(token: Option<&str>, token_env: Option<&str>) -> NestResult<String> {
     if let Some(token) = token.map(str::trim).filter(|value| !value.is_empty()) {
         return Ok(token.to_string());
     }
@@ -84,7 +81,9 @@ pub fn resolve_airtable_token(
         NestError::config(format!("environment variable not set: {token_env}"))
             .with_code(NEST_AIRTABLE_TOKEN_MISSING)
             .with_module("nest-airtable")
-            .with_help(format!("Export {token_env} with your Airtable personal access token."))
+            .with_help(format!(
+                "Export {token_env} with your Airtable personal access token."
+            ))
     })
 }
 
@@ -309,9 +308,6 @@ primary_key_field = "Asset ID"
         assert_eq!(config.base_id, "appTEST");
         let assets = config.table("assets").unwrap();
         assert_eq!(assets.table_id, "tblASSETS");
-        assert_eq!(
-            assets.primary_key_field.as_deref(),
-            Some("Asset ID")
-        );
+        assert_eq!(assets.primary_key_field.as_deref(), Some("Asset ID"));
     }
 }

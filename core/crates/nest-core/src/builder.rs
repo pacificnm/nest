@@ -123,10 +123,11 @@ impl AppBuilder {
         let mut seen = HashSet::new();
         for module in &modules {
             if !seen.insert(module.id()) {
-                return Err(
-                    NestError::module_error(format!("duplicate module registered: {}", module.id()))
-                        .with_help("Each module id may only be registered once."),
-                );
+                return Err(NestError::module_error(format!(
+                    "duplicate module registered: {}",
+                    module.id()
+                ))
+                .with_help("Each module id may only be registered once."));
             }
         }
 

@@ -105,7 +105,9 @@ table_id = "tblASSETS"
         };
 
         let mut builder = AppBuilder::new();
-        builder.register_service(ConfigService::new(loaded)).unwrap();
+        builder
+            .register_service(ConfigService::new(loaded))
+            .unwrap();
         let built = builder
             .module(HttpClientModule::default())
             .module(AirtableModule::new())

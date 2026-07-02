@@ -1,8 +1,8 @@
 //! Parsed configuration document.
 
 use nest_error::{NestError, NestResult};
-use serde::Deserialize;
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use tracing::debug;
 
 use crate::codes::{
@@ -70,16 +70,12 @@ impl ConfigDocument {
 
 fn table_from_value(value: toml::Value) -> NestResult<ConfigDocument> {
     let table = value.as_table().cloned().ok_or_else(|| {
-        NestError::config("configuration root must be a table")
-            .with_code(NEST_CONFIG_PARSE_FAILED)
+        NestError::config("configuration root must be a table").with_code(NEST_CONFIG_PARSE_FAILED)
     })?;
     Ok(ConfigDocument { table })
 }
 
-fn deserialize_section_value<T: DeserializeOwned>(
-    name: &str,
-    value: toml::Value,
-) -> NestResult<T> {
+fn deserialize_section_value<T: DeserializeOwned>(name: &str, value: toml::Value) -> NestResult<T> {
     let mut wrapper = toml::Table::new();
     wrapper.insert("__section__".to_string(), value);
     let content = toml::to_string(&toml::Value::Table(wrapper)).map_err(|error| {
@@ -89,11 +85,12 @@ fn deserialize_section_value<T: DeserializeOwned>(
     struct Section<T> {
         __section__: T,
     }
-    toml::from_str::<Section<T>>(&content).map_err(|error| {
-        NestError::config(format!("failed to deserialize section [{name}]: {error}"))
-            .with_code(NEST_CONFIG_SECTION_INVALID)
-    })
-    .map(|section| section.__section__)
+    toml::from_str::<Section<T>>(&content)
+        .map_err(|error| {
+            NestError::config(format!("failed to deserialize section [{name}]: {error}"))
+                .with_code(NEST_CONFIG_SECTION_INVALID)
+        })
+        .map(|section| section.__section__)
 }
 
 fn section_value(table: &toml::Table, name: &str) -> Option<toml::Value> {
@@ -137,7 +134,8 @@ fn json_value_to_toml_value(value: serde_json::Value) -> NestResult<toml::Value>
             } else if let Some(float) = number.as_f64() {
                 Ok(toml::Value::Float(float))
             } else {
-                Err(NestError::config("unsupported JSON number").with_code(NEST_CONFIG_PARSE_FAILED))
+                Err(NestError::config("unsupported JSON number")
+                    .with_code(NEST_CONFIG_PARSE_FAILED))
             }
         }
         serde_json::Value::String(value) => Ok(toml::Value::String(value)),

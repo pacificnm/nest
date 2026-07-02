@@ -48,12 +48,8 @@ pub fn run_pipeline(mut app: CliApp, args: Vec<OsString>) -> NestResult<()> {
     let globals = CliGlobals::from_matches(&matches);
 
     if let Some(mut nest_app) = app.nest_app.take() {
-        let document = load_config_document(
-            &app_name,
-            &globals,
-            &matches,
-            Some(nest_app.context()),
-        )?;
+        let document =
+            load_config_document(&app_name, &globals, &matches, Some(nest_app.context()))?;
         init_host_logging(
             &app_name,
             &document,
@@ -218,10 +214,7 @@ fn dispatch_command(
     #[cfg(not(feature = "async"))]
     let _ = name;
 
-    Err(
-        NestError::command(format!("unknown subcommand: {name}"))
-            .with_code(NEST_CLI_USAGE),
-    )
+    Err(NestError::command(format!("unknown subcommand: {name}")).with_code(NEST_CLI_USAGE))
 }
 
 fn is_clap_help_or_version(error: &clap::Error) -> bool {
@@ -251,7 +244,9 @@ fn default_globals() -> CliGlobals {
 
 #[cfg(feature = "async")]
 fn has_runtime_module(modules: &[Box<dyn Module>]) -> bool {
-    modules.iter().any(|module| module.id() == TASK_RUNTIME_MODULE_ID)
+    modules
+        .iter()
+        .any(|module| module.id() == TASK_RUNTIME_MODULE_ID)
 }
 
 struct DynModule(Box<dyn Module>);

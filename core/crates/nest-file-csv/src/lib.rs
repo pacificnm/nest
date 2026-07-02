@@ -166,8 +166,7 @@ mod tests {
             .map_column("customer id", "customer_id")
             .map_column("email", "email");
 
-        let rows: Vec<AirtableImportRow> =
-            csv.read_typed("trimmed.csv", &options).unwrap();
+        let rows: Vec<AirtableImportRow> = csv.read_typed("trimmed.csv", &options).unwrap();
         assert_eq!(rows[0].customer_id, "CUST-3");
         assert_eq!(rows[0].email, "carol@example.com");
     }
@@ -183,9 +182,7 @@ mod tests {
             )
             .unwrap();
 
-        let options = CsvOptions::default()
-            .continue_on_error(true)
-            .max_errors(2);
+        let options = CsvOptions::default().continue_on_error(true).max_errors(2);
         let report = csv
             .read_typed_report::<AirtableImportRow>("many-bad.csv", &options)
             .unwrap();
@@ -205,10 +202,7 @@ mod tests {
         let dir = tempdir().unwrap();
         let csv = csv_service(dir.path());
         csv.files()
-            .write_text(
-                "bad.csv",
-                "customer_id,count\nCUST-1,not-a-number\n",
-            )
+            .write_text("bad.csv", "customer_id,count\nCUST-1,not-a-number\n")
             .unwrap();
 
         let err = csv
@@ -263,11 +257,7 @@ mod tests {
                     Ok(())
                 } else {
                     nest_validation::ValidationError::from_issues(vec![
-                        ValidationIssue::field_error(
-                            "email",
-                            "validation.email",
-                            "invalid email",
-                        ),
+                        ValidationIssue::field_error("email", "validation.email", "invalid email"),
                     ])
                 }
             }

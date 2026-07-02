@@ -17,7 +17,7 @@ pub use config::SqliteConfig;
 pub use connection::SqliteConnection;
 pub use migration::SqliteMigrationRunner;
 pub use module::{SqliteDataModule, SQLITE_DATA_MODULE_ID};
-pub use notes::{Note, NoteId, NotesRepository, notes_migration};
+pub use notes::{notes_migration, Note, NoteId, NotesRepository};
 
 pub use nest_data::{DataModule, DataService, DATA_MODULE_ID};
 pub use nest_error::{NestError, NestResult};

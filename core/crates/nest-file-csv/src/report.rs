@@ -15,11 +15,7 @@ pub struct CsvRowIssue {
 
 impl CsvRowIssue {
     /// Creates a new row issue.
-    pub fn new(
-        row_number: usize,
-        code: impl Into<String>,
-        message: impl Into<String>,
-    ) -> Self {
+    pub fn new(row_number: usize, code: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             row_number,
             column: None,

@@ -36,14 +36,11 @@ mod tests {
     #[test]
     fn read_write_round_trip() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
 
-        files
-            .write_text("output/report.txt", "hello nest")
-            .unwrap();
+        files.write_text("output/report.txt", "hello nest").unwrap();
         let text = files.read_text("output/report.txt").unwrap();
         assert_eq!(text, "hello nest");
     }
@@ -51,10 +48,9 @@ mod tests {
     #[test]
     fn atomic_write_replaces_content() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         files.write_text("data.txt", "original").unwrap();
 
         let mut options = WriteOptions::from_config(files.config());
@@ -69,10 +65,9 @@ mod tests {
     #[test]
     fn backup_before_write() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         files.write_text("config.toml", "v1").unwrap();
 
         let mut options = WriteOptions::from_config(files.config());
@@ -88,10 +83,9 @@ mod tests {
     #[test]
     fn copy_move_delete() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         files.write_text("source.txt", "payload").unwrap();
         files.copy("source.txt", "copy.txt").unwrap();
         assert_eq!(files.read_text("copy.txt").unwrap(), "payload");
@@ -107,10 +101,9 @@ mod tests {
     #[test]
     fn list_dir_and_metadata() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         files.write_text("a.txt", "a").unwrap();
         files.write_text("b.txt", "bb").unwrap();
 
@@ -125,10 +118,9 @@ mod tests {
     #[test]
     fn scoped_rejects_traversal_via_service() {
         let dir = tempdir().unwrap();
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         let err = files.read_text("../outside.txt").unwrap_err();
         assert_eq!(err.code(), Some(codes::NEST_FILE_PATH_TRAVERSAL_DENIED));
     }

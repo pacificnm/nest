@@ -60,8 +60,7 @@ impl FileError {
 
     /// Creates a permission denied error.
     pub fn permission_denied(message: impl Into<String>) -> Self {
-        Self::new(FileErrorKind::PermissionDenied, message)
-            .with_code(NEST_FILE_PERMISSION_DENIED)
+        Self::new(FileErrorKind::PermissionDenied, message).with_code(NEST_FILE_PERMISSION_DENIED)
     }
 
     /// Creates a path validation error.

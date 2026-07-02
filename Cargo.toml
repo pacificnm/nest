@@ -17,7 +17,9 @@ members = [
     "core/crates/nest-http-client",
     "core/crates/nest-http-serve",
     "core/crates/nest-media",
+    "core/crates/nest-ai",
     "core/crates/nest-data",
+    "core/crates/nest-cache",
     "core/crates/nest-validation",
     "core/crates/nest-design",
     "core/crates/nest-theme",
@@ -25,7 +27,9 @@ members = [
     "modules/crates/nest-data-sqlite",
     "modules/crates/nest-media-library",
     "modules/crates/nest-tmdb",
+    "modules/crates/nest-ai-ollama",
     "modules/crates/nest-transcode",
+    "modules/crates/nest-cache-file",
 ]
 
 [workspace.package]
@@ -39,6 +43,7 @@ nest-app = { path = "core/crates/nest-app" }
 nest-config = { path = "core/crates/nest-config" }
 nest-core = { path = "core/crates/nest-core" }
 nest-data = { path = "core/crates/nest-data" }
+nest-cache = { path = "core/crates/nest-cache" }
 nest-design = { path = "core/crates/nest-design" }
 nest-error = { path = "core/crates/nest-error" }
 nest-file = { path = "core/crates/nest-file" }
@@ -47,6 +52,7 @@ nest-http = { path = "core/crates/nest-http" }
 nest-http-client = { path = "core/crates/nest-http-client" }
 nest-http-serve = { path = "core/crates/nest-http-serve" }
 nest-media = { path = "core/crates/nest-media" }
+nest-ai = { path = "core/crates/nest-ai" }
 nest-logging = { path = "core/crates/nest-logging" }
 nest-task = { path = "core/crates/nest-task" }
 nest-task-runtime = { path = "core/crates/nest-task-runtime" }
@@ -56,4 +62,6 @@ nest-airtable = { path = "modules/crates/nest-airtable" }
 nest-data-sqlite = { path = "modules/crates/nest-data-sqlite" }
 nest-media-library = { path = "modules/crates/nest-media-library" }
 nest-tmdb = { path = "modules/crates/nest-tmdb" }
+nest-ai-ollama = { path = "modules/crates/nest-ai-ollama" }
 nest-transcode = { path = "modules/crates/nest-transcode" }
+nest-cache-file = { path = "modules/crates/nest-cache-file" }

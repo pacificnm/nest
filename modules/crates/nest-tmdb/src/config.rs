@@ -149,8 +149,7 @@ mod config_service {
     use serde::Deserialize;
 
     use super::{
-        resolve_api_key, DEFAULT_BASE_URL, DEFAULT_IMAGE_BASE_URL,
-        DEFAULT_LANGUAGE, TmdbConfig,
+        resolve_api_key, TmdbConfig, DEFAULT_BASE_URL, DEFAULT_IMAGE_BASE_URL, DEFAULT_LANGUAGE,
     };
 
     #[derive(Debug, Clone, Deserialize)]
@@ -173,10 +172,8 @@ mod config_service {
         /// Loads configuration from a [`ConfigDocument`].
         pub fn from_document(document: &ConfigDocument) -> NestResult<Self> {
             let section: TmdbSection = document.section("tmdb")?;
-            let api_key = resolve_api_key(
-                section.api_key.as_deref(),
-                section.api_key_env.as_deref(),
-            )?;
+            let api_key =
+                resolve_api_key(section.api_key.as_deref(), section.api_key_env.as_deref())?;
             Ok(Self {
                 api_key,
                 base_url: section

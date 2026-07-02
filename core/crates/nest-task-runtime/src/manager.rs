@@ -98,9 +98,11 @@ where
         );
 
         if let Some(tx) = self.state.result_tx.lock().unwrap().take() {
-            let _ = tx.send(Err(
-                TaskError::cancelled(format!("task `{}` cancelled", self.state.name)).into(),
-            ));
+            let _ = tx.send(Err(TaskError::cancelled(format!(
+                "task `{}` cancelled",
+                self.state.name
+            ))
+            .into()));
         }
     }
 
@@ -250,10 +252,7 @@ impl TaskManager for TaskManagerService {
             let _span_guard = span.enter();
 
             let _ = status_tx.send(TaskStatus::Running);
-            manager
-                .inner
-                .registry
-                .set_status(&id, TaskStatus::Running);
+            manager.inner.registry.set_status(&id, TaskStatus::Running);
             manager.emit(TaskEvent {
                 task_id: id.clone(),
                 name,
@@ -381,10 +380,7 @@ impl TaskManager for TaskManagerService {
             let _span_guard = span.enter();
 
             let _ = status_tx.send(TaskStatus::Running);
-            manager
-                .inner
-                .registry
-                .set_status(&id, TaskStatus::Running);
+            manager.inner.registry.set_status(&id, TaskStatus::Running);
             manager.emit(TaskEvent {
                 task_id: id.clone(),
                 name,
@@ -480,6 +476,9 @@ fn finish_cancelled<O>(
         error: None,
     });
     if let Some(tx) = state.result_tx.lock().unwrap().take() {
-        let _ = tx.send(Err(TaskError::cancelled(format!("task `{name}` cancelled")).into()));
+        let _ = tx.send(Err(TaskError::cancelled(format!(
+            "task `{name}` cancelled"
+        ))
+        .into()));
     }
 }

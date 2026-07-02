@@ -64,8 +64,7 @@ impl LibraryError {
 
     /// Creates a provider error.
     pub fn provider(message: impl Into<String>) -> Self {
-        Self::new(LibraryErrorKind::Provider, message)
-            .with_code(NEST_MEDIA_LIBRARY_PROVIDER_FAILED)
+        Self::new(LibraryErrorKind::Provider, message).with_code(NEST_MEDIA_LIBRARY_PROVIDER_FAILED)
     }
 
     /// Creates a repository error.

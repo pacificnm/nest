@@ -121,7 +121,9 @@ mod tests {
         let conn = Arc::new(TestConnection { config }) as Arc<dyn DataConnection>;
         registry.register(conn).unwrap();
         assert!(registry.contains(&ConnectionId::new(ConnectionId::PRIMARY)));
-        assert!(registry.get(&ConnectionId::new(ConnectionId::PRIMARY)).is_ok());
+        assert!(registry
+            .get(&ConnectionId::new(ConnectionId::PRIMARY))
+            .is_ok());
     }
 
     #[test]

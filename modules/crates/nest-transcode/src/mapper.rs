@@ -1,11 +1,9 @@
 //! FFprobe JSON to nest-media mapping.
 
-use nest_media::{
-    AudioTrack, HdrFormat, MediaInspection, MediaTracks, SubtitleTrack, VideoTrack,
-};
+use nest_media::{AudioTrack, HdrFormat, MediaInspection, MediaTracks, SubtitleTrack, VideoTrack};
 
-use crate::dto::FfprobeOutput;
 use crate::dto::stream::StreamSection;
+use crate::dto::FfprobeOutput;
 
 /// Maps FFprobe output to [`MediaInspection`].
 pub fn to_inspection(output: &FfprobeOutput) -> MediaInspection {
@@ -46,7 +44,10 @@ fn map_video_track(stream: &StreamSection) -> VideoTrack {
         codec: stream.codec_name.clone(),
         width: stream.width,
         height: stream.height,
-        bitrate: stream.bit_rate.as_ref().and_then(|value| value.parse().ok()),
+        bitrate: stream
+            .bit_rate
+            .as_ref()
+            .and_then(|value| value.parse().ok()),
         hdr: detect_hdr(stream),
     }
 }

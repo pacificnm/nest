@@ -27,16 +27,14 @@ impl ConfigFormat {
             Some("toml") => Ok(Self::Toml),
             #[cfg(feature = "json")]
             Some("json") => Ok(Self::Json),
-            Some(ext) => Err(
-                NestError::config(format!("unsupported configuration format: .{ext}"))
-                    .with_code(NEST_CONFIG_UNSUPPORTED_FORMAT)
-                    .with_operation(format!("path: {}", path.display())),
-            ),
-            None => Err(
-                NestError::config("configuration file has no extension")
-                    .with_code(NEST_CONFIG_UNSUPPORTED_FORMAT)
-                    .with_operation(format!("path: {}", path.display())),
-            ),
+            Some(ext) => Err(NestError::config(format!(
+                "unsupported configuration format: .{ext}"
+            ))
+            .with_code(NEST_CONFIG_UNSUPPORTED_FORMAT)
+            .with_operation(format!("path: {}", path.display()))),
+            None => Err(NestError::config("configuration file has no extension")
+                .with_code(NEST_CONFIG_UNSUPPORTED_FORMAT)
+                .with_operation(format!("path: {}", path.display()))),
         }
     }
 

@@ -123,9 +123,7 @@ impl Transaction for SqliteTransaction {
 impl Transactional for SqliteConnection {
     fn begin(&self) -> DataResult<Box<dyn Transaction>> {
         self.with_connection(|conn| sqlite_result(conn.execute("BEGIN", [])))?;
-        Ok(Box::new(SqliteTransaction {
-            conn: self.clone(),
-        }))
+        Ok(Box::new(SqliteTransaction { conn: self.clone() }))
     }
 }
 

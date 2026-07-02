@@ -231,10 +231,10 @@ loon-server
 ## Follow-up
 
 - [nest-media-library v1](nest-media-library-v1.md) — scanning and library indexing (**planned**)
-- `nest-stream-v1.md` — byte-range streaming
+- [nest-stream v1](nest-stream-v1.md) — byte-range streaming
 - `nest-tmdb-v1.md` — `MetadataProvider` implementation
 - `nest-transcode-v1.md` — FFprobe `MediaInspector` (v0.1), FFmpeg jobs (v0.2)
-- Loon wiring: routes + SQLite repository
+- Loon wiring: routes + SQLite repository — [Loon v1 plan](../../apps/loon/docs/v1.md) (product repo)
 
 ## Related
 

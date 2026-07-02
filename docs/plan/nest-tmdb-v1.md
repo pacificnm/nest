@@ -71,7 +71,7 @@ It **may** depend on:
 - `nest-config` (optional `[tmdb]` section — recommended for Loon)
 - `serde`, `serde_json`, `async-trait`, `tracing`, `tokio`
 
-**Optional (deferred):** `nest-cache` does not exist yet. v0.1 may use an in-memory configuration cache inside `TmdbClient` (e.g. `/configuration` TTL). A shared `nest-cache` module can replace that in v0.2.
+**Optional (deferred):** use shared [nest-cache v1](nest-cache-v1.md) for `/configuration` TTL and metadata blobs (tag `tmdb`). v0.1 may keep an in-memory configuration cache inside `TmdbClient` until `nest-cache` lands.
 
 ## Responsibilities
 
@@ -409,13 +409,14 @@ loon-server
 |---------|--------|
 | TV shows / seasons / episodes | v0.2+ |
 | `append_to_response` batching | v0.2 |
-| Shared `nest-cache` module | v0.2 (in-memory config cache OK in v0.1) |
+| Shared [nest-cache](nest-cache-v1.md) module | v0.2 (in-memory config cache OK in v0.1) |
 | Watch providers / ratings by country | later |
 | Recommendations / trending | later |
 | Person profiles | later |
 | Reviews / lists | later |
 | Account / session auth (TMDB v4 user flows) | later |
 | `artwork` on `MovieMetadata` | nest-media v0.2 if needed |
+| **`MovieFetchResult` + `fetch_movie`** | [v1.1 plan](nest-tmdb-v1.1-artwork-fetch.md) — Loon artwork paths |
 
 ## Testing strategy
 
@@ -434,8 +435,9 @@ Use recorded TMDB JSON fixtures in `tests/fixtures/` — **do not** call live TM
 
 - Implement `modules/crates/nest-tmdb` per this plan
 - Add `docs/nest-tmdb/README.md`
-- Loon: wire `TmdbModule` + inject into `MediaLibraryModule`
-- Plan `nest-transcode-v1.md` (`MediaInspector` via FFprobe)
+- Loon: wire `TmdbModule` + inject into `MediaLibraryModule` — [Loon v1 plan](../../apps/loon/docs/v1.md) (product repo)
+- [nest-tmdb v1.1 artwork fetch](nest-tmdb-v1.1-artwork-fetch.md) — `MovieFetchResult` for Loon enrichment
+- Plan [nest-transcode-v1.md](nest-transcode-v1.md) (`MediaInspector` via FFprobe)
 
 ## Related
 

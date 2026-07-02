@@ -132,14 +132,16 @@ mod tests {
             .module(
                 TaskRuntimeModule::from_current()
                     .unwrap()
-                    .with_manager_config(TaskManagerConfig {
-                        max_concurrent: 4,
-                    }),
+                    .with_manager_config(TaskManagerConfig { max_concurrent: 4 }),
             )
             .build()
             .unwrap();
         built.startup().unwrap();
-        let manager = built.context.service::<TaskManagerService>().unwrap().clone();
+        let manager = built
+            .context
+            .service::<TaskManagerService>()
+            .unwrap()
+            .clone();
         (built, manager)
     }
 
@@ -182,7 +184,11 @@ mod tests {
             .build()
             .unwrap();
         built.startup().unwrap();
-        let manager = built.context.service::<TaskManagerService>().unwrap().clone();
+        let manager = built
+            .context
+            .service::<TaskManagerService>()
+            .unwrap()
+            .clone();
 
         let first = manager
             .spawn(HoldTask {
@@ -253,7 +259,10 @@ mod tests {
         .unwrap();
 
         let mut built = AppBuilder::new()
-            .module(TaskRuntimeModule::new(runtime.clone(), TaskManagerConfig::default()))
+            .module(TaskRuntimeModule::new(
+                runtime.clone(),
+                TaskManagerConfig::default(),
+            ))
             .build()
             .unwrap();
         built.startup().unwrap();

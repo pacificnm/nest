@@ -41,7 +41,10 @@ impl RetryPolicy for AirtableRetryPolicy {
             return false;
         }
 
-        if error.response_status().is_some_and(|status| status.code() == 429) {
+        if error
+            .response_status()
+            .is_some_and(|status| status.code() == 429)
+        {
             return true;
         }
 

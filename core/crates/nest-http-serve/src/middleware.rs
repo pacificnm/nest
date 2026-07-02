@@ -10,9 +10,7 @@ use crate::router::Handler;
 
 /// Type-erased middleware layer.
 pub type MiddlewareLayer = Arc<
-    dyn Fn(RequestContext, Next) -> Pin<Box<dyn Future<Output = HttpResult> + Send>>
-        + Send
-        + Sync,
+    dyn Fn(RequestContext, Next) -> Pin<Box<dyn Future<Output = HttpResult> + Send>> + Send + Sync,
 >;
 
 /// Continuation for middleware chains.

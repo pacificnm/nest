@@ -166,10 +166,8 @@ mod tests {
             .mount(&server)
             .await;
 
-        let config = HttpClientConfig::default().with_retry(FixedRetryPolicy::new(
-            3,
-            Duration::from_millis(10),
-        ));
+        let config = HttpClientConfig::default()
+            .with_retry(FixedRetryPolicy::new(3, Duration::from_millis(10)));
         let http = HttpClientService::new(config).unwrap();
 
         #[derive(serde::Deserialize)]
@@ -193,8 +191,8 @@ mod tests {
             .mount(&server)
             .await;
 
-        let config = HttpClientConfig::default()
-            .with_auth(Arc::new(BearerTokenAuth::new("test-token")));
+        let config =
+            HttpClientConfig::default().with_auth(Arc::new(BearerTokenAuth::new("test-token")));
         let http = HttpClientService::new(config).unwrap();
         let _: serde_json::Value = http
             .get_json(&format!("{}/secure", server.uri()))

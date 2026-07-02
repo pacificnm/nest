@@ -82,11 +82,7 @@ pub fn restore_terminal_best_effort() -> NestResult<()> {
     }
 }
 
-fn restore_terminal_state(
-    raw_mode: bool,
-    alternate_screen: bool,
-    mouse: bool,
-) -> NestResult<()> {
+fn restore_terminal_state(raw_mode: bool, alternate_screen: bool, mouse: bool) -> NestResult<()> {
     if mouse {
         let _ = execute!(stdout(), DisableMouseCapture);
     }
@@ -100,8 +96,7 @@ fn restore_terminal_state(
 }
 
 fn terminal_error(action: &str, error: io::Error) -> NestError {
-    NestError::io(format!("failed to {action}: {error}"))
-        .with_code(NEST_TUI_TERMINAL_INIT_FAILED)
+    NestError::io(format!("failed to {action}: {error}")).with_code(NEST_TUI_TERMINAL_INIT_FAILED)
 }
 
 /// Type alias for the crossterm-backed ratatui terminal.

@@ -17,8 +17,8 @@
 #![deny(missing_docs)]
 #![allow(clippy::result_large_err)]
 
-pub mod codes;
 mod artwork;
+pub mod codes;
 mod error;
 mod external;
 mod id;
@@ -103,10 +103,7 @@ mod tests {
                 Ok(Vec::new())
             }
 
-            async fn get_movie(
-                &self,
-                _id: ExternalMediaId,
-            ) -> MediaResult<MovieMetadata> {
+            async fn get_movie(&self, _id: ExternalMediaId) -> MediaResult<MovieMetadata> {
                 Err(MediaError::provider("not implemented"))
             }
         }

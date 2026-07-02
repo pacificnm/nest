@@ -13,10 +13,8 @@ impl AppLifecycleRunner {
     /// Runs startup lifecycle hooks when the app is not already started.
     pub fn startup(app: &mut NestApp) -> NestResult<()> {
         if app.is_started() {
-            return Err(
-                NestError::validation("application is already started")
-                    .with_code(NEST_APP_ALREADY_STARTED),
-            );
+            return Err(NestError::validation("application is already started")
+                .with_code(NEST_APP_ALREADY_STARTED));
         }
 
         let name = app.metadata().name.clone();
@@ -53,10 +51,8 @@ impl AppLifecycleRunner {
     /// Ensures the application has been started.
     pub fn ensure_started(app: &NestApp) -> NestResult<()> {
         if !app.is_started() {
-            return Err(
-                NestError::validation("application has not been started")
-                    .with_code(NEST_APP_NOT_STARTED),
-            );
+            return Err(NestError::validation("application has not been started")
+                .with_code(NEST_APP_NOT_STARTED));
         }
         Ok(())
     }

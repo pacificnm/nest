@@ -58,7 +58,8 @@ impl AirtableClient {
         table: &str,
         params: &AirtableListParams,
     ) -> NestResult<AirtableListPage> {
-        self.list_records_page_with_offset(table, params, None).await
+        self.list_records_page_with_offset(table, params, None)
+            .await
     }
 
     /// Lists one page using an explicit offset token.
@@ -123,9 +124,7 @@ impl AirtableClient {
 
         let mut all_records = Vec::with_capacity(updates.len());
         for chunk in AirtableBatch::chunk_updates(updates) {
-            let mut page = self
-                .batch_update_records_page(table, chunk)
-                .await?;
+            let mut page = self.batch_update_records_page(table, chunk).await?;
             all_records.append(&mut page);
             self.rate_limit.after_page().await;
         }
@@ -182,10 +181,7 @@ impl AirtableClient {
             query.push(format!("view={}", percent_encode(view)));
         }
         if let Some(formula) = &params.filter_by_formula {
-            query.push(format!(
-                "filterByFormula={}",
-                percent_encode(formula)
-            ));
+            query.push(format!("filterByFormula={}", percent_encode(formula)));
         }
         for field in params.fields.iter().flatten() {
             query.push(format!("fields[]={}", percent_encode(field)));
@@ -222,10 +218,7 @@ impl AirtableClient {
     }
 
     fn authorized(&self, request: HttpRequest) -> HttpRequest {
-        request.with_header(
-            "authorization",
-            format!("Bearer {}", self.config.token),
-        )
+        request.with_header("authorization", format!("Bearer {}", self.config.token))
     }
 
     async fn send_airtable(
@@ -292,9 +285,6 @@ mod tests {
 
     #[test]
     fn percent_encodes_offset_slashes() {
-        assert_eq!(
-            percent_encode("itrXXX/recYYY"),
-            "itrXXX%2FrecYYY"
-        );
+        assert_eq!(percent_encode("itrXXX/recYYY"), "itrXXX%2FrecYYY");
     }
 }

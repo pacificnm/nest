@@ -9,7 +9,20 @@ use tracing::instrument;
 
 use crate::client::TmdbClient;
 use crate::error::tmdb_to_media_error;
-use crate::mapper::{map_movie_metadata, map_search_results, parse_movie_external_id};
+use crate::mapper::{
+    artwork_paths, map_movie_metadata, map_search_results, parse_movie_external_id,
+};
+
+/// Full movie fetch including TMDB artwork path tokens.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MovieFetchResult {
+    /// Provider-normalized movie metadata.
+    pub metadata: MovieMetadata,
+    /// TMDB poster path token (e.g. `/abc.jpg`).
+    pub poster_path: Option<String>,
+    /// TMDB backdrop path token.
+    pub backdrop_path: Option<String>,
+}
 
 /// TMDB-backed metadata provider for nest-media.
 #[derive(Clone)]
@@ -27,33 +40,22 @@ impl TmdbMetadataProvider {
     pub fn client(&self) -> &TmdbClient {
         &self.client
     }
-}
 
-#[async_trait]
-impl MetadataProvider for TmdbMetadataProvider {
-    #[instrument(skip(self, query), fields(query = %query.query))]
-    async fn search_movie(
-        &self,
-        query: MovieSearchQuery,
-    ) -> MediaResult<Vec<MovieSearchResult>> {
-        let response = self
-            .client
-            .search_movie(&query)
+    /// Fetches movie metadata and artwork path tokens in one TMDB round-trip set.
+    #[instrument(skip(self, id), fields(external_id = %id))]
+    pub async fn fetch_movie(&self, id: ExternalMediaId) -> MediaResult<MovieFetchResult> {
+        let movie_id = parse_movie_external_id(&id)?;
+        self.client
+            .ensure_configuration()
             .await
             .map_err(tmdb_to_media_error)?;
-        Ok(map_search_results(response.results))
-    }
-
-    #[instrument(skip(self, id), fields(external_id = %id))]
-    async fn get_movie(&self, id: ExternalMediaId) -> MediaResult<MovieMetadata> {
-        let movie_id = parse_movie_external_id(&id)?;
-        self.client.ensure_configuration().await.map_err(tmdb_to_media_error)?;
 
         let movie = self
             .client
             .movie_details(movie_id)
             .await
             .map_err(tmdb_to_media_error)?;
+        let (poster_path, backdrop_path) = artwork_paths(&movie);
         let credits = self
             .client
             .movie_credits(movie_id)
@@ -65,6 +67,28 @@ impl MetadataProvider for TmdbMetadataProvider {
             .await
             .map_err(tmdb_to_media_error)?;
 
-        Ok(map_movie_metadata(movie, credits, external_ids))
+        Ok(MovieFetchResult {
+            metadata: map_movie_metadata(movie, credits, external_ids),
+            poster_path,
+            backdrop_path,
+        })
+    }
+}
+
+#[async_trait]
+impl MetadataProvider for TmdbMetadataProvider {
+    #[instrument(skip(self, query), fields(query = %query.query))]
+    async fn search_movie(&self, query: MovieSearchQuery) -> MediaResult<Vec<MovieSearchResult>> {
+        let response = self
+            .client
+            .search_movie(&query)
+            .await
+            .map_err(tmdb_to_media_error)?;
+        Ok(map_search_results(response.results))
+    }
+
+    #[instrument(skip(self, id), fields(external_id = %id))]
+    async fn get_movie(&self, id: ExternalMediaId) -> MediaResult<MovieMetadata> {
+        Ok(self.fetch_movie(id).await?.metadata)
     }
 }

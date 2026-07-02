@@ -17,10 +17,7 @@ impl OneOfValidator {
     }
 
     /// Creates a one-of validator with a custom registry name.
-    pub fn named(
-        name: &'static str,
-        allowed: impl IntoIterator<Item = impl Into<String>>,
-    ) -> Self {
+    pub fn named(name: &'static str, allowed: impl IntoIterator<Item = impl Into<String>>) -> Self {
         Self {
             name,
             allowed: allowed.into_iter().map(Into::into).collect(),

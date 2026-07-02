@@ -4,8 +4,7 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::codes::{
     NEST_FILE_ABSOLUTE_PATH_DENIED, NEST_FILE_EMPTY_PATH, NEST_FILE_PARENT_NOT_FOUND,
-    NEST_FILE_PATH_OUTSIDE_ROOT, NEST_FILE_PATH_TRAVERSAL_DENIED,
-    NEST_FILE_SYMLINK_ESCAPE_DENIED,
+    NEST_FILE_PATH_OUTSIDE_ROOT, NEST_FILE_PATH_TRAVERSAL_DENIED, NEST_FILE_SYMLINK_ESCAPE_DENIED,
 };
 use crate::error::{map_io_error, FileError, FileResult};
 
@@ -19,11 +18,7 @@ pub struct SafePathResolver {
 
 impl SafePathResolver {
     /// Creates a resolver from service configuration.
-    pub fn new(
-        root: Option<PathBuf>,
-        allow_absolute: bool,
-        allow_symlink_escape: bool,
-    ) -> Self {
+    pub fn new(root: Option<PathBuf>, allow_absolute: bool, allow_symlink_escape: bool) -> Self {
         Self {
             root,
             allow_absolute,
@@ -47,18 +42,18 @@ impl SafePathResolver {
         if create_parents {
             if let Some(parent) = logical.parent() {
                 if !parent.exists() {
-                    std::fs::create_dir_all(parent).map_err(|error| {
-                        map_io_error(error, parent).with_path(&logical)
-                    })?;
+                    std::fs::create_dir_all(parent)
+                        .map_err(|error| map_io_error(error, parent).with_path(&logical))?;
                 }
             }
         } else if let Some(parent) = logical.parent() {
             if !parent.exists() {
-                return Err(
-                    FileError::invalid_path(format!("parent directory not found: {}", parent.display()))
-                        .with_code(NEST_FILE_PARENT_NOT_FOUND)
-                        .with_path(&logical),
-                );
+                return Err(FileError::invalid_path(format!(
+                    "parent directory not found: {}",
+                    parent.display()
+                ))
+                .with_code(NEST_FILE_PARENT_NOT_FOUND)
+                .with_path(&logical));
             }
         }
         self.finalize_path(&logical, true)
@@ -76,11 +71,9 @@ impl SafePathResolver {
                 );
             }
             if self.root.is_none() && !self.allow_absolute {
-                return Err(
-                    FileError::invalid_path("absolute paths are denied")
-                        .with_code(NEST_FILE_ABSOLUTE_PATH_DENIED)
-                        .with_path(input),
-                );
+                return Err(FileError::invalid_path("absolute paths are denied")
+                    .with_code(NEST_FILE_ABSOLUTE_PATH_DENIED)
+                    .with_path(input));
             }
         }
 
@@ -101,7 +94,9 @@ impl SafePathResolver {
     fn finalize_path(&self, logical: &Path, _for_write: bool) -> FileResult<PathBuf> {
         let Some(root) = &self.root else {
             if logical.exists() {
-                return logical.canonicalize().map_err(|error| map_io_error(error, logical));
+                return logical
+                    .canonicalize()
+                    .map_err(|error| map_io_error(error, logical));
             }
             return Ok(logical.to_path_buf());
         };
@@ -117,7 +112,11 @@ impl SafePathResolver {
         loop {
             if ancestor.exists() {
                 let canonical_ancestor = fs_canonicalize(&ancestor, &ancestor)?;
-                ensure_within_root(&canonical_ancestor, &canonical_root, self.allow_symlink_escape)?;
+                ensure_within_root(
+                    &canonical_ancestor,
+                    &canonical_root,
+                    self.allow_symlink_escape,
+                )?;
 
                 let suffix = logical
                     .strip_prefix(&ancestor)
@@ -150,13 +149,15 @@ impl SafePathResolver {
 
 fn validate_path_input(input: &Path) -> FileResult<()> {
     if input.as_os_str().is_empty() {
-        return Err(FileError::invalid_path("path must not be empty").with_code(NEST_FILE_EMPTY_PATH));
+        return Err(
+            FileError::invalid_path("path must not be empty").with_code(NEST_FILE_EMPTY_PATH)
+        );
     }
 
     let bytes = input.as_os_str().as_encoded_bytes();
     if bytes.contains(&0) {
         return Err(
-            FileError::invalid_path("path contains NUL byte").with_code(NEST_FILE_EMPTY_PATH),
+            FileError::invalid_path("path contains NUL byte").with_code(NEST_FILE_EMPTY_PATH)
         );
     }
 
@@ -175,36 +176,30 @@ fn normalize_under_root(root: &Path, relative: &Path) -> FileResult<PathBuf> {
             Component::CurDir => {}
             Component::ParentDir => {
                 if !result.pop() {
-                    return Err(
-                        FileError::invalid_path("path traversal denied")
-                            .with_code(NEST_FILE_PATH_TRAVERSAL_DENIED)
-                            .with_path(relative),
-                    );
+                    return Err(FileError::invalid_path("path traversal denied")
+                        .with_code(NEST_FILE_PATH_TRAVERSAL_DENIED)
+                        .with_path(relative));
                 }
                 if !result.starts_with(root) {
-                    return Err(
-                        FileError::invalid_path("path traversal denied")
-                            .with_code(NEST_FILE_PATH_TRAVERSAL_DENIED)
-                            .with_path(relative),
-                    );
+                    return Err(FileError::invalid_path("path traversal denied")
+                        .with_code(NEST_FILE_PATH_TRAVERSAL_DENIED)
+                        .with_path(relative));
                 }
             }
             Component::RootDir | Component::Prefix(_) => {
-                return Err(
-                    FileError::invalid_path("absolute path components are denied in scoped mode")
-                        .with_code(NEST_FILE_ABSOLUTE_PATH_DENIED)
-                        .with_path(relative),
-                );
+                return Err(FileError::invalid_path(
+                    "absolute path components are denied in scoped mode",
+                )
+                .with_code(NEST_FILE_ABSOLUTE_PATH_DENIED)
+                .with_path(relative));
             }
         }
     }
 
     if !result.starts_with(root) {
-        return Err(
-            FileError::invalid_path("path is outside root")
-                .with_code(NEST_FILE_PATH_OUTSIDE_ROOT)
-                .with_path(relative),
-        );
+        return Err(FileError::invalid_path("path is outside root")
+            .with_code(NEST_FILE_PATH_OUTSIDE_ROOT)
+            .with_path(relative));
     }
 
     Ok(result)

@@ -46,6 +46,8 @@ mod tests {
     #[test]
     fn out_of_range_fails() {
         let validator = RangeValidator::new(1, 10);
-        assert!(!validator.validate(&11, &ValidationContext::new()).is_empty());
+        assert!(!validator
+            .validate(&11, &ValidationContext::new())
+            .is_empty());
     }
 }

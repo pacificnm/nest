@@ -378,4 +378,5 @@ loon-server
 - [nest-file README](../nest-file/README.md) — scoped filesystem I/O
 - [nest-task README](../nest-task/README.md) — background scan tasks
 - [Loon README](../../apps/loon/README.md)
+- [Loon v1 plan](../../apps/loon/docs/v1.md) — product implementation plan
 - [architecture.md](../architecture.md)

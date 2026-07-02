@@ -36,10 +36,9 @@ pub fn run_eframe(
         &runtime.title,
         options,
         Box::new(move |cc| {
-            cc.egui_ctx
-                .style_mut(|style| {
-                    let _ = apply_active_theme(&mut style.visuals, &shell_ctx);
-                });
+            cc.egui_ctx.style_mut(|style| {
+                let _ = apply_active_theme(&mut style.visuals, &shell_ctx);
+            });
             Ok(Box::new(GuiShell {
                 view,
                 ctx: shell_ctx,
@@ -49,10 +48,8 @@ pub fn run_eframe(
 
     match result {
         Ok(()) => Ok(()),
-        Err(error) => Err(
-            NestError::ui(format!("eframe failed to start: {error}"))
-                .with_code(NEST_GUI_EFRAME_START_FAILED),
-        ),
+        Err(error) => Err(NestError::ui(format!("eframe failed to start: {error}"))
+            .with_code(NEST_GUI_EFRAME_START_FAILED)),
     }
 }
 

@@ -19,11 +19,7 @@ impl Default for CorsConfig {
         Self {
             allow_any_origin: true,
             allowed_origins: Vec::new(),
-            allowed_methods: vec![
-                "GET".to_string(),
-                "POST".to_string(),
-                "OPTIONS".to_string(),
-            ],
+            allowed_methods: vec!["GET".to_string(), "POST".to_string(), "OPTIONS".to_string()],
             allowed_headers: vec!["content-type".to_string(), "authorization".to_string()],
             max_age: Some(Duration::from_secs(3600)),
         }

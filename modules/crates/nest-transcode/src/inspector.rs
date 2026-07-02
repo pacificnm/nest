@@ -74,7 +74,11 @@ mod tests {
             ))
             .build()
             .unwrap();
-        let files = built.context.service::<nest_file::FileService>().unwrap().clone();
+        let files = built
+            .context
+            .service::<nest_file::FileService>()
+            .unwrap()
+            .clone();
 
         let inspector = FfprobeMediaInspector::new(
             files,

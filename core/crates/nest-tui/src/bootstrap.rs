@@ -91,8 +91,7 @@ pub fn prepare_runtime(mut app: TuiApp, args: Vec<OsString>) -> NestResult<Prepa
         builder = builder.module(DynModule(module));
     }
 
-    let mut nest_app =
-        AppBootstrapper::build(AppMetadata::new(app_name), builder.build()?)?;
+    let mut nest_app = AppBootstrapper::build(AppMetadata::new(app_name), builder.build()?)?;
     nest_app.startup()?;
 
     Ok(PreparedRuntime {
@@ -115,11 +114,7 @@ fn prepare_from_nest_app(
     };
 
     let config_path = app.config_path.or(startup.config_path.clone());
-    let document = load_config_document(
-        &app_name,
-        config_path,
-        Some(nest_app.context()),
-    )?;
+    let document = load_config_document(&app_name, config_path, Some(nest_app.context()))?;
     init_host_logging(&app_name, &document, &startup, app.logging)?;
 
     let runtime_config = merge_runtime_config(&document, &startup)?;

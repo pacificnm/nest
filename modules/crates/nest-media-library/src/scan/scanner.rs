@@ -11,13 +11,11 @@ use crate::config::MediaLibraryConfig;
 use crate::error::{LibraryError, LibraryResult};
 use crate::parse::filename::guess_from_path;
 
-use super::models::{
-    MovieScanCandidate, ScanItemStatus, ScanResult, ScannedFile,
-};
+use super::models::{MovieScanCandidate, ScanItemStatus, ScanResult, ScannedFile};
 use super::stats::{initial_stats, record_candidate, record_error, record_file_seen};
 
 /// Discovers media files in configured library roots.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct LibraryScanner {
     files: FileService,
 }
@@ -164,7 +162,9 @@ fn normalize_relative_path(path: &str) -> String {
     if path == "/" || path.is_empty() {
         ".".to_string()
     } else {
-        path.trim_start_matches('/').trim_end_matches('/').to_string()
+        path.trim_start_matches('/')
+            .trim_end_matches('/')
+            .to_string()
     }
 }
 
@@ -181,15 +181,12 @@ fn unix_now() -> u64 {
 mod tests {
     use super::*;
     use crate::config::MediaLibraryConfig;
-    use nest_file::{FileServiceConfig, FileService};
+    use nest_file::{FileService, FileServiceConfig};
     use std::fs;
     use tempfile::tempdir;
 
     fn scoped_files(root: &std::path::Path) -> FileService {
-        FileService::with_config(
-            FileServiceConfig::scoped(root).allow_create_dirs(true),
-        )
-        .unwrap()
+        FileService::with_config(FileServiceConfig::scoped(root).allow_create_dirs(true)).unwrap()
     }
 
     #[test]

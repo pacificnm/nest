@@ -62,9 +62,7 @@ impl GuiStartupOptions {
             .and_then(|value| value.parse().ok());
 
         Self {
-            config_path: matches
-                .get_one::<String>("config")
-                .map(PathBuf::from),
+            config_path: matches.get_one::<String>("config").map(PathBuf::from),
             log_level,
             log_file: matches.get_one::<String>("log-file").map(PathBuf::from),
             no_color: matches.get_flag("no-color"),

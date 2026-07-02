@@ -3,17 +3,14 @@
 use std::sync::Arc;
 
 use nest_media::{
-    MediaId, MediaInput, MediaInspector, MediaLibraryRepository, MetadataProvider,
-    MovieSearchQuery,
+    MediaId, MediaInput, MediaInspector, MediaLibraryRepository, MetadataProvider, MovieSearchQuery,
 };
 use tracing::instrument;
 
 use crate::config::MediaLibraryConfig;
 use crate::error::{LibraryError, LibraryResult};
-use crate::scan::{
-    LibraryScanOptions, LibraryScanner, ScanItemStatus, ScanResult,
-};
 use crate::scan::stats::record_error;
+use crate::scan::{LibraryScanOptions, LibraryScanner, ScanItemStatus, ScanResult};
 
 /// Orchestrates filesystem discovery and optional provider enrichment.
 #[derive(Clone)]
@@ -64,9 +61,7 @@ impl LibraryIndexer {
         let config = config.clone();
         let mut result = tokio::task::spawn_blocking(move || scanner.discover(&config))
             .await
-            .map_err(|error| {
-                LibraryError::scan(format!("scan task join failed: {error}"))
-            })??;
+            .map_err(|error| LibraryError::scan(format!("scan task join failed: {error}")))??;
 
         if options.inspect_files {
             self.inspect_candidates(&mut result).await?;
@@ -88,18 +83,20 @@ impl LibraryIndexer {
             return Ok(());
         };
 
+        let mut failures = Vec::new();
         for candidate in &mut result.candidates {
             let path = candidate.file.relative_path.clone();
-            match inspector
-                .inspect(MediaInput::LocalPath(path.clone()))
-                .await
-            {
+            match inspector.inspect(MediaInput::LocalPath(path.clone())).await {
                 Ok(inspection) => candidate.inspection = Some(inspection),
                 Err(error) => {
                     candidate.status = ScanItemStatus::Error;
-                    record_error(result, &path, error.message());
+                    failures.push((path, error.message().to_string()));
                 }
             }
+        }
+
+        for (path, message) in failures {
+            record_error(result, path, message);
         }
 
         Ok(())
@@ -110,6 +107,7 @@ impl LibraryIndexer {
             return Ok(());
         };
 
+        let mut failures = Vec::new();
         for candidate in &mut result.candidates {
             let path = candidate.file.relative_path.clone();
             let title = candidate
@@ -129,22 +127,22 @@ impl LibraryIndexer {
                         Ok(metadata) => candidate.metadata = Some(metadata),
                         Err(error) => {
                             candidate.status = ScanItemStatus::Error;
-                            record_error(result, &path, error.message());
+                            failures.push((path, error.message().to_string()));
                         }
                     }
                 }
                 Ok(_) => {
-                    record_error(
-                        result,
-                        &path,
-                        "metadata provider returned no search results",
-                    );
+                    failures.push((path, "metadata provider returned no search results".into()));
                 }
                 Err(error) => {
                     candidate.status = ScanItemStatus::Error;
-                    record_error(result, &path, error.message());
+                    failures.push((path, error.message().to_string()));
                 }
             }
+        }
+
+        for (path, message) in failures {
+            record_error(result, path, message);
         }
 
         Ok(())
@@ -155,6 +153,7 @@ impl LibraryIndexer {
             return Ok(());
         };
 
+        let mut failures = Vec::new();
         for candidate in &mut result.candidates {
             let path = candidate.file.relative_path.clone();
             let movie = if let Some(metadata) = candidate.metadata.clone() {
@@ -173,9 +172,13 @@ impl LibraryIndexer {
                 Ok(()) => candidate.status = ScanItemStatus::New,
                 Err(error) => {
                     candidate.status = ScanItemStatus::Error;
-                    record_error(result, &path, error.message());
+                    failures.push((path, error.message().to_string()));
                 }
             }
+        }
+
+        for (path, message) in failures {
+            record_error(result, path, message);
         }
 
         Ok(())
@@ -190,10 +193,10 @@ fn media_id_for_path(path: &str) -> MediaId {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use nest_media::{
-        MediaResult, Movie, MovieMetadata, MovieSearchResult, MovieSearchQuery, ExternalMediaId,
-    };
     use nest_file::{FileService, FileServiceConfig};
+    use nest_media::{
+        ExternalMediaId, MediaResult, Movie, MovieMetadata, MovieSearchQuery, MovieSearchResult,
+    };
     use std::fs;
     use tempfile::tempdir;
 
@@ -251,10 +254,7 @@ mod tests {
             Ok(())
         }
 
-        async fn get_movie(
-            &self,
-            _id: nest_media::MediaId,
-        ) -> MediaResult<Option<Movie>> {
+        async fn get_movie(&self, _id: nest_media::MediaId) -> MediaResult<Option<Movie>> {
             Ok(None)
         }
 
@@ -268,10 +268,9 @@ mod tests {
         let dir = tempdir().unwrap();
         fs::write(dir.path().join("Alien (1979).mkv"), b"video").unwrap();
 
-        let files = FileService::with_config(
-            FileServiceConfig::scoped(dir.path()).allow_create_dirs(true),
-        )
-        .unwrap();
+        let files =
+            FileService::with_config(FileServiceConfig::scoped(dir.path()).allow_create_dirs(true))
+                .unwrap();
         let scanner = LibraryScanner::new(files);
         let repository = Arc::new(MockRepository::new());
         let indexer = LibraryIndexer::new(scanner)

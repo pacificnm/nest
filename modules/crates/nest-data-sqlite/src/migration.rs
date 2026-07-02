@@ -37,7 +37,10 @@ fn applied_ids(conn: &SqliteConnection) -> DataResult<Vec<String>> {
     })
 }
 
-fn pending_ids(conn: &SqliteConnection, migrations: &[Box<dyn Migration>]) -> DataResult<Vec<String>> {
+fn pending_ids(
+    conn: &SqliteConnection,
+    migrations: &[Box<dyn Migration>],
+) -> DataResult<Vec<String>> {
     let applied: std::collections::HashSet<String> = applied_ids(conn)?.into_iter().collect();
     Ok(migrations
         .iter()

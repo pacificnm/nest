@@ -25,10 +25,7 @@ impl DataService {
     }
 
     /// Registers a named connection.
-    pub fn register_connection(
-        &self,
-        connection: Arc<dyn DataConnection>,
-    ) -> DataResult<()> {
+    pub fn register_connection(&self, connection: Arc<dyn DataConnection>) -> DataResult<()> {
         self.registry
             .write()
             .expect("data registry lock")
@@ -60,10 +57,7 @@ impl DataService {
 
     /// Returns a registered connection by id.
     pub fn connection(&self, id: &ConnectionId) -> DataResult<Arc<dyn DataConnection>> {
-        self.registry
-            .read()
-            .expect("data registry lock")
-            .get(id)
+        self.registry.read().expect("data registry lock").get(id)
     }
 
     /// Returns the active connection.
@@ -128,9 +122,7 @@ mod tests {
     fn register_set_active_and_lookup() {
         let service = DataService::new();
         service.register_connection(test_conn("primary")).unwrap();
-        service
-            .set_active(&ConnectionId::new("primary"))
-            .unwrap();
+        service.set_active(&ConnectionId::new("primary")).unwrap();
         assert_eq!(service.active_id().unwrap().as_str(), "primary");
         assert!(service.active_connection().is_ok());
     }

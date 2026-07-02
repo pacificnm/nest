@@ -141,9 +141,9 @@ impl CliApp {
 
     /// Renders the long `--help` text for this application.
     pub fn render_long_help(&self) -> NestResult<String> {
-        let name = self
-            .app_name
-            .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
+        let name = self.app_name.ok_or_else(|| {
+            nest_error::NestError::command("CLI host requires an application name")
+        })?;
         Ok(self
             .registry
             .build_clap_command(name, self.about, self.long_about, self.version)
@@ -153,12 +153,12 @@ impl CliApp {
 
     /// Renders the long `--help` text for a top-level command group.
     pub fn render_group_long_help(&self, group: &str) -> NestResult<String> {
-        let name = self
-            .app_name
-            .ok_or_else(|| nest_error::NestError::command("CLI host requires an application name"))?;
-        let mut root = self
-            .registry
-            .build_clap_command(name, self.about, self.long_about, self.version);
+        let name = self.app_name.ok_or_else(|| {
+            nest_error::NestError::command("CLI host requires an application name")
+        })?;
+        let mut root =
+            self.registry
+                .build_clap_command(name, self.about, self.long_about, self.version);
         let sub = root.find_subcommand_mut(group).ok_or_else(|| {
             nest_error::NestError::command(format!("unknown command group: {group}"))
         })?;

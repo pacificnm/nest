@@ -15,13 +15,11 @@ impl AirtableBatch<AirtableBatchUpdate> {
     /// Creates a batch helper for record updates.
     pub fn updates(updates: Vec<AirtableBatchUpdate>) -> NestResult<Self> {
         if updates.len() > MAX_BATCH_UPDATE_SIZE {
-            return Err(
-                NestError::validation(format!(
-                    "batch exceeds Airtable limit of {MAX_BATCH_UPDATE_SIZE} records"
-                ))
-                .with_code(NEST_AIRTABLE_BATCH_LIMIT_EXCEEDED)
-                .with_module("nest-airtable"),
-            );
+            return Err(NestError::validation(format!(
+                "batch exceeds Airtable limit of {MAX_BATCH_UPDATE_SIZE} records"
+            ))
+            .with_code(NEST_AIRTABLE_BATCH_LIMIT_EXCEEDED)
+            .with_module("nest-airtable"));
         }
         Ok(Self {
             items: updates,

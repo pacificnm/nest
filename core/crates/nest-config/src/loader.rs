@@ -114,10 +114,13 @@ fn load_file(path: PathBuf, format: ConfigFormat) -> NestResult<LoadedConfig> {
         } else {
             NEST_CONFIG_READ_FAILED
         };
-        NestError::config(format!("failed to read configuration file: {}", path.display()))
-            .with_code(code)
-            .with_operation(format!("path: {}", path.display()))
-            .with_source(error)
+        NestError::config(format!(
+            "failed to read configuration file: {}",
+            path.display()
+        ))
+        .with_code(code)
+        .with_operation(format!("path: {}", path.display()))
+        .with_source(error)
     })?;
 
     let document = format.parse(&content, Some(&path))?;

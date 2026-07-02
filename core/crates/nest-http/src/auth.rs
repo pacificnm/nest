@@ -43,9 +43,6 @@ mod tests {
         let auth = BearerTokenAuth::new("secret");
         let mut request = HttpRequest::new(HttpMethod::Get, "https://api.example.com");
         auth.apply(&mut request).unwrap();
-        assert_eq!(
-            request.headers.get("authorization"),
-            Some("Bearer secret")
-        );
+        assert_eq!(request.headers.get("authorization"), Some("Bearer secret"));
     }
 }

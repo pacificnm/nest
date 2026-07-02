@@ -47,7 +47,10 @@ impl TmdbClient {
 
     /// Searches movies via `GET /search/movie`.
     #[instrument(skip(self, query), fields(query = %query.query))]
-    pub(crate) async fn search_movie(&self, query: &MovieSearchQuery) -> TmdbResult<MovieSearchResponse> {
+    pub(crate) async fn search_movie(
+        &self,
+        query: &MovieSearchQuery,
+    ) -> TmdbResult<MovieSearchResponse> {
         let mut params = vec![
             ("api_key", self.config.api_key.as_str()),
             ("language", self.config.language.as_str()),
@@ -126,10 +129,7 @@ impl TmdbClient {
     where
         T: serde::de::DeserializeOwned,
     {
-        self.http
-            .get_json(url)
-            .await
-            .map_err(TmdbError::from)
+        self.http.get_json(url).await.map_err(TmdbError::from)
     }
 
     fn movie_url(&self, movie_id: u32, suffix: &[&str]) -> String {

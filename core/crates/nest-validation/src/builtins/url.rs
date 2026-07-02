@@ -17,11 +17,10 @@ impl Validator<str> for UrlValidator {
         if valid {
             vec![]
         } else {
-            vec![ValidationIssue::error(
-                ctx.qualify_code("validation.url"),
-                "Invalid URL",
-            )
-            .with_help("URL must start with http:// or https://")]
+            vec![
+                ValidationIssue::error(ctx.qualify_code("validation.url"), "Invalid URL")
+                    .with_help("URL must start with http:// or https://"),
+            ]
         }
     }
 }

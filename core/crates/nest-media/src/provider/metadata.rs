@@ -10,10 +10,7 @@ use crate::metadata::{MovieMetadata, MovieSearchQuery, MovieSearchResult};
 #[async_trait]
 pub trait MetadataProvider: Send + Sync {
     /// Searches for movies matching the query.
-    async fn search_movie(
-        &self,
-        query: MovieSearchQuery,
-    ) -> MediaResult<Vec<MovieSearchResult>>;
+    async fn search_movie(&self, query: MovieSearchQuery) -> MediaResult<Vec<MovieSearchResult>>;
 
     /// Fetches full movie metadata for a provider id.
     async fn get_movie(&self, id: ExternalMediaId) -> MediaResult<MovieMetadata>;

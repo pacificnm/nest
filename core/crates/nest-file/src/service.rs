@@ -74,20 +74,12 @@ impl FileService {
     }
 
     /// Writes UTF-8 text to a file.
-    pub fn write_text(
-        &self,
-        path: impl AsRef<Path>,
-        content: impl AsRef<str>,
-    ) -> NestResult<()> {
+    pub fn write_text(&self, path: impl AsRef<Path>, content: impl AsRef<str>) -> NestResult<()> {
         self.write_bytes(path, content.as_ref().as_bytes())
     }
 
     /// Appends UTF-8 text to a file.
-    pub fn append_text(
-        &self,
-        path: impl AsRef<Path>,
-        content: impl AsRef<str>,
-    ) -> NestResult<()> {
+    pub fn append_text(&self, path: impl AsRef<Path>, content: impl AsRef<str>) -> NestResult<()> {
         let started = Instant::now();
         let input = path.as_ref();
         let options = WriteOptions::from_config(&self.config);
@@ -168,14 +160,16 @@ impl FileService {
                 .file_name()
                 .and_then(|name| name.to_str())
                 .unwrap_or("file");
-            let temp = resolved.with_file_name(format!("{file_name}.nest-tmp-{}", std::process::id()));
+            let temp =
+                resolved.with_file_name(format!("{file_name}.nest-tmp-{}", std::process::id()));
             fs::write(&temp, content).map_err(|error| map_io_error(error, input))?;
             if let Err(error) = fs::rename(&temp, resolved) {
                 let _ = fs::remove_file(&temp);
-                return Err(
-                    FileError::write(format!("atomic rename failed: {}", resolved.display()))
-                        .with_source(error),
-                );
+                return Err(FileError::write(format!(
+                    "atomic rename failed: {}",
+                    resolved.display()
+                ))
+                .with_source(error));
             }
             return Ok(());
         }
@@ -197,7 +191,9 @@ impl FileService {
 
         let result = fs::copy(&resolved_from, &resolved_to)
             .map(|_| ())
-            .map_err(|error| NestError::from(map_io_error(error, from_input).with_path(from_input)));
+            .map_err(|error| {
+                NestError::from(map_io_error(error, from_input).with_path(from_input))
+            });
 
         debug!(
             file.from = %from_input.display(),

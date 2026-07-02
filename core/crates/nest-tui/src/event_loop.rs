@@ -49,6 +49,5 @@ pub fn run_event_loop(
 }
 
 fn event_loop_error(error: impl std::fmt::Display) -> NestError {
-    NestError::io(format!("TUI event loop failed: {error}"))
-        .with_code(NEST_TUI_EVENT_LOOP_FAILED)
+    NestError::io(format!("TUI event loop failed: {error}")).with_code(NEST_TUI_EVENT_LOOP_FAILED)
 }

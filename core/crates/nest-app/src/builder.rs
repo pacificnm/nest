@@ -1,8 +1,6 @@
 //! Facade over [`nest_core::AppBuilder`].
 
-use nest_core::{
-    AppBuilder, Command, Job, Lifecycle, Module, Panel, Plugin, Service, NestResult,
-};
+use nest_core::{AppBuilder, Command, Job, Lifecycle, Module, NestResult, Panel, Plugin, Service};
 
 use crate::app::NestApp;
 use crate::bootstrap::AppBootstrapper;

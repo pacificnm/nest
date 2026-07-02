@@ -431,8 +431,8 @@ Example fixture sources: H.264 + AAC `.mp4`, multi-audio `.mkv`, embedded subtit
 
 - Implement `modules/crates/nest-transcode` per this plan
 - Add `docs/nest-transcode/README.md`
-- Loon: wire `TranscodeModule` + inject into `MediaLibraryModule`
-- Plan `nest-stream-v1.md` — byte-range streaming
+- Loon: wire `TranscodeModule` + inject into `MediaLibraryModule` — [Loon v1 plan](../../apps/loon/docs/v1.md) (product repo)
+- Plan [nest-stream-v1.md](nest-stream-v1.md) — byte-range streaming
 
 ## Related
 

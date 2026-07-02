@@ -149,7 +149,9 @@ impl NestError {
             "module `{module_id}` requires `{dependency_id}`, which was not registered"
         ))
         .with_code(NEST_MODULE_DEPENDENCY_MISSING)
-        .with_help(format!("Add `.module(...)` for `{dependency_id}` before building."))
+        .with_help(format!(
+            "Add `.module(...)` for `{dependency_id}` before building."
+        ))
     }
 
     /// Sets a stable error code.

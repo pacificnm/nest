@@ -75,9 +75,6 @@ mod lib_tests {
         let error = TranscodeError::probe("ffprobe failed");
         let nest_error: NestError = error.into();
         assert_eq!(nest_error.kind(), NestErrorKind::Task);
-        assert_eq!(
-            nest_error.code(),
-            Some(codes::NEST_TRANSCODE_PROBE_FAILED)
-        );
+        assert_eq!(nest_error.code(), Some(codes::NEST_TRANSCODE_PROBE_FAILED));
     }
 }

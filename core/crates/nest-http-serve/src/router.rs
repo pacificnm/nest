@@ -7,13 +7,12 @@ use std::sync::Arc;
 use nest_http::HttpMethod;
 
 use crate::context::RequestContext;
-use crate::middleware::{wrap_with_middleware, MiddlewareLayer};
+use crate::middleware::{wrap_with_middleware, IntoMiddleware, MiddlewareLayer};
 use crate::response::HttpResult;
 
 /// Type-erased async route handler.
-pub type Handler = Arc<
-    dyn Fn(RequestContext) -> Pin<Box<dyn Future<Output = HttpResult> + Send>> + Send + Sync,
->;
+pub type Handler =
+    Arc<dyn Fn(RequestContext) -> Pin<Box<dyn Future<Output = HttpResult> + Send>> + Send + Sync>;
 
 /// A single route definition.
 #[derive(Clone)]
@@ -27,7 +26,7 @@ pub struct RouteDefinition {
 }
 
 /// Collects routes from one or more groups.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct RouteRegistry {
     routes: Vec<RouteDefinition>,
 }
@@ -46,7 +45,7 @@ impl RouteRegistry {
     /// Returns routes sorted for match priority: static, param, wildcard.
     pub fn sorted_routes(&self) -> Vec<RouteDefinition> {
         let mut routes = self.routes.clone();
-        routes.sort_by(|left, right| route_priority(&left.pattern).cmp(&route_priority(&right.pattern)));
+        routes.sort_by_key(|route| route_priority(&route.pattern));
         routes
     }
 
@@ -94,6 +93,19 @@ impl RouteGroup {
     {
         self.routes.push(RouteDefinition {
             method: HttpMethod::Post,
+            pattern: join_paths(&self.prefix, path.into()),
+            handler: handler.into_handler(),
+        });
+        self
+    }
+
+    /// Registers a PUT route.
+    pub fn put<H>(mut self, path: impl Into<String>, handler: H) -> Self
+    where
+        H: IntoHandler,
+    {
+        self.routes.push(RouteDefinition {
+            method: HttpMethod::Put,
             pattern: join_paths(&self.prefix, path.into()),
             handler: handler.into_handler(),
         });
@@ -213,8 +225,8 @@ mod tests {
         let mut registry = RouteRegistry::new();
         registry.add_group(
             RouteGroup::new("/movies")
-                .get("/:slug", |_| async { Ok(Json(1).into()) })
-                .get("/recent", |_| async { Ok(Json(2).into()) }),
+                .get("/:slug", |_| async { Json(1).into_response() })
+                .get("/recent", |_| async { Json(2).into_response() }),
         );
 
         let patterns: Vec<_> = registry

@@ -82,9 +82,9 @@ impl FfprobeRunner {
             }
         }
 
-        let output = child
-            .wait_with_output()
-            .map_err(|error| TranscodeError::probe(format!("ffprobe failed: {error}")).with_source(error))?;
+        let output = child.wait_with_output().map_err(|error| {
+            TranscodeError::probe(format!("ffprobe failed: {error}")).with_source(error)
+        })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);

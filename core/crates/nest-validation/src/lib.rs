@@ -61,8 +61,8 @@ impl From<ValidationError> for NestError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::builtins::{EmailValidator, RequiredValidator};
     use crate::builtins::{merge_issues, RangeValidator};
+    use crate::builtins::{EmailValidator, RequiredValidator};
 
     struct Project {
         name: String,
@@ -107,9 +107,11 @@ mod tests {
 
     #[test]
     fn warnings_do_not_block_by_default() {
-        let issues = vec![
-            ValidationIssue::field_warning("name", "validation.weak", "Name is short"),
-        ];
+        let issues = vec![ValidationIssue::field_warning(
+            "name",
+            "validation.weak",
+            "Name is short",
+        )];
         assert!(ValidationError::from_issues(issues).is_ok());
     }
 

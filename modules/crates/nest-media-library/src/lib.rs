@@ -42,8 +42,8 @@ pub use error::{LibraryError, LibraryErrorKind, LibraryResult};
 pub use indexer::LibraryIndexer;
 pub use module::{MediaLibraryModule, MEDIA_LIBRARY_MODULE_ID};
 pub use scan::{
-    LibraryScanOptions, LibraryScanner, MovieScanCandidate, ScanError, ScanItemStatus,
-    ScanResult, ScanStats, ScannedFile,
+    LibraryScanOptions, LibraryScanner, MovieScanCandidate, ScanError, ScanItemStatus, ScanResult,
+    ScanStats, ScannedFile,
 };
 pub use task::LibraryScanTask;
 

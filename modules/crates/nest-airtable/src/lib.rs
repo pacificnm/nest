@@ -23,12 +23,12 @@ mod types;
 
 pub use batch::AirtableBatch;
 pub use client::AirtableClient;
-pub use meta_types::{
-    is_computed_field_type, AirtableBaseSchema, AirtableFieldSchema, AirtableTableSchema,
-};
 pub use config::{
     looks_like_secret, resolve_airtable_token, AirtableConfig, AirtableConfigBuilder,
     AirtableTableConfig, DEFAULT_META_API_URL,
+};
+pub use meta_types::{
+    is_computed_field_type, AirtableBaseSchema, AirtableFieldSchema, AirtableTableSchema,
 };
 pub use module::{AirtableModule, AIRTABLE_MODULE_ID};
 pub use pager::AirtablePager;
@@ -215,12 +215,11 @@ primary_key_field = "Asset ID"
 
     #[test]
     fn unknown_table_returns_error_code() {
-        let config = AirtableConfig::builder("appTEST", "pat-test").build().unwrap();
+        let config = AirtableConfig::builder("appTEST", "pat-test")
+            .build()
+            .unwrap();
         let err = config.table("missing").unwrap_err();
-        assert_eq!(
-            err.code(),
-            Some(codes::NEST_AIRTABLE_TABLE_NOT_FOUND)
-        );
+        assert_eq!(err.code(), Some(codes::NEST_AIRTABLE_TABLE_NOT_FOUND));
     }
 
     #[tokio::test]

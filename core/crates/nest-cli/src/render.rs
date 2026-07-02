@@ -16,10 +16,7 @@ pub fn render_error(error: &NestError, globals: &CliGlobals) {
 
 fn render_human(report: &NestErrorReport, globals: &CliGlobals) {
     let use_color = !globals.no_color;
-    let code = report
-        .code
-        .as_deref()
-        .unwrap_or("NEST_UNKNOWN");
+    let code = report.code.as_deref().unwrap_or("NEST_UNKNOWN");
 
     if use_color {
         eprintln!("\x1b[1;31merror[{code}]\x1b[0m: {}", report.message);
@@ -49,7 +46,10 @@ fn render_json(report: &NestErrorReport) {
             "details": report.details,
         }
     });
-    eprintln!("{}", serde_json::to_string_pretty(&payload).unwrap_or_else(|_| {
-        serde_json::json!({"success": false, "error": {"message": report.message}}).to_string()
-    }));
+    eprintln!(
+        "{}",
+        serde_json::to_string_pretty(&payload).unwrap_or_else(|_| {
+            serde_json::json!({"success": false, "error": {"message": report.message}}).to_string()
+        })
+    );
 }

@@ -25,7 +25,9 @@ use crate::error::{ValidationError, ValidationResult};
 use crate::issue::ValidationIssue;
 
 /// Registers all built-in string validators with default configuration.
-pub fn register_defaults(registry: &mut crate::registry::ValidatorRegistry) -> nest_error::NestResult<()> {
+pub fn register_defaults(
+    registry: &mut crate::registry::ValidatorRegistry,
+) -> nest_error::NestResult<()> {
     registry.register(RequiredValidator)?;
     registry.register(NotEmptyValidator)?;
     registry.register(EmailValidator)?;
@@ -36,9 +38,7 @@ pub fn register_defaults(registry: &mut crate::registry::ValidatorRegistry) -> n
 }
 
 /// Merges issue vectors into a single validation result.
-pub fn merge_issues(
-    groups: impl IntoIterator<Item = Vec<ValidationIssue>>,
-) -> ValidationResult {
+pub fn merge_issues(groups: impl IntoIterator<Item = Vec<ValidationIssue>>) -> ValidationResult {
     let issues: Vec<ValidationIssue> = groups.into_iter().flatten().collect();
     ValidationError::from_issues(issues)
 }

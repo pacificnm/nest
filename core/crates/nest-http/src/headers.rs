@@ -22,14 +22,14 @@ impl HeaderMap {
 
     /// Returns a header value by name.
     pub fn get(&self, name: impl AsRef<str>) -> Option<&str> {
-        self.headers.get(&name.as_ref().to_ascii_lowercase()).map(String::as_str)
+        self.headers
+            .get(&name.as_ref().to_ascii_lowercase())
+            .map(String::as_str)
     }
 
     /// Returns an iterator over header name/value pairs.
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.headers
-            .iter()
-            .map(|(k, v)| (k.as_str(), v.as_str()))
+        self.headers.iter().map(|(k, v)| (k.as_str(), v.as_str()))
     }
 
     /// Returns whether the map is empty.

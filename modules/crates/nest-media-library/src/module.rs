@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use nest_core::{AppBuilder, Module, ModuleId, NestResult};
-use nest_file::{FileModule, FileService, FILE_MODULE_ID};
+use nest_file::{FileService, FILE_MODULE_ID};
 use nest_media::{MediaInspector, MediaLibraryRepository, MetadataProvider};
 
 use crate::indexer::LibraryIndexer;
@@ -106,9 +106,7 @@ mod tests {
 
     #[test]
     fn missing_file_dependency_fails() {
-        let result = AppBuilder::new()
-            .module(MediaLibraryModule::new())
-            .build();
+        let result = AppBuilder::new().module(MediaLibraryModule::new()).build();
         assert_eq!(
             result.err().unwrap().code(),
             Some(nest_error::codes::NEST_MODULE_DEPENDENCY_MISSING)

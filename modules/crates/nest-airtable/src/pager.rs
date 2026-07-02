@@ -17,7 +17,11 @@ pub struct AirtablePager {
 
 impl AirtablePager {
     /// Creates a pager for the given logical table.
-    pub fn new(client: AirtableClient, table: impl Into<String>, params: AirtableListParams) -> Self {
+    pub fn new(
+        client: AirtableClient,
+        table: impl Into<String>,
+        params: AirtableListParams,
+    ) -> Self {
         Self {
             client,
             table: table.into(),

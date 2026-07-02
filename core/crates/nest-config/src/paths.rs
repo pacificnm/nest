@@ -4,7 +4,10 @@ use std::path::PathBuf;
 
 /// Returns default configuration search paths for an application.
 pub fn default_search_paths(app_name: &str) -> Vec<PathBuf> {
-    let mut paths = vec![PathBuf::from("config.toml"), PathBuf::from("config/config.toml")];
+    let mut paths = vec![
+        PathBuf::from("config.toml"),
+        PathBuf::from("config/config.toml"),
+    ];
     if let Some(home) = home_config_path(app_name) {
         paths.push(home);
     }

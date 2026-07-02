@@ -32,7 +32,7 @@ mod context;
 mod cors;
 mod error;
 mod middleware;
-mod prelude;
+pub mod prelude;
 mod response;
 mod router;
 mod server;
@@ -51,8 +51,3 @@ pub use static_files::StaticFilesConfig;
 
 pub use nest_error::{NestError, NestResult};
 pub use nest_http::{HttpError, HttpMethod, HttpStatus};
-
-pub mod prelude {
-    //! Common imports for nest-http-serve handlers.
-    pub use crate::prelude::*;
-}

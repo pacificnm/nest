@@ -9,7 +9,9 @@ pub(crate) struct ConfigurationResponse {
 pub(crate) struct ImageConfiguration {
     pub base_url: String,
     #[serde(default)]
+    #[allow(dead_code)]
     pub poster_sizes: Vec<String>,
     #[serde(default)]
+    #[allow(dead_code)]
     pub backdrop_sizes: Vec<String>,
 }

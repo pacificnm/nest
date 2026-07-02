@@ -20,11 +20,8 @@ pub(crate) fn validate_row<T: nest_validation::Validate>(
             .iter()
             .filter(|issue| issue.is_blocking())
             .map(|issue| {
-                let mut csv_issue = CsvRowIssue::new(
-                    row_number,
-                    issue.code.clone(),
-                    issue.message.clone(),
-                );
+                let mut csv_issue =
+                    CsvRowIssue::new(row_number, issue.code.clone(), issue.message.clone());
                 if let Some(field) = &issue.field {
                     csv_issue = csv_issue.with_column(field.as_str().to_string());
                 }

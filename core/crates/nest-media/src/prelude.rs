@@ -9,9 +9,7 @@ pub use crate::item::MediaItem;
 pub use crate::kind::MediaKind;
 pub use crate::metadata::{MovieMetadata, MovieSearchQuery, MovieSearchResult};
 pub use crate::movie::{Movie, PersonCredit};
-pub use crate::tracks::{
-    AudioTrack, HdrFormat, MediaTracks, SubtitleTrack, VideoTrack,
-};
+pub use crate::tracks::{AudioTrack, HdrFormat, MediaTracks, SubtitleTrack, VideoTrack};
 
 #[cfg(feature = "async")]
 pub use crate::provider::{MediaInspector, MediaLibraryRepository, MetadataProvider};

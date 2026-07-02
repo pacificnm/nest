@@ -2,7 +2,7 @@
 
 mod models;
 mod scanner;
-mod stats;
+pub(crate) mod stats;
 
 pub use models::{
     LibraryScanOptions, MovieScanCandidate, ScanError, ScanItemStatus, ScanResult, ScanStats,

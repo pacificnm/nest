@@ -70,15 +70,12 @@ impl Module for SqliteDataModule {
     }
 
     fn configure(&self, app: &mut AppBuilder) -> NestResult<()> {
-        let conn =
-            SqliteConnection::open_named(self.connection_id.clone(), &self.config).map_err(|e| {
-                nest_error::NestError::data(e.to_string()).with_source(e)
-            })?;
+        let conn = SqliteConnection::open_named(self.connection_id.clone(), &self.config)
+            .map_err(|e| nest_error::NestError::data(e.to_string()).with_source(e))?;
 
         if !self.migrations.is_empty() {
-            apply_migrations(&conn, &self.migrations).map_err(|e| {
-                nest_error::NestError::data(e.to_string()).with_source(e)
-            })?;
+            apply_migrations(&conn, &self.migrations)
+                .map_err(|e| nest_error::NestError::data(e.to_string()).with_source(e))?;
         }
 
         let data = app.service_mut::<DataService>()?;
@@ -189,7 +186,11 @@ mod tests {
             .unwrap();
 
         let data = built.context.service::<DataService>().unwrap();
-        let ids: Vec<_> = data.list_connections().into_iter().map(|id| id.to_string()).collect();
+        let ids: Vec<_> = data
+            .list_connections()
+            .into_iter()
+            .map(|id| id.to_string())
+            .collect();
         assert!(ids.iter().any(|id| id == "primary"));
         assert!(ids.iter().any(|id| id == "cache"));
     }

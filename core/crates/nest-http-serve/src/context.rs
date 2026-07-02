@@ -87,7 +87,8 @@ impl RequestContext {
         if self.body.is_empty() {
             return Err(ServeError::json_invalid("request body is empty"));
         }
-        serde_json::from_slice(&self.body).map_err(|error| ServeError::json_invalid(error))
+        serde_json::from_slice(&self.body)
+            .map_err(|error| ServeError::json_invalid(error.to_string()))
     }
 
     /// Builds a context from axum request parts.
@@ -151,8 +152,14 @@ pub(crate) fn parse_query(query: Option<&str>) -> HashMap<String, String> {
 /// Extracts path parameters from a matched pattern and request path.
 pub(crate) fn extract_params(pattern: &str, path: &str) -> HashMap<String, String> {
     let mut params = HashMap::new();
-    let pattern_segments: Vec<&str> = pattern.split('/').filter(|segment| !segment.is_empty()).collect();
-    let path_segments: Vec<&str> = path.split('/').filter(|segment| !segment.is_empty()).collect();
+    let pattern_segments: Vec<&str> = pattern
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect();
+    let path_segments: Vec<&str> = path
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect();
 
     let mut pattern_index = 0;
     let mut path_index = 0;

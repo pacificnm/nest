@@ -100,10 +100,8 @@ mod tests {
 
     #[test]
     fn merge_runtime_config_respects_precedence() {
-        let document = ConfigDocument::parse_toml(
-            "[tui]\nmouse = false\ntick_rate_ms = 500\n",
-        )
-        .unwrap();
+        let document =
+            ConfigDocument::parse_toml("[tui]\nmouse = false\ntick_rate_ms = 500\n").unwrap();
         let startup = TuiStartupOptions {
             mouse: Some(true),
             tick_rate_ms: Some(100),

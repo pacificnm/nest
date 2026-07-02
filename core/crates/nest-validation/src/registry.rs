@@ -79,9 +79,7 @@ mod tests {
         let mut registry = ValidatorRegistry::new();
         registry.register(EmailValidator).unwrap();
         let ctx = ValidationContext::new();
-        let issues = registry
-            .validate_named("email", "bad", &ctx)
-            .unwrap();
+        let issues = registry.validate_named("email", "bad", &ctx).unwrap();
         assert_eq!(issues.len(), 1);
     }
 
@@ -90,9 +88,6 @@ mod tests {
         let mut registry = ValidatorRegistry::new();
         registry.register(EmailValidator).unwrap();
         let err = registry.register(EmailValidator).unwrap_err();
-        assert_eq!(
-            err.code(),
-            Some(NEST_VALIDATOR_ALREADY_REGISTERED)
-        );
+        assert_eq!(err.code(), Some(NEST_VALIDATOR_ALREADY_REGISTERED));
     }
 }

@@ -120,9 +120,7 @@ mod config_service {
     use nest_error::NestResult;
     use serde::Deserialize;
 
-    use super::{
-        resolve_ffprobe_path, DEFAULT_TIMEOUT_SECONDS, TranscodeConfig,
-    };
+    use super::{resolve_ffprobe_path, TranscodeConfig, DEFAULT_TIMEOUT_SECONDS};
 
     #[derive(Debug, Clone, Deserialize)]
     pub(crate) struct TranscodeSection {
@@ -143,9 +141,7 @@ mod config_service {
             Ok(Self {
                 ffprobe_path: resolve_ffprobe_path(section.ffprobe_path.as_deref())?,
                 ffmpeg_path: section.ffmpeg_path,
-                timeout_seconds: section
-                    .timeout_seconds
-                    .unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+                timeout_seconds: section.timeout_seconds.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
                 extra_ffprobe_args: section.extra_ffprobe_args,
             })
         }

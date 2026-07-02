@@ -4,8 +4,8 @@
 
 use egui::Visuals;
 use nest_core::AppContext;
-use nest_theme::ThemeMode;
 use nest_error::NestResult;
+use nest_theme::ThemeMode;
 use nest_theme::ThemeService;
 
 /// Applies the active Nest theme to egui visuals (v1 stub).

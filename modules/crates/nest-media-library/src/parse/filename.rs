@@ -29,8 +29,7 @@ pub fn guess_from_path(path: &str) -> FilenameGuess {
 }
 
 fn find_year_in_parens(text: &str) -> Option<u16> {
-    let mut chars = text.char_indices().peekable();
-    while let Some((index, ch)) = chars.next() {
+    for (index, ch) in text.char_indices() {
         if ch != '(' {
             continue;
         }
@@ -72,9 +71,9 @@ fn extract_title(stem: &str, year: Option<u16>) -> Option<String> {
     title = title.replace('_', " ");
     title = collapse_whitespace(&title);
 
-    let lowered = title.to_ascii_lowercase();
-    for token in ["1080p", "720p", "2160p", "4k", "bluray", "webrip", "x264", "x265", "h264", "h265"]
-    {
+    for token in [
+        "1080p", "720p", "2160p", "4k", "bluray", "webrip", "x264", "x265", "h264", "h265",
+    ] {
         title = replace_token_case_insensitive(&title, token, "");
     }
 

@@ -14,7 +14,10 @@ pub fn http_to_airtable_error(error: NestError, operation: &str) -> NestError {
         .map(str::to_string)
         .unwrap_or_else(|| NEST_AIRTABLE_REQUEST_FAILED.to_string());
     if let Some(source) = error.source().and_then(|s| s.downcast_ref::<HttpError>()) {
-        if source.response_status().is_some_and(|status| status.code() == 429) {
+        if source
+            .response_status()
+            .is_some_and(|status| status.code() == 429)
+        {
             return NestError::network("Airtable rate limit exceeded")
                 .with_code(NEST_AIRTABLE_RATE_LIMITED)
                 .with_module("nest-airtable")
@@ -50,11 +53,9 @@ pub fn table_not_found(name: &str) -> NestError {
 /// Propagates cancellation when a token is set and cancelled.
 pub fn check_cancelled(token: Option<&nest_task::CancelToken>) -> NestResult<()> {
     if token.is_some_and(nest_task::CancelToken::is_cancelled) {
-        return Err(
-            NestError::task("Airtable operation cancelled")
-                .with_code(nest_error::codes::NEST_TASK_CANCELLED)
-                .with_module("nest-airtable"),
-        );
+        return Err(NestError::task("Airtable operation cancelled")
+            .with_code(nest_error::codes::NEST_TASK_CANCELLED)
+            .with_module("nest-airtable"));
     }
     Ok(())
 }

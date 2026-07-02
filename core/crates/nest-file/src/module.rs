@@ -58,7 +58,10 @@ mod tests {
 
     #[test]
     fn module_registers_file_service() {
-        let built = AppBuilder::new().module(FileModule::default()).build().unwrap();
+        let built = AppBuilder::new()
+            .module(FileModule::default())
+            .build()
+            .unwrap();
         assert!(built.context.has_service::<FileService>());
     }
 }

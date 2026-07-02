@@ -65,8 +65,7 @@ impl CsvError {
 
     /// Creates a required-column error.
     pub fn required_column(message: impl Into<String>) -> Self {
-        Self::new(CsvErrorKind::RequiredColumn, message)
-            .with_code(NEST_CSV_REQUIRED_COLUMN_MISSING)
+        Self::new(CsvErrorKind::RequiredColumn, message).with_code(NEST_CSV_REQUIRED_COLUMN_MISSING)
     }
 
     /// Creates a validation error.

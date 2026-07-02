@@ -44,7 +44,9 @@ pub fn build_logging_config(
     }
 
     if let Some(log_file) = &startup.log_file {
-        let parent = log_file.parent().filter(|path| !path.as_os_str().is_empty());
+        let parent = log_file
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty());
         if let Some(directory) = parent {
             config = config.with_file(directory);
         } else {

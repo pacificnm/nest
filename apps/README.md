@@ -26,8 +26,17 @@ Framework consumers who do not need Pacific NM products can skip this entirely �
 | Local path | Repository |
 |------------|------------|
 | `apps/airtable-sync/` | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
+| `apps/loon/` | [github.com/pacificnm/loon](https://github.com/pacificnm/loon) — [plan](loon/docs/v1.md) (clone into `apps/loon/`) |
 
 Planned: `kiwi`, `finch`, …
+
+### Loon
+
+```bash
+git clone https://github.com/pacificnm/loon.git apps/loon
+```
+
+See [apps/loon/docs/implementation-v1.md](loon/docs/implementation-v1.md) for build order.
 
 ## Build (example)
 

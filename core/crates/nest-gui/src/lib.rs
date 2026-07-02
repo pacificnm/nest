@@ -61,16 +61,8 @@ mod tests {
     #[test]
     fn startup_options_parse_window_flags() {
         let options = GuiStartupOptions::from_args_iter([
-            "kiwi",
-            "--config",
-            "app.toml",
-            "--title",
-            "Kiwi IDE",
-            "--width",
-            "1024",
-            "--height",
-            "768",
-            "--debug",
+            "kiwi", "--config", "app.toml", "--title", "Kiwi IDE", "--width", "1024", "--height",
+            "768", "--debug",
         ])
         .unwrap();
         assert_eq!(options.title.as_deref(), Some("Kiwi IDE"));
@@ -81,8 +73,7 @@ mod tests {
 
     #[test]
     fn merge_runtime_config_respects_precedence() {
-        let document =
-            ConfigDocument::parse_toml("[gui]\nwidth = 800\nheight = 600\n").unwrap();
+        let document = ConfigDocument::parse_toml("[gui]\nwidth = 800\nheight = 600\n").unwrap();
         let startup = GuiStartupOptions {
             width: Some(1920),
             height: Some(1080),

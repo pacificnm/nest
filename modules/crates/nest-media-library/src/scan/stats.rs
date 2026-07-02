@@ -18,7 +18,11 @@ pub(crate) fn record_candidate(stats: &mut ScanStats) {
 }
 
 /// Records one scan error on the result.
-pub(crate) fn record_error(result: &mut ScanResult, path: impl Into<String>, message: impl Into<String>) {
+pub(crate) fn record_error(
+    result: &mut ScanResult,
+    path: impl Into<String>,
+    message: impl Into<String>,
+) {
     result.errors.push(ScanError {
         path: path.into(),
         message: message.into(),

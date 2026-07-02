@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 use std::time::Duration;
 
 use axum::extract::Request;
-use axum::routing::{get, post, MethodRouter};
+use axum::routing::{delete, get, patch, post, put, MethodRouter};
 use axum::Router;
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
@@ -22,10 +22,8 @@ use crate::router::{nest_pattern_to_axum, RouteGroup, RouteRegistry};
 use crate::spa::SpaConfig;
 use crate::static_files::StaticFilesConfig;
 
-/// Running HTTP server configuration.
-pub struct HttpServer {
-    builder: HttpServerBuilder,
-}
+/// HTTP server entry point (use [`HttpServer::builder`]).
+pub struct HttpServer;
 
 /// Fluent builder for the HTTP host.
 #[derive(Clone)]
@@ -53,12 +51,20 @@ impl HttpServer {
     }
 }
 
+impl Default for HttpServerBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HttpServerBuilder {
     /// Creates a default builder bound to `127.0.0.1:3000`.
     pub fn new() -> Self {
         Self {
             name: "nest-http-serve".to_string(),
-            bind_addr: "127.0.0.1:3000".parse().expect("valid default bind address"),
+            bind_addr: "127.0.0.1:3000"
+                .parse()
+                .expect("valid default bind address"),
             registry: RouteRegistry::new(),
             middleware: Vec::new(),
             cors: Some(CorsConfig::permissive()),
@@ -150,9 +156,7 @@ impl HttpServerBuilder {
 
     /// Starts the server in the background for integration tests.
     pub async fn spawn(mut self) -> Result<TestServer, ServeError> {
-        self.bind_addr = "127.0.0.1:0"
-            .parse()
-            .expect("valid test bind address");
+        self.bind_addr = "127.0.0.1:0".parse().expect("valid test bind address");
 
         let listener = TcpListener::bind(self.bind_addr)
             .await
@@ -202,8 +206,7 @@ impl HttpServerBuilder {
             }
 
             let index_path = spa.index_file().to_path_buf();
-            let spa_service = ServeDir::new(spa.dist_dir())
-                .not_found_service(ServeFile::new(index_path));
+            let spa_service = ServeDir::new(spa.dist_dir()).fallback(ServeFile::new(index_path));
             router = router.fallback_service(spa_service);
         }
 
@@ -248,7 +251,8 @@ fn method_router_for(
             };
 
             let params = extract_params(&pattern, parts.uri.path());
-            let ctx = RequestContext::from_parts(parts.method, &parts.uri, &parts.headers, params, body);
+            let ctx =
+                RequestContext::from_parts(parts.method, &parts.uri, &parts.headers, params, body);
             into_axum_response(handler(ctx).await)
         }
     };
@@ -256,7 +260,11 @@ fn method_router_for(
     match method {
         HttpMethod::Get => get(dispatch),
         HttpMethod::Post => post(dispatch),
-        _ => get(dispatch),
+        HttpMethod::Put => put(dispatch),
+        HttpMethod::Patch => patch(dispatch),
+        HttpMethod::Delete => delete(dispatch),
+        HttpMethod::Head => get(dispatch),
+        HttpMethod::Options => get(dispatch),
     }
 }
 
@@ -294,15 +302,13 @@ async fn shutdown_signal(timeout: Duration) {
 }
 
 fn config_error(message: impl Into<String>) -> ServeError {
-    ServeError::from(
-        nest_http::HttpError::config(message).with_code(NEST_HTTP_SERVE_CONFIG),
-    )
+    ServeError::from(nest_http::HttpError::config(message).with_code(NEST_HTTP_SERVE_CONFIG))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::response::Json;
+    use crate::response::{HttpResult, Json};
     use serde::Serialize;
 
     #[derive(Serialize)]
@@ -311,7 +317,7 @@ mod tests {
     }
 
     async fn health(_ctx: RequestContext) -> HttpResult {
-        Ok(Json(Health { ok: true }).into_response()?)
+        Json(Health { ok: true }).into_response()
     }
 
     #[tokio::test]
@@ -363,12 +369,11 @@ mod tests {
     #[tokio::test]
     async fn static_route_wins_over_param_route() {
         async fn recent(_ctx: RequestContext) -> HttpResult {
-            Ok(Json(serde_json::json!({ "route": "recent" })).into_response()?)
+            Json(serde_json::json!({ "route": "recent" })).into_response()
         }
 
         async fn by_slug(ctx: RequestContext) -> HttpResult {
-            Ok(Json(serde_json::json!({ "route": "slug", "slug": ctx.param("slug")? }))
-                .into_response()?)
+            Json(serde_json::json!({ "route": "slug", "slug": ctx.param("slug")? })).into_response()
         }
 
         let server = HttpServer::builder()

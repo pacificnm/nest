@@ -95,8 +95,7 @@ impl DataError {
 
     /// No active connection set.
     pub fn no_active_connection() -> Self {
-        Self::connection_error("no active connection")
-            .with_code(NEST_DATA_NO_ACTIVE_CONNECTION)
+        Self::connection_error("no active connection").with_code(NEST_DATA_NO_ACTIVE_CONNECTION)
     }
 
     /// Sets a stable error code.

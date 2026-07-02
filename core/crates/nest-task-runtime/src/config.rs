@@ -27,8 +27,6 @@ pub struct TaskManagerConfig {
 
 impl Default for TaskManagerConfig {
     fn default() -> Self {
-        Self {
-            max_concurrent: 4,
-        }
+        Self { max_concurrent: 4 }
     }
 }

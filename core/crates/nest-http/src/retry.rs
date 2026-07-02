@@ -49,9 +49,7 @@ impl RetryPolicy for FixedRetryPolicy {
         matches!(
             error.kind(),
             HttpErrorKind::Timeout | HttpErrorKind::Connection
-        ) || error
-            .response_status()
-            .is_some_and(|s| s.code() == 503)
+        ) || error.response_status().is_some_and(|s| s.code() == 503)
     }
 
     fn delay_before_retry(&self, attempt: u32) -> Duration {

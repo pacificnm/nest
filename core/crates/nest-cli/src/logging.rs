@@ -4,8 +4,8 @@ use nest_error::NestResult;
 use nest_logging::{LogLevel, LoggingConfig};
 use serde::Deserialize;
 
-use nest_config::ConfigDocument;
 use crate::globals::CliGlobals;
+use nest_config::ConfigDocument;
 
 #[derive(Debug, Deserialize)]
 struct LoggingSection {
@@ -49,7 +49,9 @@ pub fn build_logging_config(
     }
 
     if let Some(log_file) = &globals.log_file {
-        let parent = log_file.parent().filter(|path| !path.as_os_str().is_empty());
+        let parent = log_file
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty());
         if let Some(directory) = parent {
             config = config.with_file(directory);
         } else {

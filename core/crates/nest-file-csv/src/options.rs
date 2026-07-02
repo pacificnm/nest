@@ -17,8 +17,7 @@ impl CsvColumnMapping {
 
     /// Inserts a source-to-target column mapping.
     pub fn insert(&mut self, source: impl Into<String>, target: impl Into<String>) {
-        self.source_to_target
-            .insert(source.into(), target.into());
+        self.source_to_target.insert(source.into(), target.into());
     }
 
     /// Returns the target name for a normalized source header.

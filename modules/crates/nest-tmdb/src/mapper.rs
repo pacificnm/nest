@@ -1,7 +1,9 @@
 //! TMDB DTO to nest-media mapping.
 
-use nest_media::{ExternalIds, ExternalMediaId, MediaError, MediaResult, MediaTracks, MovieMetadata,
-    MovieSearchResult, PersonCredit};
+use nest_media::{
+    ExternalIds, ExternalMediaId, MediaError, MediaResult, MediaTracks, MovieMetadata,
+    MovieSearchResult, PersonCredit,
+};
 
 use crate::dto::credits::{CastMember, CrewMember, MovieCreditsResponse};
 use crate::dto::external_ids::MovieExternalIdsResponse;
@@ -54,27 +56,21 @@ pub fn map_movie_metadata(
 
 /// Returns poster and backdrop paths from movie details.
 pub fn artwork_paths(movie: &MovieDetailsResponse) -> (Option<String>, Option<String>) {
-    (
-        movie.poster_path.clone(),
-        movie.backdrop_path.clone(),
-    )
+    (movie.poster_path.clone(), movie.backdrop_path.clone())
 }
 
 /// Parses a nest-media external id (`tmdb:{id}`) into a TMDB movie id.
 pub fn parse_movie_external_id(id: &ExternalMediaId) -> MediaResult<u32> {
-    let value = id
-        .as_str()
-        .strip_prefix("tmdb:")
-        .ok_or_else(|| {
-            MediaError::invalid_input(format!(
-                "expected TMDB external id prefix tmdb:, got {}",
-                id.as_str()
-            ))
-        })?;
+    let value = id.as_str().strip_prefix("tmdb:").ok_or_else(|| {
+        MediaError::invalid_input(format!(
+            "expected TMDB external id prefix tmdb:, got {}",
+            id.as_str()
+        ))
+    })?;
 
-    value.parse::<u32>().map_err(|_| {
-        MediaError::invalid_input(format!("invalid TMDB movie id: {value}"))
-    })
+    value
+        .parse::<u32>()
+        .map_err(|_| MediaError::invalid_input(format!("invalid TMDB movie id: {value}")))
 }
 
 /// Formats a TMDB movie id as a nest-media external id.

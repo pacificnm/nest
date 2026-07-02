@@ -11,6 +11,8 @@ impl HttpStatus {
     pub const OK: Self = Self(200);
     /// 201 Created.
     pub const CREATED: Self = Self(201);
+    /// 202 Accepted.
+    pub const ACCEPTED: Self = Self(202);
     /// 204 No Content.
     pub const NO_CONTENT: Self = Self(204);
     /// 400 Bad Request.
@@ -19,6 +21,8 @@ impl HttpStatus {
     pub const UNAUTHORIZED: Self = Self(401);
     /// 404 Not Found.
     pub const NOT_FOUND: Self = Self(404);
+    /// 409 Conflict.
+    pub const CONFLICT: Self = Self(409);
     /// 500 Internal Server Error.
     pub const INTERNAL_SERVER_ERROR: Self = Self(500);
     /// 503 Service Unavailable.

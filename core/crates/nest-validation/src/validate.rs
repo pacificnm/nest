@@ -15,9 +15,6 @@ pub fn validate<T: Validate>(value: &T) -> ValidationResult {
 }
 
 /// Validates a value with an explicit context.
-pub fn validate_with_context<T: Validate>(
-    value: &T,
-    ctx: &ValidationContext,
-) -> ValidationResult {
+pub fn validate_with_context<T: Validate>(value: &T, ctx: &ValidationContext) -> ValidationResult {
     value.validate(ctx)
 }

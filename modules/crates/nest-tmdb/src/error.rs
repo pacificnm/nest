@@ -121,9 +121,10 @@ impl TmdbError {
         let error = match kind {
             TmdbErrorKind::NotFound => MediaError::not_found(message),
             TmdbErrorKind::Config => MediaError::config(message),
-            TmdbErrorKind::Parse | TmdbErrorKind::Api | TmdbErrorKind::Http | TmdbErrorKind::RateLimit => {
-                MediaError::provider(message)
-            }
+            TmdbErrorKind::Parse
+            | TmdbErrorKind::Api
+            | TmdbErrorKind::Http
+            | TmdbErrorKind::RateLimit => MediaError::provider(message),
         };
         if let Some(source) = self.source {
             error.with_source(TmdbError {
@@ -155,10 +156,16 @@ impl Error for TmdbError {
 impl From<NestError> for TmdbError {
     fn from(error: NestError) -> Self {
         if let Some(source) = error.source().and_then(|s| s.downcast_ref::<HttpError>()) {
-            if source.response_status().is_some_and(|status| status.code() == 404) {
+            if source
+                .response_status()
+                .is_some_and(|status| status.code() == 404)
+            {
                 return TmdbError::not_found(error.to_string()).with_source(error);
             }
-            if source.response_status().is_some_and(|status| status.code() == 429) {
+            if source
+                .response_status()
+                .is_some_and(|status| status.code() == 429)
+            {
                 return TmdbError::rate_limited("TMDB rate limit exceeded").with_source(error);
             }
         }
@@ -167,12 +174,12 @@ impl From<NestError> for TmdbError {
 }
 
 /// Maps a decode failure into a TMDB error.
+#[allow(dead_code)]
 pub fn invalid_response(message: impl Into<String>, operation: &str) -> TmdbError {
-    TmdbError::parse(message)
-        .with_source(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            operation.to_string(),
-        ))
+    TmdbError::parse(message).with_source(std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        operation.to_string(),
+    ))
 }
 
 /// Converts [`TmdbError`] into [`MediaError`] based on kind.

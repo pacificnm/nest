@@ -44,9 +44,7 @@ impl ServeError {
 
     /// Creates a bad-request error for invalid JSON.
     pub fn json_invalid(message: impl Into<String>) -> Self {
-        Self::Http(
-            HttpError::decode(message).with_code(NEST_HTTP_SERVE_JSON_INVALID),
-        )
+        Self::Http(HttpError::decode(message).with_code(NEST_HTTP_SERVE_JSON_INVALID))
     }
 
     /// Returns the HTTP status for this error.

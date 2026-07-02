@@ -75,7 +75,7 @@ TMDB movie ids use the nest-media convention `tmdb:{id}` (e.g. `tmdb:348`).
 |----------|----------|
 | Movie search | TV shows |
 | Movie details + credits + external ids | `append_to_response` batching |
-| Poster/backdrop URL builders | Shared `nest-cache` module |
+| Poster/backdrop URL builders | [nest-cache](../plan/nest-cache-v1.md) file adapter (planned) |
 | `TmdbModule` | Trending, persons, reviews |
 
 ## Dependency rule

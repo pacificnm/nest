@@ -8,11 +8,9 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use crate::options::CsvOptions;
-use crate::reader::{
-    read_records, read_records_report, read_typed_report, strict_from_report,
-};
 #[cfg(feature = "validate")]
 use crate::reader::read_typed_validated_report;
+use crate::reader::{read_records, read_records_report, read_typed_report, strict_from_report};
 use crate::record::CsvRecord;
 use crate::report::{CsvReadReport, CsvWriteReport};
 use crate::validator::CsvRowValidator;
@@ -74,13 +72,8 @@ impl CsvService {
         path: impl AsRef<Path>,
         options: &CsvOptions,
     ) -> NestResult<CsvReadReport<T>> {
-        read_typed_report::<T, NoopValidator>(
-            &self.files,
-            path.as_ref(),
-            options,
-            None,
-        )
-        .map_err(Into::into)
+        read_typed_report::<T, NoopValidator>(&self.files, path.as_ref(), options, None)
+            .map_err(Into::into)
     }
 
     /// Reads typed rows with a custom row validator.
@@ -94,8 +87,7 @@ impl CsvService {
         T: DeserializeOwned,
         V: CsvRowValidator<T>,
     {
-        read_typed_report(&self.files, path.as_ref(), options, Some(validator))
-            .map_err(Into::into)
+        read_typed_report(&self.files, path.as_ref(), options, Some(validator)).map_err(Into::into)
     }
 
     /// Reads typed rows and runs [`nest_validation::Validate`] when the `validate` feature is enabled.
@@ -108,8 +100,7 @@ impl CsvService {
     where
         T: DeserializeOwned + nest_validation::Validate,
     {
-        read_typed_validated_report(&self.files, path.as_ref(), options)
-        .map_err(Into::into)
+        read_typed_validated_report(&self.files, path.as_ref(), options).map_err(Into::into)
     }
 
     /// Writes CSV records to a file.
