@@ -90,6 +90,7 @@ fn map_cast(cast: Vec<CastMember>) -> Vec<PersonCredit> {
             profile_path: member
                 .profile_path
                 .filter(|value| !value.is_empty()),
+            tmdb_person_id: Some(member.id),
         })
         .collect()
 }
@@ -149,6 +150,7 @@ mod tests {
         let credits = MovieCreditsResponse {
             cast: vec![CastMember {
                 name: "Sigourney Weaver".into(),
+                id: 10205,
                 character: Some("Ripley".into()),
                 order: Some(0),
                 profile_path: Some("/profile.jpg".into()),

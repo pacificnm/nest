@@ -30,6 +30,31 @@ pub struct TmdbMetadataProvider {
     client: TmdbClient,
 }
 
+/// TMDB person details for app-layer caching.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PersonDetails {
+    /// TMDB person id.
+    pub id: u32,
+    /// Display name.
+    pub name: String,
+    /// Biography text.
+    pub biography: Option<String>,
+    /// Birthday ISO date.
+    pub birthday: Option<String>,
+    /// Deathday ISO date.
+    pub deathday: Option<String>,
+    /// Birth place label.
+    pub place_of_birth: Option<String>,
+    /// TMDB profile path token.
+    pub profile_path: Option<String>,
+    /// Primary department.
+    pub known_for_department: Option<String>,
+    /// TMDB gender code.
+    pub gender: Option<i32>,
+    /// Alternate names.
+    pub also_known_as: Vec<String>,
+}
+
 impl TmdbMetadataProvider {
     /// Creates a provider backed by the given client.
     pub fn new(client: TmdbClient) -> Self {
@@ -71,6 +96,38 @@ impl TmdbMetadataProvider {
             metadata: map_movie_metadata(movie, credits, external_ids),
             poster_path,
             backdrop_path,
+        })
+    }
+
+    /// Fetches TMDB person details.
+    pub async fn fetch_person(&self, person_id: u32) -> MediaResult<PersonDetails> {
+        self.client
+            .ensure_configuration()
+            .await
+            .map_err(tmdb_to_media_error)?;
+        let person = self
+            .client
+            .person_details(person_id)
+            .await
+            .map_err(tmdb_to_media_error)?;
+        Ok(PersonDetails {
+            id: person.id,
+            name: person.name,
+            biography: person.biography.filter(|value| !value.is_empty()),
+            birthday: person.birthday.filter(|value| !value.is_empty()),
+            deathday: person.deathday.filter(|value| !value.is_empty()),
+            place_of_birth: person.place_of_birth.filter(|value| !value.is_empty()),
+            profile_path: person.profile_path.filter(|value| !value.is_empty()),
+            known_for_department: person
+                .known_for_department
+                .filter(|value| !value.is_empty()),
+            gender: person.gender,
+            also_known_as: person
+                .also_known_as
+                .unwrap_or_default()
+                .into_iter()
+                .filter(|value| !value.is_empty())
+                .collect(),
         })
     }
 }

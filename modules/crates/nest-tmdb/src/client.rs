@@ -10,6 +10,7 @@ use tracing::{debug, instrument};
 
 use crate::config::{TmdbConfig, DEFAULT_IMAGE_BASE_URL};
 use crate::dto::configuration::ConfigurationResponse;
+use crate::dto::person::PersonDetailsResponse;
 use crate::dto::credits::MovieCreditsResponse;
 use crate::dto::external_ids::MovieExternalIdsResponse;
 use crate::dto::movie::MovieDetailsResponse;
@@ -93,6 +94,22 @@ impl TmdbClient {
         movie_id: u32,
     ) -> TmdbResult<MovieExternalIdsResponse> {
         let url = self.movie_url(movie_id, &["external_ids"]);
+        self.get_json(&url).await
+    }
+
+    /// Fetches person details via `GET /person/{id}`.
+    pub(crate) async fn person_details(
+        &self,
+        person_id: u32,
+    ) -> TmdbResult<PersonDetailsResponse> {
+        let url = format!(
+            "{}/person/{person_id}?{}",
+            self.config.base_url,
+            encode_query(&[
+                ("api_key", self.config.api_key.as_str()),
+                ("language", self.config.language.as_str()),
+            ])
+        );
         self.get_json(&url).await
     }
 

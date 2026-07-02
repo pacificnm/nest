@@ -17,6 +17,8 @@ pub struct PersonCredit {
     pub character: Option<String>,
     /// TMDB profile image path token when known.
     pub profile_path: Option<String>,
+    /// TMDB person id when known.
+    pub tmdb_person_id: Option<u32>,
 }
 
 impl PersonCredit {
@@ -31,6 +33,7 @@ impl PersonCredit {
             role: role.into(),
             character,
             profile_path: None,
+            tmdb_person_id: None,
         }
     }
 }

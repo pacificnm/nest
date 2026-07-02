@@ -55,7 +55,7 @@ pub use error::{tmdb_to_media_error, TmdbError, TmdbErrorKind, TmdbResult};
 pub use images::{artwork_for_movie_with_base, ImageSize, TmdbImageService};
 pub use mapper::{external_id_for_movie, parse_movie_external_id};
 pub use module::{TmdbModule, TMDB_MODULE_ID};
-pub use provider::{MovieFetchResult, TmdbMetadataProvider};
+pub use provider::{MovieFetchResult, PersonDetails, TmdbMetadataProvider};
 
 pub use nest_error::{NestError, NestResult};
 pub use nest_media::{MetadataProvider, MovieMetadata, MovieSearchQuery, MovieSearchResult};
@@ -178,6 +178,7 @@ mod tests {
             .and(path("/movie/348/credits"))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!({
                 "cast": [{
+                    "id": 10205,
                     "name": "Sigourney Weaver",
                     "character": "Ripley",
                     "order": 0
