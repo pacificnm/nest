@@ -11,6 +11,7 @@ pub(crate) struct CastMember {
     pub name: String,
     pub character: Option<String>,
     pub order: Option<i32>,
+    pub profile_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -83,12 +83,13 @@ fn map_cast(cast: Vec<CastMember>) -> Vec<PersonCredit> {
     members.sort_by_key(|member| member.order.unwrap_or(i32::MAX));
     members
         .into_iter()
-        .map(|member| {
-            PersonCredit::new(
-                member.name,
-                "Actor",
-                member.character.filter(|value| !value.is_empty()),
-            )
+        .map(|member| PersonCredit {
+            name: member.name,
+            role: "Actor".into(),
+            character: member.character.filter(|value| !value.is_empty()),
+            profile_path: member
+                .profile_path
+                .filter(|value| !value.is_empty()),
         })
         .collect()
 }
@@ -150,6 +151,7 @@ mod tests {
                 name: "Sigourney Weaver".into(),
                 character: Some("Ripley".into()),
                 order: Some(0),
+                profile_path: Some("/profile.jpg".into()),
             }],
             crew: vec![CrewMember {
                 name: "Ridley Scott".into(),
@@ -167,6 +169,7 @@ mod tests {
         assert_eq!(metadata.runtime_seconds, Some(117 * 60));
         assert_eq!(metadata.genres, vec!["Horror"]);
         assert_eq!(metadata.cast.len(), 1);
+        assert_eq!(metadata.cast[0].profile_path.as_deref(), Some("/profile.jpg"));
         assert_eq!(metadata.crew[0].role, "Director");
         assert_eq!(metadata.external_ids.imdb_id.as_deref(), Some("tt0078748"));
     }

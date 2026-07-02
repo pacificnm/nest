@@ -26,6 +26,8 @@ pub enum ImageSize {
     W300,
     /// 1280px wide backdrop.
     W1280,
+    /// 185px wide profile image.
+    W185,
 }
 
 impl ImageSize {
@@ -39,6 +41,7 @@ impl ImageSize {
             Self::Original => "original",
             Self::W300 => "w300",
             Self::W1280 => "w1280",
+            Self::W185 => "w185",
         }
     }
 }
@@ -80,6 +83,11 @@ impl TmdbImageService {
     pub async fn backdrop_url(&self, path: &str, size: ImageSize) -> String {
         let base = self.base_url.read().await;
         Self::backdrop_url_with_base(&base, path, size)
+    }
+
+    /// Builds a profile image URL.
+    pub fn profile_url_with_base(base_url: &str, path: &str, size: ImageSize) -> String {
+        join_image_url(base_url, size.as_str(), path)
     }
 
     /// Builds nest-media artwork entries for a movie's primary poster and backdrop.
