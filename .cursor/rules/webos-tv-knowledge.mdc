@@ -1,0 +1,41 @@
+---
+description: Mandatory webos-tv knowledge lookup when working on Loon webOS client
+globs: apps/loon/client/**
+alwaysApply: false
+---
+
+# webOS TV knowledge (mandatory for client work)
+
+Hooks enforce this when editing under `apps/loon/client/`. Do not skip it.
+
+## Before webOS client implementation
+
+After project + context memory (see `nest-memory.mdc`), call:
+
+**`search_knowledge_base`** (`nest-knowledge`) with `collection="webos-tv"`
+
+Search for the specific APIs or platform behavior you need **before** guessing. Examples:
+
+| Task | Example query |
+|------|----------------|
+| Packaging | `appinfo.json mandatory id icon version` |
+| Back / D-pad | `disableBackHistoryAPI back button` |
+| Lifecycle | `webOSRelaunch handlesRelaunch` |
+| Install on TV | `ares-install developer mode passphrase` |
+| App type | `packaged web app basic hosted` |
+
+Run **at least one** `webos-tv` search per session before editing client code. Re-search when touching a new platform area (player, packaging, events).
+
+## During work
+
+- Prefer indexed LG docs over training-data assumptions.
+- Cite behavior from search results; link [webOS Developer](https://webostv.developer.lge.com) for humans.
+- If search returns nothing useful, say so and fetch may need `./scripts/fetch-webos-knowledge.sh --force`.
+
+## Refresh index
+
+```bash
+./scripts/fetch-webos-knowledge.sh          # from nest repo root
+```
+
+See [apps/loon/docs/webos-knowledge-v1.md](../../apps/loon/docs/webos-knowledge-v1.md).

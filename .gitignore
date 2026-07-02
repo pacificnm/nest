@@ -9,4 +9,6 @@ Cargo.lock
 .env
 tools/__pycache__/
 tools/knowledge.toml
+tools/knowledge-webos.toml
+data/nest-knowledge/
 .cursor/memory-gate-state.json

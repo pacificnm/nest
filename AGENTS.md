@@ -13,6 +13,9 @@ Hooks **block** file edits, shell commands, and other tools until both complete.
 
 Optional when using Rust/egui: **`search_knowledge_base`** (`nest-knowledge`).
 
+When editing **`apps/loon/client/`**: **`search_knowledge_base`** with
+`collection="webos-tv"` (hook-enforced). See `.cursor/rules/webos-tv-knowledge.mdc`.
+
 ## After every agent response (required)
 
 Call **`save_context_memory`** before the turn ends. The **stop** hook will prompt

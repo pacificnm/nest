@@ -50,6 +50,11 @@ extensions = ["rs", "md"]
 name = "egui-docs"
 source = "${KNOWLEDGE}/egui/docs"
 extensions = ["md"]
+
+[[collections]]
+name = "webos-tv"
+source = "${KNOWLEDGE}/webos-tv"
+extensions = ["md"]
 EOF
 
 echo "Knowledge root: ${KNOWLEDGE}"

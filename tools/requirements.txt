@@ -2,3 +2,6 @@ openai
 psycopg[binary]
 mcp[cli]
 toml
+httpx
+beautifulsoup4
+markdownify

@@ -1,0 +1,53 @@
+# webOS TV knowledge — canonical URL set (Loon v1)
+# Consumed by tools/fetch_webos_knowledge.py
+#
+# These 8 pages are the complete v1 knowledge scope. Each URL is fetched once,
+# saved as markdown under ${NEST_KNOWLEDGE}/webos-tv/{slug}.md, then indexed
+# into nest-knowledge collection "webos-tv".
+#
+# Refresh:
+#   ./scripts/fetch-webos-knowledge.sh
+#   ./scripts/index-knowledge.sh
+#
+# Search:
+#   search_knowledge_base(query, collection="webos-tv")
+
+[[pages]]
+slug = "references/appinfo-json"
+url = "https://webostv.developer.lge.com/develop/references/appinfo-json"
+priority = 0
+
+[[pages]]
+slug = "references/webos-event"
+url = "https://webostv.developer.lge.com/develop/references/webos-event"
+priority = 0
+
+[[pages]]
+slug = "references/luna-service-introduction"
+url = "https://webostv.developer.lge.com/develop/references/luna-service-introduction"
+priority = 0
+
+[[pages]]
+slug = "references/webostvjs-introduction"
+url = "https://webostv.developer.lge.com/develop/references/webostvjs-introduction"
+priority = 0
+
+[[pages]]
+slug = "references/webos-service-introduction"
+url = "https://webostv.developer.lge.com/develop/references/webos-service-introduction"
+priority = 0
+
+[[pages]]
+slug = "getting-started/developer-workflow"
+url = "https://webostv.developer.lge.com/develop/getting-started/developer-workflow"
+priority = 0
+
+[[pages]]
+slug = "getting-started/web-app-types"
+url = "https://webostv.developer.lge.com/develop/getting-started/web-app-types"
+priority = 0
+
+[[pages]]
+slug = "getting-started/developer-mode-app"
+url = "https://webostv.developer.lge.com/develop/getting-started/developer-mode-app"
+priority = 0

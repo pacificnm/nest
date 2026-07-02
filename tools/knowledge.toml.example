@@ -4,6 +4,9 @@
 #
 # Override the manuals root:
 #   NEST_KNOWLEDGE=/data/nest-knowledge ./scripts/index-knowledge.sh
+#
+# webOS TV docs (Loon client) — fetch first:
+#   ./scripts/fetch-webos-knowledge.sh   # planned; see apps/loon/docs/webos-knowledge-v1.md
 
 [[collections]]
 name = "rust-book"
@@ -34,3 +37,9 @@ extensions = ["rs", "md"]
 name = "egui-docs"
 source = "/data/nest-knowledge/egui/docs"
 extensions = ["md"]
+
+# Uncomment after running ./scripts/fetch-webos-knowledge.sh
+# [[collections]]
+# name = "webos-tv"
+# source = "/data/nest-knowledge/webos-tv"
+# extensions = ["md"]

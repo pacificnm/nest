@@ -27,6 +27,17 @@ MEMORY_SERVER_MARKERS = (
     "nest-knowledge",
 )
 
+WEBOS_PATH_MARKERS = (
+    "apps/loon/client",
+    "loon/client",
+)
+
+WEBOS_PATH_PATTERNS = (
+    '"client/',
+    "'client/",
+    "/client/",
+)
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -67,6 +78,8 @@ def get_state(payload: dict) -> dict[str, Any]:
             "session_key": "",
             "project_memory_ok": False,
             "context_read_ok": False,
+            "webos_context_active": False,
+            "webos_knowledge_ok": False,
             "saved_this_turn": False,
             "last_save_at": None,
             "updated_at": _now_iso(),
@@ -82,6 +95,8 @@ def reset_session(payload: dict, *, session_key: str = "") -> None:
         "session_key": session_key,
         "project_memory_ok": False,
         "context_read_ok": False,
+        "webos_context_active": False,
+        "webos_knowledge_ok": False,
         "saved_this_turn": False,
         "last_save_at": None,
         "updated_at": _now_iso(),
@@ -101,7 +116,20 @@ def update_state(payload: dict, **fields: Any) -> dict[str, Any]:
 
 
 def gate_open(state: dict[str, Any]) -> bool:
-    return bool(state.get("project_memory_ok") and state.get("context_read_ok"))
+    base = bool(state.get("project_memory_ok") and state.get("context_read_ok"))
+    if not base:
+        return False
+    if state.get("webos_context_active"):
+        return bool(state.get("webos_knowledge_ok"))
+    return True
+
+
+def is_webos_work(payload: dict) -> bool:
+    """True when the pending tool targets the Loon webOS client tree."""
+    blob = json.dumps(payload)
+    if any(marker in blob for marker in WEBOS_PATH_MARKERS):
+        return True
+    return any(pattern in blob for pattern in WEBOS_PATH_PATTERNS)
 
 
 def is_memory_tool(payload: dict) -> bool:
@@ -128,6 +156,8 @@ def mark_from_tool(payload: dict) -> None:
         fields["project_memory_ok"] = True
     if "search_context_memory" in blob or "list_context_memory" in blob:
         fields["context_read_ok"] = True
+    if "search_knowledge_base" in blob and "webos-tv" in blob:
+        fields["webos_knowledge_ok"] = True
     if "save_context_memory" in blob:
         fields["saved_this_turn"] = True
         fields["last_save_at"] = _now_iso()

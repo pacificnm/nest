@@ -297,7 +297,11 @@ echo '{"conversation_id":"test"}' | .cursor/hooks/memory_stop.sh | jq .
 | `search_knowledge_base` | `query: str`, `limit: int = 8`, `collection: str = ""` | Matching manual snippets (Rust, egui, …). |
 | `list_knowledge_collections` | — | Indexed collection names. |
 
-Pass `collection` to narrow (e.g. `"egui"`, `"rust-book"`).
+Pass `collection` to narrow (e.g. `"egui"`, `"rust-book"`, `"webos-tv"`).
+
+**Loon webOS client:** hooks require `search_knowledge_base` with `collection="webos-tv"`
+before editing `apps/loon/client/`. Index with `./scripts/fetch-webos-knowledge.sh`.
+See `.cursor/rules/webos-tv-knowledge.mdc`.
 
 ### Context memory (`nest-context-memory`)
 

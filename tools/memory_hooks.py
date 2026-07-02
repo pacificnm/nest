@@ -12,9 +12,11 @@ from memory_gate import (
     gate_open,
     get_state,
     is_memory_tool,
+    is_webos_work,
     mark_from_tool,
     reset_session,
     tool_name,
+    update_state,
 )
 from transcript_snapshot import git_branch, snapshot_transcript
 
@@ -31,6 +33,11 @@ commands, or making implementation changes:
 
 Optional when using Rust/egui APIs: **`search_knowledge_base`** (`nest-knowledge`).
 
+### webOS TV client (`apps/loon/client/`)
+
+When editing the Loon webOS client, hooks also require **`search_knowledge_base`**
+with `collection="webos-tv"` before other tools. See `.cursor/rules/webos-tv-knowledge.mdc`.
+
 ### Save context (required)
 
 - **After every agent response** that changes understanding or code: call
@@ -40,7 +47,8 @@ Optional when using Rust/egui APIs: **`search_knowledge_base`** (`nest-knowledge
 
 Use `session_key="{SESSION_KEY_HINT}"` on all context memory calls.
 
-Hooks block non-memory tools until steps 1–2 are complete.
+Hooks block non-memory tools until steps 1–2 are complete (and `webos-tv` knowledge
+when editing `apps/loon/client/`).
 """
 
 
@@ -63,6 +71,17 @@ SAVE_FOLLOWUP_MESSAGE = """Required before ending this turn: call MCP `save_cont
 - Commands run and results
 
 Use session_key="{session_key}" and a short title."""
+
+
+WEBOS_GATE_DENY_MESSAGE = """webOS TV knowledge gate is closed.
+
+You are working on the Loon webOS client. After project + context memory, call:
+
+  search_knowledge_base(query="<your platform topic>", collection="webos-tv")
+
+Examples: appinfo.json fields, disableBackHistoryAPI, webOSRelaunch, ares-install.
+
+Then retry your action."""
 
 
 def read_hook_input() -> dict:
@@ -133,16 +152,26 @@ def pre_tool_use() -> int:
         print(json.dumps({"permission": "allow"}))
         return 0
 
+    if is_webos_work(payload) and not state.get("webos_context_active"):
+        state = update_state(payload, webos_context_active=True)
+
     if gate_open(state):
         print(json.dumps({"permission": "allow"}))
         return 0
 
     name = tool_name(payload)
-    agent_message = GATE_DENY_MESSAGE.format(session_key=session_key or "(git branch)")
-    user_message = (
-        "Memory gate blocked a tool until project and context memory are queried. "
-        f"Blocked tool: {name or 'unknown'}."
-    )
+    if state.get("webos_context_active") and not state.get("webos_knowledge_ok"):
+        agent_message = WEBOS_GATE_DENY_MESSAGE
+        user_message = (
+            "webOS knowledge gate blocked a tool until search_knowledge_base "
+            f"(collection=webos-tv) runs. Blocked tool: {name or 'unknown'}."
+        )
+    else:
+        agent_message = GATE_DENY_MESSAGE.format(session_key=session_key or "(git branch)")
+        user_message = (
+            "Memory gate blocked a tool until project and context memory are queried. "
+            f"Blocked tool: {name or 'unknown'}."
+        )
     print(
         json.dumps(
             {
