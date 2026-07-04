@@ -12,20 +12,36 @@ pub mod prelude;
 mod app;
 mod bootstrap;
 mod config;
+#[cfg(feature = "icons")]
+mod button;
+mod hero;
 mod logging;
 mod module;
 mod render;
 mod shell;
 mod startup;
+mod status_bar;
 mod theme;
+mod toast;
 mod view;
 
 pub use app::GuiApp;
 pub use bootstrap::PreparedRuntime;
 pub use config::GuiRuntimeConfig;
+pub use hero::{hero_poster_row, BackdropHero};
+#[cfg(feature = "icons")]
+pub use button::{ActionButton, ButtonSize};
 pub use module::{GuiModule, GUI_MODULE_ID};
 pub use startup::GuiStartupOptions;
-pub use view::GuiView;
+pub use status_bar::{
+    show_status_bar, StatusBarConfig, StatusBarModule, StatusBarRight, StatusBarService,
+    StatusBarState, StatusKind, STATUS_BAR_MODULE_ID,
+};
+pub use toast::{
+    show_toasts, ToastConfig, ToastKind, ToastMessage, ToastModule, ToastPosition, ToastService,
+    TOAST_MODULE_ID,
+};
+pub use view::{GuiView, WorkbenchView};
 
 pub use nest_config::{ConfigDocument, ConfigLoader, ConfigService, ConfigSource};
 pub use nest_core::{AppContext, Module, ModuleId};

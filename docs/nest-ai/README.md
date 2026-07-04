@@ -21,6 +21,15 @@ let response = ai
     .await?;
 ```
 
+## Tool calling (Phase 2)
+
+`CompletionRequest` accepts [`ToolDefinition`](../../core/crates/nest-ai/src/tools.rs) entries.
+Responses and stream chunks may include [`ToolCall`](../../core/crates/nest-ai/src/tools.rs) values.
+Use `ChatMessage::tool_result` for tool-role history entries.
+
+Ollama adapter: [`nest-ai-ollama`](../nest-ai-ollama/README.md) sends `tools` on `/api/chat`
+and parses `tool_calls` from responses and NDJSON stream lines.
+
 ## Providers
 
 | Crate | Engine | Status |

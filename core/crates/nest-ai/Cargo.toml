@@ -8,14 +8,16 @@ repository.workspace = true
 description = "AI inference provider contracts for the Nest framework"
 
 [dependencies]
+futures-core = { version = "0.3", optional = true }
 nest-error = { workspace = true }
 serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
 async-trait = { version = "0.1", optional = true }
 
 [features]
 default = ["serde", "async"]
-serde = ["dep:serde"]
-async = ["dep:async-trait"]
+serde = ["dep:serde", "dep:serde_json"]
+async = ["dep:async-trait", "dep:futures-core"]
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

@@ -10,7 +10,7 @@ use nest_logging::LoggingConfig;
 
 use crate::bootstrap::{exit_with_error, prepare_runtime, run_pipeline};
 use crate::startup::GuiStartupOptions;
-use crate::view::GuiView;
+use crate::view::{GuiView, RootView, WorkbenchView};
 
 /// Desktop GUI host for Nest applications.
 pub struct GuiApp {
@@ -20,7 +20,7 @@ pub struct GuiApp {
     pub(crate) config_path: Option<PathBuf>,
     pub(crate) startup_options: Option<GuiStartupOptions>,
     pub(crate) modules: Vec<Box<dyn Module>>,
-    pub(crate) view: Option<Box<dyn GuiView>>,
+    pub(crate) view: Option<RootView>,
     #[cfg(feature = "async")]
     pub(crate) with_task_runtime: bool,
 }
@@ -87,9 +87,15 @@ impl GuiApp {
         self
     }
 
-    /// Registers the root GUI view.
+    /// Registers the root GUI view (central panel host).
     pub fn view<V: GuiView>(mut self, view: V) -> Self {
-        self.view = Some(Box::new(view));
+        self.view = Some(RootView::Standard(Box::new(view)));
+        self
+    }
+
+    /// Registers a full-window IDE-style workbench view.
+    pub fn workbench<V: WorkbenchView>(mut self, view: V) -> Self {
+        self.view = Some(RootView::Workbench(Box::new(view)));
         self
     }
 

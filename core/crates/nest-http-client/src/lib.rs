@@ -17,7 +17,7 @@ mod service;
 pub use config::HttpClientConfig;
 pub use example::{Customer, ExampleApiClient};
 pub use module::{HttpClientModule, HTTP_CLIENT_MODULE_ID};
-pub use service::HttpClientService;
+pub use service::{ByteStream, HttpClientService};
 
 pub use nest_core::{Module, ModuleId};
 pub use nest_error::{NestError, NestResult};

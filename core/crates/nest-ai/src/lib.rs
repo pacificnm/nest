@@ -18,10 +18,18 @@
 
 pub mod codes;
 pub mod error;
+pub mod metrics;
 pub mod prelude;
 pub mod provider;
+pub mod service;
+pub mod stream;
+pub mod tools;
 pub mod types;
 
 pub use error::{AiError, AiErrorKind, AiResult};
 pub use provider::AiProvider;
+pub use service::AiService;
+pub use metrics::CompletionMetrics;
+pub use stream::{CompletionChunk, CompletionStream};
+pub use tools::{merge_tool_calls, ToolCall, ToolDefinition};
 pub use types::{ChatMessage, ChatRole, CompletionRequest, CompletionResponse, ResponseFormat};

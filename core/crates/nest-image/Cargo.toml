@@ -1,0 +1,24 @@
+[package]
+name = "nest-image"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Remote image fetch and disk cache for Nest egui applications"
+
+[dependencies]
+egui = { version = "0.31", optional = true }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+nest-cache = { workspace = true }
+nest-core = { workspace = true }
+nest-error = { workspace = true }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+tracing = "0.1"
+
+[features]
+default = ["egui"]
+egui = ["dep:egui"]
+
+[dev-dependencies]
+tempfile = "3"

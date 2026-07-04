@@ -1,0 +1,10 @@
+Font Awesome Free 6.x
+
+Icons — CC BY 4.0 License — https://creativecommons.org/licenses/by/4.0/
+Fonts — SIL OFL 1.1 License — https://scripts.sil.org/OFL
+Code — MIT License
+
+Copyright (c) Fonticons, Inc.
+
+The Font Awesome font files bundled in nest-icon are redistributed under the
+SIL Open Font License 1.1. See https://fontawesome.com/license/free for details.

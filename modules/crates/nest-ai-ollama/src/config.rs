@@ -10,6 +10,9 @@ pub const DEFAULT_BASE_URL: &str = "http://127.0.0.1:11434";
 /// Default model when none is specified on a request.
 pub const DEFAULT_MODEL: &str = "smollm2:360m";
 
+/// Default Ollama HTTP port.
+pub const DEFAULT_PORT: u16 = 11434;
+
 /// Resolved Ollama client configuration.
 #[derive(Debug, Clone)]
 pub struct OllamaConfig {
@@ -31,6 +34,29 @@ impl OllamaConfig {
     /// Creates configuration from defaults.
     pub fn default_local() -> Self {
         Self::new(DEFAULT_BASE_URL, DEFAULT_MODEL)
+    }
+
+    /// Builds a base URL from host and port.
+    pub fn base_url_from_host(host: &str, port: u16) -> String {
+        format!(
+            "http://{}:{}",
+            host.trim().trim_start_matches("http://").trim_start_matches("https://"),
+            port
+        )
+    }
+
+    /// Parses host and port from a base URL.
+    pub fn host_port_from_base_url(base_url: &str) -> (String, u16) {
+        let trimmed = base_url.trim().trim_end_matches('/');
+        let without_scheme = trimmed
+            .strip_prefix("http://")
+            .or_else(|| trimmed.strip_prefix("https://"))
+            .unwrap_or(trimmed);
+
+        match without_scheme.split_once(':') {
+            Some((host, port)) => (host.to_string(), port.parse().unwrap_or(DEFAULT_PORT)),
+            None => (without_scheme.to_string(), DEFAULT_PORT),
+        }
     }
 
     /// Loads `[ai]` or `[ollama]` section from a config service.
@@ -70,15 +96,30 @@ pub struct AiSection {
     /// Default model id.
     #[serde(default = "default_model")]
     pub model: String,
+    /// Agent host (IP or hostname). When set, overrides `base_url` host/port.
+    pub host: Option<String>,
+    /// Agent HTTP port.
+    #[serde(default = "default_port")]
+    pub port: u16,
+    /// Available model ids for the agent.
+    #[serde(default)]
+    pub models: Vec<String>,
 }
 
 #[cfg(feature = "config")]
 impl AiSection {
-    fn into_config(self) -> OllamaConfig {
-        if self.provider != "ollama" {
-            return OllamaConfig::new(self.base_url, self.model);
+    /// Resolves the effective Ollama HTTP base URL.
+    pub fn resolved_base_url(&self) -> String {
+        if let Some(host) = &self.host {
+            if !host.trim().is_empty() {
+                return OllamaConfig::base_url_from_host(host, self.port);
+            }
         }
-        OllamaConfig::new(self.base_url, self.model)
+        trim_trailing_slash(self.base_url.clone())
+    }
+
+    fn into_config(self) -> OllamaConfig {
+        OllamaConfig::new(self.resolved_base_url(), self.model)
     }
 }
 
@@ -117,6 +158,10 @@ fn default_base_url() -> String {
 
 fn default_model() -> String {
     DEFAULT_MODEL.into()
+}
+
+fn default_port() -> u16 {
+    DEFAULT_PORT
 }
 
 fn trim_trailing_slash(value: String) -> String {

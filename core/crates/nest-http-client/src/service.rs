@@ -1,7 +1,11 @@
 //! Async HTTP client service.
 
-use std::time::Instant;
+use std::pin::Pin;
+use std::time::{Duration, Instant};
 
+use bytes::Bytes;
+use futures_util::Stream;
+use futures_util::StreamExt;
 use nest_error::NestResult;
 use nest_http::{HttpError, HttpRequest, HttpResponse, RetryPolicy};
 use serde::de::DeserializeOwned;
@@ -14,12 +18,16 @@ use crate::adapter::{
 use crate::config::HttpClientConfig;
 use crate::http_error_to_nest_error;
 
+/// Byte stream returned from [`HttpClientService::post_json_stream`].
+pub type ByteStream = Pin<Box<dyn Stream<Item = NestResult<Bytes>> + Send>>;
+
 /// Async HTTP client registered via [`crate::HttpClientModule`].
 ///
 /// Provides futures only — the host must run a Tokio runtime to `.await` calls.
 #[derive(Clone)]
 pub struct HttpClientService {
     client: reqwest::Client,
+    stream_client: reqwest::Client,
     config: HttpClientConfig,
 }
 
@@ -38,7 +46,20 @@ impl HttpClientService {
             nest_error::NestError::network(error.to_string()).with_source(error)
         })?;
 
-        Ok(Self { client, config })
+        let mut stream_builder =
+            reqwest::Client::builder().connect_timeout(config.default_timeout.connect);
+        if let Some(user_agent) = &config.user_agent {
+            stream_builder = stream_builder.user_agent(user_agent);
+        }
+        let stream_client = stream_builder.build().map_err(|error| {
+            nest_error::NestError::network(error.to_string()).with_source(error)
+        })?;
+
+        Ok(Self {
+            client,
+            stream_client,
+            config,
+        })
     }
 
     /// Sends a GET request and decodes JSON.
@@ -66,6 +87,60 @@ impl HttpClientService {
             .with_body(json);
         let response = self.send(request).await?;
         self.decode_json(&response, url)
+    }
+
+    /// Sends a POST request with a JSON body and returns the response body stream.
+    ///
+    /// Streaming requests disable the per-request timeout so long-lived SSE/NDJSON
+    /// responses are not cut off prematurely.
+    pub async fn post_json_stream<B>(&self, url: &str, body: &B) -> NestResult<ByteStream>
+    where
+        B: Serialize,
+    {
+        let json = serde_json::to_vec(body).map_err(|error| {
+            http_error_to_nest_error(HttpError::decode(format!(
+                "failed to encode request body: {error}"
+            )))
+        })?;
+        let mut request = HttpRequest::post(url)
+            .with_header("content-type", "application/json")
+            .with_body(json);
+
+        if let Some(auth) = &self.config.auth {
+            auth.apply(&mut request).map_err(http_error_to_nest_error)?;
+        }
+
+        self.post_stream_request(request, url).await
+    }
+
+    async fn post_stream_request(
+        &self,
+        request: HttpRequest,
+        url: &str,
+    ) -> NestResult<ByteStream> {
+        let builder = build_reqwest_request(
+            &self.stream_client,
+            request,
+            &self.config.default_headers,
+        )
+        .map_err(|error| http_error_to_nest_error(error.with_url(url)))?;
+
+        let response = builder
+            .timeout(Duration::from_secs(3600))
+            .send()
+            .await
+            .map_err(|error| http_error_to_nest_error(map_reqwest_error(error).with_url(url)))?
+            .error_for_status()
+            .map_err(|error| http_error_to_nest_error(map_reqwest_error(error).with_url(url)))?;
+
+        let owned_url = url.to_string();
+        let stream = response.bytes_stream().map(move |chunk| {
+            chunk.map_err(|error| {
+                http_error_to_nest_error(map_reqwest_error(error).with_url(&owned_url))
+            })
+        });
+
+        Ok(Box::pin(stream))
     }
 
     /// Sends an HTTP request with optional retry and auth.

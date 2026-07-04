@@ -18,11 +18,15 @@ members = [
     "core/crates/nest-http-serve",
     "core/crates/nest-media",
     "core/crates/nest-ai",
+    "core/crates/nest-mcp",
+    "core/crates/nest-agent",
     "core/crates/nest-data",
     "core/crates/nest-cache",
     "core/crates/nest-validation",
     "core/crates/nest-design",
     "core/crates/nest-theme",
+    "core/crates/nest-icon",
+    "core/crates/nest-image",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
     "modules/crates/nest-media-library",
@@ -53,10 +57,14 @@ nest-http-client = { path = "core/crates/nest-http-client" }
 nest-http-serve = { path = "core/crates/nest-http-serve" }
 nest-media = { path = "core/crates/nest-media" }
 nest-ai = { path = "core/crates/nest-ai" }
+nest-mcp = { path = "core/crates/nest-mcp" }
+nest-agent = { path = "core/crates/nest-agent" }
 nest-logging = { path = "core/crates/nest-logging" }
 nest-task = { path = "core/crates/nest-task" }
 nest-task-runtime = { path = "core/crates/nest-task-runtime" }
 nest-theme = { path = "core/crates/nest-theme" }
+nest-icon = { path = "core/crates/nest-icon" }
+nest-image = { path = "core/crates/nest-image" }
 nest-validation = { path = "core/crates/nest-validation" }
 nest-airtable = { path = "modules/crates/nest-airtable" }
 nest-data-sqlite = { path = "modules/crates/nest-data-sqlite" }

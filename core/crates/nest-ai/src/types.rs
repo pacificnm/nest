@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::tools::{ToolCall, ToolDefinition};
+
 /// Chat role for multi-turn prompts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -12,15 +14,24 @@ pub enum ChatRole {
     User,
     /// Model output.
     Assistant,
+    /// Tool execution result returned to the model.
+    Tool,
 }
 
 /// One chat message.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatMessage {
     /// Message role.
     pub role: ChatRole,
     /// Message text.
+    #[serde(default)]
     pub content: String,
+    /// Tool name when [`ChatRole::Tool`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_name: Option<String>,
+    /// Tool invocations when [`ChatRole::Assistant`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<Vec<ToolCall>>,
 }
 
 impl ChatMessage {
@@ -29,6 +40,8 @@ impl ChatMessage {
         Self {
             role: ChatRole::System,
             content: content.into(),
+            tool_name: None,
+            tool_calls: None,
         }
     }
 
@@ -37,6 +50,8 @@ impl ChatMessage {
         Self {
             role: ChatRole::User,
             content: content.into(),
+            tool_name: None,
+            tool_calls: None,
         }
     }
 
@@ -45,7 +60,36 @@ impl ChatMessage {
         Self {
             role: ChatRole::Assistant,
             content: content.into(),
+            tool_name: None,
+            tool_calls: None,
         }
+    }
+
+    /// Creates an assistant message that requests tool calls.
+    pub fn assistant_tool_calls(tool_calls: Vec<ToolCall>) -> Self {
+        Self {
+            role: ChatRole::Assistant,
+            content: String::new(),
+            tool_name: None,
+            tool_calls: Some(tool_calls),
+        }
+    }
+
+    /// Creates a tool result message.
+    pub fn tool_result(name: impl Into<String>, content: impl Into<String>) -> Self {
+        Self {
+            role: ChatRole::Tool,
+            content: content.into(),
+            tool_name: Some(name.into()),
+            tool_calls: None,
+        }
+    }
+
+    /// Returns true when the assistant requested one or more tools.
+    pub fn has_tool_calls(&self) -> bool {
+        self.tool_calls
+            .as_ref()
+            .is_some_and(|calls| !calls.is_empty())
     }
 }
 
@@ -60,7 +104,7 @@ pub enum ResponseFormat {
 }
 
 /// Provider-agnostic completion request.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompletionRequest {
     /// Model id; providers use their default when omitted.
     pub model: Option<String>,
@@ -68,6 +112,9 @@ pub struct CompletionRequest {
     pub messages: Vec<ChatMessage>,
     /// Optional response format hint.
     pub format: Option<ResponseFormat>,
+    /// Tool definitions available to the model.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tools: Vec<ToolDefinition>,
 }
 
 impl CompletionRequest {
@@ -77,6 +124,7 @@ impl CompletionRequest {
             model: None,
             messages: vec![ChatMessage::user(content)],
             format: None,
+            tools: Vec::new(),
         }
     }
 
@@ -91,10 +139,16 @@ impl CompletionRequest {
         self.format = Some(ResponseFormat::Json);
         self
     }
+
+    /// Attaches tool definitions to the request.
+    pub fn with_tools(mut self, tools: Vec<ToolDefinition>) -> Self {
+        self.tools = tools;
+        self
+    }
 }
 
 /// Provider-agnostic completion response.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompletionResponse {
     /// Model that produced the response.
     pub model: String,
@@ -102,4 +156,14 @@ pub struct CompletionResponse {
     pub content: String,
     /// Whether the provider marked the response complete.
     pub done: bool,
+    /// Tool calls requested by the assistant, if any.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tool_calls: Vec<ToolCall>,
+}
+
+impl CompletionResponse {
+    /// Returns true when the model requested tool invocations.
+    pub fn has_tool_calls(&self) -> bool {
+        !self.tool_calls.is_empty()
+    }
 }

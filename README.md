@@ -125,6 +125,7 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-design** | Design token schema and built-in theme definitions (no runtime or UI deps). | [docs](docs/nest-design/README.md) |
 | **nest-theme** | Runtime theme loading, validation, and `ThemeService` lifecycle. | [docs](docs/nest-theme/README.md) |
+| **nest-icon** | Font Awesome icon fonts and egui widgets (`Icon`, `IconButton`, `IconModule`). | [docs](docs/nest-icon/README.md) |
 
 ### Validation
 
