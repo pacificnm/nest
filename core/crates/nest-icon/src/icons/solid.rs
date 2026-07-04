@@ -60,6 +60,10 @@ pub const ARROW_LEFT: char = '\u{f060}';
 pub const ARROW_RIGHT: char = '\u{f061}';
 /// `arrow-rotate-right` — solid refresh / scan.
 pub const ARROW_ROTATE_RIGHT: char = '\u{f01e}';
+/// `chevron-up` — solid chevron pointing up.
+pub const CHEVRON_UP: char = '\u{f077}';
+/// `chevron-down` — solid chevron pointing down.
+pub const CHEVRON_DOWN: char = '\u{f078}';
 /// `circle-info` — solid info circle.
 pub const CIRCLE_INFO: char = '\u{f05a}';
 /// `circle-exclamation` — solid warning circle.

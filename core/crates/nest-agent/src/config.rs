@@ -21,6 +21,10 @@ pub struct AgentConfig {
     pub tool_timeout: Duration,
     /// Which tools may run without approval.
     pub auto_run_policy: AutoRunPolicy,
+    /// When true, `save_context_memory` may auto-run under [`AutoRunPolicy::ReadOnlyOnly`].
+    pub allow_save_context: bool,
+    /// When true, independent tool calls may run concurrently (different MCP servers).
+    pub parallel_tool_calls: bool,
 }
 
 impl Default for AgentConfig {
@@ -29,6 +33,8 @@ impl Default for AgentConfig {
             max_steps: 10,
             tool_timeout: Duration::from_secs(60),
             auto_run_policy: AutoRunPolicy::ReadOnlyOnly,
+            allow_save_context: false,
+            parallel_tool_calls: true,
         }
     }
 }
@@ -37,6 +43,12 @@ impl AgentConfig {
     /// Creates config with the given step cap.
     pub fn with_max_steps(mut self, max_steps: u32) -> Self {
         self.max_steps = max_steps;
+        self
+    }
+
+    /// Enables or disables auto-run for `save_context_memory`.
+    pub fn with_allow_save_context(mut self, allow: bool) -> Self {
+        self.allow_save_context = allow;
         self
     }
 }

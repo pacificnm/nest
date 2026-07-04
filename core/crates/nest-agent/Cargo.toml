@@ -9,6 +9,7 @@ description = "Tool-using agent loop for the Nest framework"
 
 [dependencies]
 async-trait = "0.1"
+futures-util = "0.3"
 nest-ai = { workspace = true }
 nest-error = { workspace = true }
 nest-mcp = { workspace = true }

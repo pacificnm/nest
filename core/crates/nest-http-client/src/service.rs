@@ -129,18 +129,24 @@ impl HttpClientService {
             .timeout(Duration::from_secs(3600))
             .send()
             .await
-            .map_err(|error| http_error_to_nest_error(map_reqwest_error(error).with_url(url)))?
-            .error_for_status()
             .map_err(|error| http_error_to_nest_error(map_reqwest_error(error).with_url(url)))?;
 
-        let owned_url = url.to_string();
-        let stream = response.bytes_stream().map(move |chunk| {
-            chunk.map_err(|error| {
-                http_error_to_nest_error(map_reqwest_error(error).with_url(&owned_url))
-            })
-        });
+        let status = response.status();
+        if status.is_success() {
+            let owned_url = url.to_string();
+            let stream = response.bytes_stream().map(move |chunk| {
+                chunk.map_err(|error| {
+                    http_error_to_nest_error(map_reqwest_error(error).with_url(&owned_url))
+                })
+            });
+            return Ok(Box::pin(stream));
+        }
 
-        Ok(Box::pin(stream))
+        let http_response = map_reqwest_response(response)
+            .await
+            .map_err(|error| http_error_to_nest_error(error.with_url(url)))?;
+        ensure_success(&http_response, url).map_err(http_error_to_nest_error)?;
+        unreachable!("ensure_success returns Err for non-success HTTP status")
     }
 
     /// Sends an HTTP request with optional retry and auth.

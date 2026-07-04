@@ -51,14 +51,21 @@ impl ToolRegistry {
 
     /// Resolves a model function name to the MCP qualified name (`server/tool`).
     pub fn qualified_name(&self, model_name: &str) -> Option<&str> {
-        self.model_to_qualified
-            .get(model_name)
-            .map(String::as_str)
+        if let Some(qualified) = self.model_to_qualified.get(model_name) {
+            return Some(qualified.as_str());
+        }
+        self.tools
+            .iter()
+            .find(|tool| tool.name == model_name)
+            .map(|tool| tool.qualified_name.as_str())
     }
 
     /// Returns MCP metadata for a model function name.
     pub fn mcp_tool(&self, model_name: &str) -> Option<&McpTool> {
-        self.model_to_mcp.get(model_name)
+        if let Some(tool) = self.model_to_mcp.get(model_name) {
+            return Some(tool);
+        }
+        self.tools.iter().find(|tool| tool.name == model_name)
     }
 }
 
@@ -93,6 +100,21 @@ mod tests {
         assert_eq!(
             registry.qualified_name("nest_memory__search_project_memory"),
             Some("nest-memory/search_project_memory")
+        );
+    }
+
+    #[test]
+    fn resolves_bare_mcp_tool_name() {
+        let registry = ToolRegistry::from_mcp_tools(vec![McpTool {
+            server: "nest-knowledge".into(),
+            name: "list_knowledge_collections".into(),
+            qualified_name: "nest-knowledge/list_knowledge_collections".into(),
+            description: "List".into(),
+            input_schema: json!({"type": "object"}),
+        }]);
+        assert_eq!(
+            registry.qualified_name("list_knowledge_collections"),
+            Some("nest-knowledge/list_knowledge_collections")
         );
     }
 }

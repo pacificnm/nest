@@ -13,13 +13,15 @@ mod policy;
 mod registry;
 mod runner;
 mod tools;
+mod validation;
 
 pub use cancel::CancelToken;
 pub use config::{AgentConfig, AutoRunPolicy};
 pub use event::AgentEvent;
 pub use registry::ToolRegistry;
 pub use runner::AgentLoop;
-pub use tools::ToolSource;
+pub use tools::{SharedMcpHub, ToolSource};
+pub use validation::{looks_like_schema_arguments, parse_tool_calls_from_content, validate_tool_arguments};
 
 pub use nest_error::{NestError, NestResult};
 

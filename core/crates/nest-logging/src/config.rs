@@ -1,16 +1,19 @@
 //! Logging configuration and builder.
 
 use std::collections::HashMap;
+use std::fmt;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::format::LogFormat;
 use crate::level::LogLevel;
 use crate::retention::RetentionPolicy;
 use crate::rotation::RotationPolicy;
 use crate::target::LogTarget;
+use crate::ui_buffer::LogBuffer;
 
 /// Configuration for nest-logging initialization.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct LoggingConfig {
     /// Application name used in log file prefixes.
     pub app_name: String,
@@ -32,6 +35,8 @@ pub struct LoggingConfig {
     pub capture_panics: bool,
     /// When true, `RUST_LOG` overrides configured module levels.
     pub env_override: bool,
+    /// Optional in-memory buffer for GUI log panels.
+    pub ui_buffer: Option<Arc<LogBuffer>>,
 }
 
 impl LoggingConfig {
@@ -48,6 +53,7 @@ impl LoggingConfig {
             rotation: RotationPolicy::default(),
             capture_panics: false,
             env_override: true,
+            ui_buffer: None,
         }
     }
 
@@ -119,6 +125,12 @@ impl LoggingConfig {
         self
     }
 
+    /// Captures filtered log events into an in-memory ring buffer for UI panels.
+    pub fn with_ui_buffer(mut self, buffer: Arc<LogBuffer>) -> Self {
+        self.ui_buffer = Some(buffer);
+        self
+    }
+
     /// Returns whether console output is enabled.
     pub fn has_console(&self) -> bool {
         self.targets.contains(&LogTarget::Console)
@@ -153,6 +165,24 @@ impl LoggingConfig {
     /// Sensible GUI defaults: file logging only (console deferred to future log viewer).
     pub fn for_gui(app_name: impl Into<String>) -> Self {
         Self::new(app_name).with_file("./logs")
+    }
+}
+
+impl fmt::Debug for LoggingConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LoggingConfig")
+            .field("app_name", &self.app_name)
+            .field("level", &self.level)
+            .field("module_levels", &self.module_levels)
+            .field("targets", &self.targets)
+            .field("format", &self.format)
+            .field("directory", &self.directory)
+            .field("retention", &self.retention)
+            .field("rotation", &self.rotation)
+            .field("capture_panics", &self.capture_panics)
+            .field("env_override", &self.env_override)
+            .field("ui_buffer", &self.ui_buffer.as_ref().map(|_| "LogBuffer"))
+            .finish()
     }
 }
 

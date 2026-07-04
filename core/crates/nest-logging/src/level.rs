@@ -30,6 +30,17 @@ impl LogLevel {
         }
     }
 
+    /// Maps a tracing level to the Nest log level.
+    pub fn from_tracing(level: tracing::Level) -> Self {
+        match level {
+            tracing::Level::TRACE => Self::Trace,
+            tracing::Level::DEBUG => Self::Debug,
+            tracing::Level::INFO => Self::Info,
+            tracing::Level::WARN => Self::Warn,
+            tracing::Level::ERROR => Self::Error,
+        }
+    }
+
     /// Returns the EnvFilter directive prefix for this level.
     pub fn directive(self) -> &'static str {
         match self {

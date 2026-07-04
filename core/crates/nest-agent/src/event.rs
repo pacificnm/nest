@@ -8,7 +8,7 @@ use serde_json::Value;
 /// Incremental agent loop events.
 #[derive(Debug, Clone)]
 pub enum AgentEvent {
-    /// Assistant text fragment (when streaming is added).
+    /// Assistant text fragment streamed from the model.
     TextDelta(String),
     /// A model step is starting.
     StepStarted {

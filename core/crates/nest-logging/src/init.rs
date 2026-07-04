@@ -5,6 +5,7 @@ use std::io;
 use std::sync::OnceLock;
 
 use nest_error::{NestError, NestResult};
+use tracing::Subscriber;
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use tracing_subscriber::layer::Layered;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
@@ -19,6 +20,7 @@ use crate::format::LogFormat;
 use crate::panic_hook::install_panic_hook;
 use crate::retention::cleanup_logs;
 use crate::rotation::{file_appender, validate_rotation};
+use crate::ui_buffer::ui_log_layer;
 
 static GLOBAL_GUARD: OnceLock<LoggingGuard> = OnceLock::new();
 
@@ -68,45 +70,49 @@ pub fn init_logging(config: LoggingConfig) -> NestResult<LoggingGuard> {
     let mut guards = Vec::new();
     let registry = Registry::default().with(env_filter);
 
+    if let Some(buffer) = config.ui_buffer.clone() {
+        crate::ui_buffer::install_ui_buffer(buffer);
+    }
+
     match (
         config.has_console(),
         config.has_file(),
         config.has_json_file(),
     ) {
-        (true, false, false) => init_console_only(registry, config.format),
+        (true, false, false) => init_console_only(registry, config.format, &config),
         (false, true, false) => {
             let (writer, guard) = text_file_writer(&config, &rotation)?;
             guards.push(guard);
-            init_file_only(registry, writer, config.format);
+            init_file_only(registry, writer, config.format, &config);
         }
         (false, false, true) => {
             let (writer, guard) = json_file_writer(&config, &rotation)?;
             guards.push(guard);
-            init_json_file_only(registry, writer);
+            init_json_file_only(registry, writer, &config);
         }
         (true, true, false) => {
             let (writer, guard) = text_file_writer(&config, &rotation)?;
             guards.push(guard);
-            init_console_and_file(registry, writer, config.format);
+            init_console_and_file(registry, writer, config.format, &config);
         }
         (true, false, true) => {
             let (writer, guard) = json_file_writer(&config, &rotation)?;
             guards.push(guard);
-            init_console_and_json(registry, writer, config.format);
+            init_console_and_json(registry, writer, config.format, &config);
         }
         (false, true, true) => {
             let (text, guard1) = text_file_writer(&config, &rotation)?;
             let (json, guard2) = json_file_writer(&config, &rotation)?;
             guards.push(guard1);
             guards.push(guard2);
-            init_text_and_json(registry, text, json);
+            init_text_and_json(registry, text, json, &config);
         }
         (true, true, true) => {
             let (text, guard1) = text_file_writer(&config, &rotation)?;
             let (json, guard2) = json_file_writer(&config, &rotation)?;
             guards.push(guard1);
             guards.push(guard2);
-            init_console_text_and_json(registry, text, json, config.format);
+            init_console_text_and_json(registry, text, json, config.format, &config);
         }
         (false, false, false) => {
             return Err(
@@ -164,109 +170,141 @@ fn json_file_writer(
     Ok(tracing_appender::non_blocking(appender))
 }
 
-fn init_console_only(registry: FilteredRegistry, format: LogFormat) {
+fn finish_init<S>(subscriber: S, config: &LoggingConfig)
+where
+    S: Subscriber + Send + Sync + 'static,
+{
+    if let Some(buffer) = config.ui_buffer.clone() {
+        subscriber.with(ui_log_layer(buffer)).init();
+    } else {
+        subscriber.init();
+    }
+}
+
+fn init_console_only(registry: FilteredRegistry, format: LogFormat, config: &LoggingConfig) {
     match format {
-        LogFormat::Pretty => registry
-            .with(
+        LogFormat::Pretty => finish_init(
+            registry.with(
                 fmt::layer()
                     .pretty()
                     .with_writer(io::stdout)
                     .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Compact => registry
-            .with(
+            ),
+            config,
+        ),
+        LogFormat::Compact => finish_init(
+            registry.with(
                 fmt::layer()
                     .compact()
                     .with_writer(io::stdout)
                     .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Json => registry
-            .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false))
-            .init(),
+            ),
+            config,
+        ),
+        LogFormat::Json => finish_init(
+            registry.with(fmt::layer().json().with_writer(io::stdout).with_ansi(false)),
+            config,
+        ),
     }
 }
 
-fn init_file_only(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat) {
+fn init_file_only(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
     match format {
-        LogFormat::Pretty => registry
-            .with(fmt::layer().pretty().with_writer(writer).with_ansi(false))
-            .init(),
-        LogFormat::Compact => registry
-            .with(fmt::layer().compact().with_writer(writer).with_ansi(false))
-            .init(),
-        LogFormat::Json => registry
-            .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-            .init(),
+        LogFormat::Pretty => finish_init(
+            registry.with(fmt::layer().pretty().with_writer(writer).with_ansi(false)),
+            config,
+        ),
+        LogFormat::Compact => finish_init(
+            registry.with(fmt::layer().compact().with_writer(writer).with_ansi(false)),
+            config,
+        ),
+        LogFormat::Json => finish_init(
+            registry.with(fmt::layer().json().with_writer(writer).with_ansi(false)),
+            config,
+        ),
     }
 }
 
-fn init_json_file_only(registry: FilteredRegistry, writer: NonBlocking) {
-    registry
-        .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-        .init();
+fn init_json_file_only(registry: FilteredRegistry, writer: NonBlocking, config: &LoggingConfig) {
+    finish_init(
+        registry.with(fmt::layer().json().with_writer(writer).with_ansi(false)),
+        config,
+    );
 }
 
-fn init_console_and_file(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat) {
+fn init_console_and_file(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
     match format {
-        LogFormat::Pretty => registry
-            .with(fmt::layer().pretty().with_writer(writer).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .pretty()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Compact => registry
-            .with(fmt::layer().compact().with_writer(writer).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .compact()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Json => registry
-            .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-            .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false))
-            .init(),
+        LogFormat::Pretty => finish_init(
+            registry
+                .with(fmt::layer().pretty().with_writer(writer).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .pretty()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Compact => finish_init(
+            registry
+                .with(fmt::layer().compact().with_writer(writer).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .compact()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Json => finish_init(
+            registry
+                .with(fmt::layer().json().with_writer(writer).with_ansi(false))
+                .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false)),
+            config,
+        ),
     }
 }
 
-fn init_console_and_json(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat) {
+fn init_console_and_json(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
     match format {
-        LogFormat::Pretty => registry
-            .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .pretty()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Compact => registry
-            .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .compact()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Json => registry
-            .with(fmt::layer().json().with_writer(writer).with_ansi(false))
-            .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false))
-            .init(),
+        LogFormat::Pretty => finish_init(
+            registry
+                .with(fmt::layer().json().with_writer(writer).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .pretty()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Compact => finish_init(
+            registry
+                .with(fmt::layer().json().with_writer(writer).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .compact()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Json => finish_init(
+            registry
+                .with(fmt::layer().json().with_writer(writer).with_ansi(false))
+                .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false)),
+            config,
+        ),
     }
 }
 
-fn init_text_and_json(registry: FilteredRegistry, text: NonBlocking, json: NonBlocking) {
-    registry
-        .with(fmt::layer().pretty().with_writer(text).with_ansi(false))
-        .with(fmt::layer().json().with_writer(json).with_ansi(false))
-        .init();
+fn init_text_and_json(registry: FilteredRegistry, text: NonBlocking, json: NonBlocking, config: &LoggingConfig) {
+    finish_init(
+        registry
+            .with(fmt::layer().pretty().with_writer(text).with_ansi(false))
+            .with(fmt::layer().json().with_writer(json).with_ansi(false)),
+        config,
+    );
 }
 
 fn init_console_text_and_json(
@@ -274,33 +312,40 @@ fn init_console_text_and_json(
     text: NonBlocking,
     json: NonBlocking,
     format: LogFormat,
+    config: &LoggingConfig,
 ) {
     match format {
-        LogFormat::Pretty => registry
-            .with(fmt::layer().pretty().with_writer(text).with_ansi(false))
-            .with(fmt::layer().json().with_writer(json).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .pretty()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Compact => registry
-            .with(fmt::layer().compact().with_writer(text).with_ansi(false))
-            .with(fmt::layer().json().with_writer(json).with_ansi(false))
-            .with(
-                fmt::layer()
-                    .compact()
-                    .with_writer(io::stdout)
-                    .with_ansi(true),
-            )
-            .init(),
-        LogFormat::Json => registry
-            .with(fmt::layer().json().with_writer(text).with_ansi(false))
-            .with(fmt::layer().json().with_writer(json).with_ansi(false))
-            .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false))
-            .init(),
+        LogFormat::Pretty => finish_init(
+            registry
+                .with(fmt::layer().pretty().with_writer(text).with_ansi(false))
+                .with(fmt::layer().json().with_writer(json).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .pretty()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Compact => finish_init(
+            registry
+                .with(fmt::layer().compact().with_writer(text).with_ansi(false))
+                .with(fmt::layer().json().with_writer(json).with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .compact()
+                        .with_writer(io::stdout)
+                        .with_ansi(true),
+                ),
+            config,
+        ),
+        LogFormat::Json => finish_init(
+            registry
+                .with(fmt::layer().json().with_writer(text).with_ansi(false))
+                .with(fmt::layer().json().with_writer(json).with_ansi(false))
+                .with(fmt::layer().json().with_writer(io::stdout).with_ansi(false)),
+            config,
+        ),
     }
 }
 

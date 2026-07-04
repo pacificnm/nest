@@ -2,7 +2,8 @@
 
 use std::time::Instant;
 
-use nest_ai::{AiService, ChatMessage, CompletionRequest, ToolCall};
+use futures_util::StreamExt;
+use nest_ai::{merge_tool_calls, AiService, ChatMessage, ChatRole, CompletionRequest, ToolCall};
 use tokio::sync::mpsc;
 use tracing::debug;
 
@@ -11,7 +12,8 @@ use crate::config::AgentConfig;
 use crate::event::AgentEvent;
 use crate::policy::may_auto_run;
 use crate::registry::ToolRegistry;
-use crate::tools::ToolSource;
+use crate::tools::{SharedMcpHub, ToolSource};
+use crate::validation::{parse_tool_calls_from_content, validate_tool_arguments};
 use crate::{ai_to_nest, NestResult};
 
 /// Orchestrates LLM completions with MCP tool execution.
@@ -36,8 +38,20 @@ impl AgentLoop {
         cancel: CancelToken,
     ) -> NestResult<()> {
         let mcp_tools = tools.list_tools().await?;
-        let registry = ToolRegistry::from_mcp_tools(mcp_tools);
-        ensure_system_prompt(&mut messages, registry.tools().len());
+        let attached_files = has_attached_files(&messages);
+        let search_with_attachments = attached_files
+            && latest_user_message_requests_external_search(&messages);
+        let exposed_tools: Vec<_> = if attached_files && !search_with_attachments {
+            // File contents are already in the user message; tools distract weak models.
+            Vec::new()
+        } else {
+            mcp_tools
+                .into_iter()
+                .filter(|tool| may_auto_run(&self.config, tool))
+                .collect()
+        };
+        let registry = ToolRegistry::from_mcp_tools(exposed_tools);
+        ensure_system_prompt(&mut messages, registry.tools().len(), attached_files);
 
         for step in 1..=self.config.max_steps {
             if cancel.is_cancelled() {
@@ -56,48 +70,34 @@ impl AgentLoop {
                 tools: registry.definitions(),
             };
 
-            let response = self.ai.complete(request).await.map_err(ai_to_nest)?;
+            let (content, tool_calls, metrics) = self
+                .complete_step(&request, &tx, &cancel)
+                .await?;
 
-            if !response.content.is_empty() {
-                let _ = tx
-                    .send(AgentEvent::TextDelta(response.content.clone()))
-                    .await;
-            }
-
-            if response.tool_calls.is_empty() {
+            if tool_calls.is_empty() {
                 let _ = tx
                     .send(AgentEvent::Finished {
-                        metrics: response.metrics,
-                        content: response.content,
+                        metrics,
+                        content,
                     })
                     .await;
                 return Ok(());
             }
 
-            let assistant = if response.content.is_empty() {
-                ChatMessage::assistant_tool_calls(response.tool_calls.clone())
+            let assistant = if content.is_empty() {
+                ChatMessage::assistant_tool_calls(tool_calls.clone())
             } else {
-                let mut message = ChatMessage::assistant(&response.content);
-                message.tool_calls = Some(response.tool_calls.clone());
+                let mut message = ChatMessage::assistant(&content);
+                message.tool_calls = Some(tool_calls.clone());
                 message
             };
             messages.push(assistant);
 
-            for call in response.tool_calls {
-                if cancel.is_cancelled() {
-                    let _ = tx
-                        .send(AgentEvent::Failed("agent run cancelled".into()))
-                        .await;
-                    return Ok(());
-                }
-
-                match self.run_tool_call(tools, &registry, &call, &tx).await {
-                    Ok(result) => messages.push(ChatMessage::tool_result(&call.name, result)),
-                    Err(error) => {
-                        let _ = tx.send(AgentEvent::Failed(error.to_string())).await;
-                        return Ok(());
-                    }
-                }
+            let tool_results = self
+                .execute_tool_calls(tools, &registry, tool_calls, &tx, &cancel)
+                .await;
+            for (call, result) in tool_results {
+                messages.push(ChatMessage::tool_result(&call.name, result));
             }
         }
 
@@ -108,6 +108,140 @@ impl AgentLoop {
             )))
             .await;
         Ok(())
+    }
+
+    async fn complete_step(
+        &self,
+        request: &CompletionRequest,
+        tx: &mpsc::Sender<AgentEvent>,
+        cancel: &CancelToken,
+    ) -> NestResult<(String, Vec<ToolCall>, Option<nest_ai::CompletionMetrics>)> {
+        if let Ok(mut stream) = self.ai.stream_complete(request.clone()).await {
+            let mut content = String::new();
+            let mut tool_calls = Vec::new();
+            let mut metrics = None;
+
+            while let Some(chunk) = stream.next().await {
+                if cancel.is_cancelled() {
+                    return Err(nest_error::NestError::network("agent run cancelled")
+                        .with_module("nest-agent"));
+                }
+                match chunk {
+                    Ok(chunk) => {
+                        if !chunk.content_delta.is_empty() {
+                            content.push_str(&chunk.content_delta);
+                            let _ = tx
+                                .send(AgentEvent::TextDelta(chunk.content_delta))
+                                .await;
+                        }
+                        if !chunk.tool_calls.is_empty() {
+                            merge_tool_calls(&mut tool_calls, &chunk.tool_calls);
+                        }
+                        if chunk.metrics.is_some() {
+                            metrics = chunk.metrics;
+                        }
+                        if chunk.done {
+                            break;
+                        }
+                    }
+                    Err(error) => return Err(ai_to_nest(error)),
+                }
+            }
+
+            if tool_calls.is_empty() {
+                if let Some(parsed) = parse_tool_calls_from_content(&content) {
+                    tool_calls = parsed;
+                    content.clear();
+                }
+            }
+
+            return Ok((content, tool_calls, metrics));
+        }
+
+        let response = self
+            .ai
+            .complete(request.clone())
+            .await
+            .map_err(ai_to_nest)?;
+
+        let mut content = response.content;
+        let mut tool_calls = response.tool_calls;
+        if tool_calls.is_empty() {
+            if let Some(parsed) = parse_tool_calls_from_content(&content) {
+                tool_calls = parsed;
+                content.clear();
+            }
+        }
+
+        if !content.is_empty() {
+            let _ = tx.send(AgentEvent::TextDelta(content.clone())).await;
+        }
+
+        Ok((content, tool_calls, response.metrics))
+    }
+
+    async fn execute_tool_calls(
+        &self,
+        tools: &mut dyn ToolSource,
+        registry: &ToolRegistry,
+        tool_calls: Vec<ToolCall>,
+        tx: &mpsc::Sender<AgentEvent>,
+        cancel: &CancelToken,
+    ) -> Vec<(ToolCall, String)> {
+        if cancel.is_cancelled() {
+            return Vec::new();
+        }
+
+        if self.config.parallel_tool_calls && tool_calls.len() > 1 {
+            if let Some(shared) = tools.shared() {
+                return self
+                    .run_tool_calls_parallel(shared, registry, tool_calls, tx.clone())
+                    .await;
+            }
+        }
+
+        let mut results = Vec::new();
+        for call in tool_calls {
+            if cancel.is_cancelled() {
+                break;
+            }
+            let result = match self.run_tool_call(tools, registry, &call, tx).await {
+                Ok(text) => text,
+                Err(error) => format!("Tool error: {error}"),
+            };
+            results.push((call, result));
+        }
+        results
+    }
+
+    async fn run_tool_calls_parallel(
+        &self,
+        hub: SharedMcpHub,
+        registry: &ToolRegistry,
+        tool_calls: Vec<ToolCall>,
+        tx: mpsc::Sender<AgentEvent>,
+    ) -> Vec<(ToolCall, String)> {
+        let config = self.config.clone();
+        let registry = registry.clone();
+        let mut handles = Vec::new();
+
+        for call in tool_calls {
+            let hub = hub.clone();
+            let registry = registry.clone();
+            let tx = tx.clone();
+            let config = config.clone();
+            handles.push(tokio::spawn(async move {
+                parallel_tool_call(&config, hub, &registry, call, tx).await
+            }));
+        }
+
+        let mut results = Vec::new();
+        for handle in handles {
+            if let Ok(pair) = handle.await {
+                results.push(pair);
+            }
+        }
+        results
     }
 
     async fn run_tool_call(
@@ -124,33 +258,25 @@ impl AgentLoop {
             })
             .await;
 
-        let Some(mcp_tool) = registry.mcp_tool(&call.name) else {
+        let Some(_mcp_tool) = registry.mcp_tool(&call.name) else {
+            let error = format!("unknown tool: {}", call.name);
             let _ = tx
                 .send(AgentEvent::ToolCallFailed {
                     tool: call.name.clone(),
-                    error: format!("unknown tool: {}", call.name),
+                    error: error.clone(),
                 })
                 .await;
-            return Err(
-                nest_error::NestError::network(format!("unknown tool: {}", call.name))
-                    .with_module("nest-agent"),
-            );
+            return Err(nest_error::NestError::network(error).with_module("nest-agent"));
         };
 
-        if !may_auto_run(self.config.auto_run_policy, mcp_tool) {
+        if let Err(error) = validate_tool_arguments(&call.arguments) {
             let _ = tx
                 .send(AgentEvent::ToolCallFailed {
                     tool: call.name.clone(),
-                    error: "tool requires approval".into(),
+                    error: error.clone(),
                 })
                 .await;
-            return Err(
-                nest_error::NestError::network(format!(
-                    "tool {} requires approval",
-                    call.name
-                ))
-                .with_module("nest-agent"),
-            );
+            return Err(nest_error::NestError::network(error).with_module("nest-agent"));
         }
 
         let qualified = registry
@@ -168,10 +294,11 @@ impl AgentLoop {
         {
             Ok(Ok(text)) => text,
             Ok(Err(error)) => {
+                let message = error.to_string();
                 let _ = tx
                     .send(AgentEvent::ToolCallFailed {
                         tool: call.name.clone(),
-                        error: error.to_string(),
+                        error: message.clone(),
                     })
                     .await;
                 return Err(error);
@@ -202,22 +329,146 @@ impl AgentLoop {
     }
 }
 
-fn ensure_system_prompt(messages: &mut Vec<ChatMessage>, tool_count: usize) {
+async fn parallel_tool_call(
+    config: &AgentConfig,
+    hub: SharedMcpHub,
+    registry: &ToolRegistry,
+    call: ToolCall,
+    tx: mpsc::Sender<AgentEvent>,
+) -> (ToolCall, String) {
+    let _ = tx
+        .send(AgentEvent::ToolCallStarted {
+            tool: call.name.clone(),
+            arguments: call.arguments.clone(),
+        })
+        .await;
+
+    let Some(_mcp_tool) = registry.mcp_tool(&call.name) else {
+        let error = format!("unknown tool: {}", call.name);
+        let _ = tx
+            .send(AgentEvent::ToolCallFailed {
+                tool: call.name.clone(),
+                error: error.clone(),
+            })
+            .await;
+        return (call, format!("Tool error: {error}"));
+    };
+
+    if let Err(error) = validate_tool_arguments(&call.arguments) {
+        let _ = tx
+            .send(AgentEvent::ToolCallFailed {
+                tool: call.name.clone(),
+                error: error.clone(),
+            })
+            .await;
+        return (call, format!("Tool error: {error}"));
+    }
+
+    let qualified = registry
+        .qualified_name(&call.name)
+        .expect("tool exists in registry")
+        .to_string();
+
+    debug!(tool = %call.name, qualified = %qualified, "executing MCP tool (parallel)");
+    let started = Instant::now();
+    let mut tools = hub;
+    let outcome = match tokio::time::timeout(
+        config.tool_timeout,
+        tools.call_tool(&qualified, call.arguments.clone()),
+    )
+    .await
+    {
+        Ok(Ok(text)) => Ok(text),
+        Ok(Err(error)) => Err(error.to_string()),
+        Err(_) => Err(format!("tool {} timed out", call.name)),
+    };
+
+    match outcome {
+        Ok(text) => {
+            let _ = tx
+                .send(AgentEvent::ToolCallFinished {
+                    tool: call.name.clone(),
+                    result: truncate_preview(&text),
+                    duration: started.elapsed(),
+                })
+                .await;
+            (call, text)
+        }
+        Err(error) => {
+            let _ = tx
+                .send(AgentEvent::ToolCallFailed {
+                    tool: call.name.clone(),
+                    error: error.clone(),
+                })
+                .await;
+            (call, format!("Tool error: {error}"))
+        }
+    }
+}
+
+fn has_attached_files(messages: &[ChatMessage]) -> bool {
+    messages
+        .iter()
+        .any(|message| message.content.contains("<file path="))
+}
+
+fn latest_user_message_requests_external_search(messages: &[ChatMessage]) -> bool {
+    let Some(message) = messages
+        .iter()
+        .rev()
+        .find(|message| message.role == ChatRole::User)
+    else {
+        return false;
+    };
+
+    let lower = message.content.to_ascii_lowercase();
+    [
+        "search project",
+        "search memory",
+        "project memory",
+        "knowledge base",
+        "search_knowledge",
+        "search_project",
+        "look up in the repo",
+        "find in the repo",
+        "find in project",
+    ]
+    .iter()
+    .any(|phrase| lower.contains(phrase))
+}
+
+fn ensure_system_prompt(messages: &mut Vec<ChatMessage>, tool_count: usize, attached_files: bool) {
     if messages
         .first()
-        .is_some_and(|message| message.role == nest_ai::ChatRole::System)
+        .is_some_and(|message| message.role == ChatRole::System)
     {
         return;
     }
 
-    messages.insert(
-        0,
-        ChatMessage::system(format!(
-            "You are Kiwi, a coding assistant with access to {tool_count} tools. \
-             Call tools to gather information when needed. You may call tools multiple times. \
-             When you have enough context, reply with a clear final answer."
-        )),
-    );
+    let prompt = if attached_files && tool_count == 0 {
+        "You are Kiwi, a coding assistant. The user's message includes attached file contents \
+         inside <file path=\"...\">...</file> blocks. Read and answer from those attachments \
+         directly. Do not call tools or claim you cannot access the files."
+            .to_string()
+    } else if attached_files {
+        format!(
+            "You are Kiwi, a coding assistant with access to {tool_count} read/search tools. \
+             The user's message includes attached file contents in <file path=\"...\"> blocks — \
+             read those first. Only call tools when the user explicitly asks to search project \
+             memory or the knowledge base beyond what is attached. Use structured tool calls with \
+             concrete argument values, never JSON Schema fragments. When you have enough context, \
+             reply with a clear final answer in plain text."
+        )
+    } else {
+        format!(
+            "You are Kiwi, a coding assistant with access to {tool_count} read/search tools. \
+             Use structured tool calls with concrete argument values (strings, numbers), \
+             never JSON Schema fragments. When you have enough context, reply with a clear final \
+             answer in plain text."
+        )
+    };
+
+    messages.insert(0, ChatMessage::system(prompt));
 }
 
 fn truncate_preview(text: &str) -> String {
@@ -363,23 +614,32 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn agent_blocks_unapproved_tools() {
+    async fn agent_excludes_unapproved_tools_from_registry() {
         let ai = AiService::new(Arc::new(MockAi {
-            responses: Mutex::new(vec![CompletionResponse {
-                model: "mock".into(),
-                content: String::new(),
-                done: true,
-                tool_calls: vec![ToolCall::new(
-                    "nest_context_memory__save_context_memory",
-                    json!({"content": "x"}),
-                )],
-                metrics: None,
-            }]),
+            responses: Mutex::new(vec![
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: String::new(),
+                    done: true,
+                    tool_calls: vec![ToolCall::new(
+                        "nest_context_memory__save_context_memory",
+                        json!({"content": "x"}),
+                    )],
+                    metrics: None,
+                },
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: "done".into(),
+                    done: true,
+                    tool_calls: vec![],
+                    metrics: None,
+                },
+            ]),
         }));
 
         let (tx, mut rx) = mpsc::channel(8);
         let mut tools = MockTools {
-            tools: vec![save_tool()],
+            tools: vec![search_tool(), save_tool()],
             calls: vec![],
         };
 
@@ -394,20 +654,161 @@ mod tests {
             .await
             .unwrap();
 
-        let mut failed = false;
-        let mut policy_block = false;
+        let mut unknown_tool = false;
+        let mut finished = false;
         while let Ok(event) = rx.try_recv() {
             match event {
-                AgentEvent::ToolCallFailed { error, .. } if error.contains("approval") => {
-                    policy_block = true;
+                AgentEvent::ToolCallFailed { error, .. } if error.contains("unknown tool") => {
+                    unknown_tool = true;
                 }
-                AgentEvent::Failed(_) => failed = true,
+                AgentEvent::Finished { .. } => finished = true,
                 _ => {}
             }
         }
-        assert!(policy_block);
-        assert!(failed);
+        assert!(unknown_tool);
+        assert!(finished);
         assert!(tools.calls.is_empty());
+    }
+
+    #[tokio::test]
+    async fn agent_recovers_from_invalid_schema_arguments() {
+        let ai = AiService::new(Arc::new(MockAi {
+            responses: Mutex::new(vec![
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: String::new(),
+                    done: true,
+                    tool_calls: vec![ToolCall::new(
+                        "nest_memory__search_project_memory",
+                        json!({"query": {"type": "string"}}),
+                    )],
+                    metrics: None,
+                },
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: "answer".into(),
+                    done: true,
+                    tool_calls: vec![],
+                    metrics: None,
+                },
+            ]),
+        }));
+
+        let (tx, mut rx) = mpsc::channel(16);
+        let mut tools = MockTools {
+            tools: vec![search_tool()],
+            calls: vec![],
+        };
+        AgentLoop::new(ai, AgentConfig::default())
+            .run(
+                &mut tools,
+                vec![ChatMessage::user("search")],
+                None,
+                tx,
+                CancelToken::new(),
+            )
+            .await
+            .unwrap();
+
+        let mut schema_error = false;
+        let mut finished = false;
+        while let Ok(event) = rx.try_recv() {
+            match event {
+                AgentEvent::ToolCallFailed { error, .. } if error.contains("JSON Schema") => {
+                    schema_error = true;
+                }
+                AgentEvent::Finished { .. } => finished = true,
+                _ => {}
+            }
+        }
+        assert!(schema_error);
+        assert!(finished);
+        assert!(tools.calls.is_empty());
+    }
+
+    #[tokio::test]
+    async fn agent_parses_tool_call_from_assistant_content() {
+        let ai = AiService::new(Arc::new(MockAi {
+            responses: Mutex::new(vec![
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: r#"{"name":"nest_memory__search_project_memory","arguments":{"query":"nest"}}"#.into(),
+                    done: true,
+                    tool_calls: vec![],
+                    metrics: None,
+                },
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: "found it".into(),
+                    done: true,
+                    tool_calls: vec![],
+                    metrics: None,
+                },
+            ]),
+        }));
+
+        let (tx, mut rx) = mpsc::channel(16);
+        let mut tools = MockTools {
+            tools: vec![search_tool()],
+            calls: vec![],
+        };
+        AgentLoop::new(ai, AgentConfig::default())
+            .run(
+                &mut tools,
+                vec![ChatMessage::user("search nest")],
+                None,
+                tx,
+                CancelToken::new(),
+            )
+            .await
+            .unwrap();
+
+        let mut finished = None;
+        while let Ok(event) = rx.try_recv() {
+            if let AgentEvent::Finished { content, .. } = event {
+                finished = Some(content);
+            }
+        }
+        assert_eq!(tools.calls.len(), 1);
+        assert_eq!(finished.as_deref(), Some("found it"));
+    }
+
+    #[tokio::test]
+    async fn agent_skips_tools_when_file_attached_in_message() {
+        let ai = AiService::new(Arc::new(MockAi {
+            responses: Mutex::new(vec![CompletionResponse {
+                model: "mock".into(),
+                content: "This README describes the Nest framework.".into(),
+                done: true,
+                tool_calls: vec![],
+                metrics: None,
+            }]),
+        }));
+
+        let (tx, mut rx) = mpsc::channel(8);
+        let mut tools = MockTools {
+            tools: vec![search_tool()],
+            calls: vec![],
+        };
+        let message = ChatMessage::user(
+            "Summarize this readme\n<file path=\"README.md\">\n# Nest\nA framework.\n</file>",
+        );
+        AgentLoop::new(ai, AgentConfig::default())
+            .run(&mut tools, vec![message], None, tx, CancelToken::new())
+            .await
+            .unwrap();
+
+        let mut finished = None;
+        while let Ok(event) = rx.try_recv() {
+            if let AgentEvent::Finished { content, .. } = event {
+                finished = Some(content);
+            }
+        }
+        assert!(tools.calls.is_empty());
+        assert_eq!(
+            finished.as_deref(),
+            Some("This README describes the Nest framework.")
+        );
     }
 
     #[tokio::test]

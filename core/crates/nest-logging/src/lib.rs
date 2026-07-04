@@ -49,6 +49,7 @@ pub mod prelude;
 mod retention;
 mod rotation;
 mod target;
+mod ui_buffer;
 
 pub use config::LoggingConfig;
 pub use error_log::{log_error, log_result};
@@ -58,3 +59,4 @@ pub use level::LogLevel;
 pub use retention::{cleanup_logs, RetentionPolicy};
 pub use rotation::RotationPolicy;
 pub use target::LogTarget;
+pub use ui_buffer::{ui_buffer, LogBuffer, LogRecord};

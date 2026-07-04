@@ -315,6 +315,31 @@ See `.cursor/rules/webos-tv-knowledge.mdc`.
 Use a stable `session_key` such as a branch name or task slug so related entries
 stay grouped across compaction.
 
+## 7. Using MCP from Kiwi
+
+Kiwi Agent mode (chat panel **Agent** checkbox) runs the same MCP servers as Cursor
+via `[agent]` in `apps/kiwi/desktop/config.toml`:
+
+```toml
+[agent]
+model = "qwen2.5:7b"
+mcp_config = "../../../.cursor/mcp.json"
+mcp_servers = ["nest-memory", "nest-knowledge", "nest-context-memory"]
+disabled_mcp_servers = []          # toggle off in Agent sidebar
+allow_save_context = false         # opt-in for save_context_memory
+agent_mode = true
+max_steps = 10
+```
+
+- **Agent sidebar** — enable/disable individual MCP servers; optional
+  `save_context_memory` auto-run.
+- **Tool Activity** tab — MCP call log with expandable results.
+- **Streaming** — final agent replies stream token-by-token when Ollama supports it.
+- **Read-only by default** — search/list/get tools auto-run; writes require
+  `allow_save_context = true`.
+
+See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |

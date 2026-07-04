@@ -99,9 +99,31 @@ pub fn ensure_success(response: &HttpResponse, url: &str) -> HttpResult<()> {
     if response.status.is_success() {
         Ok(())
     } else {
-        Err(
-            HttpError::from_status(response.status, format!("HTTP {}", response.status.code()))
-                .with_url(url),
-        )
+        let message = api_error_message(response);
+        Err(HttpError::from_status(response.status, message).with_url(url))
     }
+}
+
+fn api_error_message(response: &HttpResponse) -> String {
+    if let Some(detail) = json_error_field(&response.body) {
+        return detail;
+    }
+
+    let body = String::from_utf8_lossy(&response.body);
+    let trimmed = body.trim();
+    if trimmed.is_empty() {
+        format!("HTTP {}", response.status.code())
+    } else if trimmed.len() > 240 {
+        format!("HTTP {}: {}…", response.status.code(), &trimmed[..240])
+    } else {
+        format!("HTTP {}: {}", response.status.code(), trimmed)
+    }
+}
+
+fn json_error_field(body: &[u8]) -> Option<String> {
+    let value: serde_json::Value = serde_json::from_slice(body).ok()?;
+    value
+        .get("error")
+        .and_then(|error| error.as_str())
+        .map(str::to_string)
 }

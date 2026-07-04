@@ -24,7 +24,12 @@ def list_knowledge_collections() -> str:
     """List knowledge_base collections that have been indexed."""
     names = list_collections()
     if not names:
-        return "No knowledge collections indexed yet. Run ./scripts/index-knowledge.sh"
+        return (
+            "No reference-manual collections indexed in knowledge_base yet.\n"
+            "This is separate from nest-memory (project docs in PostgreSQL).\n"
+            "Run: NEST_KNOWLEDGE=~/nest-knowledge ./scripts/index-knowledge.sh\n"
+            "For Nest project docs, use nest-memory search_project_memory instead."
+        )
 
     return "Indexed collections:\n" + "\n".join(f"- {name}" for name in names)
 

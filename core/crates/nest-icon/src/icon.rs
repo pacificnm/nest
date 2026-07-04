@@ -86,6 +86,10 @@ impl Icon {
     pub const ARROW_LEFT: Self = Self::solid(icons::solid::ARROW_LEFT);
     /// `arrow-rotate-right` (solid).
     pub const ARROW_ROTATE_RIGHT: Self = Self::solid(icons::solid::ARROW_ROTATE_RIGHT);
+    /// `chevron-up` (solid).
+    pub const CHEVRON_UP: Self = Self::solid(icons::solid::CHEVRON_UP);
+    /// `chevron-down` (solid).
+    pub const CHEVRON_DOWN: Self = Self::solid(icons::solid::CHEVRON_DOWN);
     /// `circle-info` (solid).
     pub const INFO: Self = Self::solid(icons::solid::CIRCLE_INFO);
     /// `triangle-exclamation` (solid).

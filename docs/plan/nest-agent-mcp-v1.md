@@ -1,6 +1,6 @@
 # nest-agent + nest-mcp v1 Implementation Plan
 
-## Status: In progress (Phase 1 complete)
+## Status: Complete (v1)
 
 Kiwi copy: [`apps/kiwi/docs/agent-mcp-v1.md`](../../apps/kiwi/docs/agent-mcp-v1.md).
 
@@ -442,14 +442,14 @@ GUI shows tool steps for the same path.
 
 ## Phase 5 — Hardening (v1 polish)
 
-| Item | Priority |
+| Item | Status |
 | --- | --- |
-| Parallel tool calls (Ollama supports) | Medium |
-| Stream tool_call accumulation in agent loop | Medium |
-| MCP hub reconnect on server crash | Medium |
-| Config UI: enable/disable servers | Low |
-| `save_context_memory` with approval | Low |
-| Index plan doc: `./scripts/index-memory.sh` | Required after merge |
+| Agent response streaming (`stream_complete` + `TextDelta`) | **Done** |
+| Parallel tool calls (`SharedMcpHub`) | **Done** |
+| MCP hub reconnect on transport failure | **Done** |
+| Agent sidebar: enable/disable MCP servers | **Done** |
+| Optional `save_context_memory` auto-run | **Done** |
+| Attached-file summarize + tool-call parsing fixes | **Done** |
 
 ---
 

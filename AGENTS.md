@@ -58,3 +58,4 @@ automatic transcript snapshot, but you must still save an explicit summary.
 ## Setup
 
 See [`tools/MCP-SETUP.md`](tools/MCP-SETUP.md).
+
