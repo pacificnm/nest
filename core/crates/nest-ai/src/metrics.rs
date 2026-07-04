@@ -1,7 +1,7 @@
 //! Completion timing and token usage metrics.
 
 /// Token counts and throughput for a completed inference request.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CompletionMetrics {
     /// Tokens consumed evaluating the prompt.
     pub prompt_tokens: u32,

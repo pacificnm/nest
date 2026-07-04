@@ -106,6 +106,34 @@ pub struct ChatResponse {
     pub message: OllamaChatMessage,
     /// Whether generation finished.
     pub done: bool,
+    #[serde(default)]
+    load_duration: u64,
+    #[serde(default)]
+    prompt_eval_count: u32,
+    #[serde(default)]
+    prompt_eval_duration: u64,
+    #[serde(default)]
+    eval_count: u32,
+    #[serde(default)]
+    eval_duration: u64,
+    #[serde(default)]
+    total_duration: u64,
+}
+
+impl ChatResponse {
+    /// Token and timing stats when Ollama includes them on the final response.
+    pub fn metrics(&self) -> Option<nest_ai::CompletionMetrics> {
+        self.done.then(|| {
+            nest_ai::CompletionMetrics::from_timing(
+                self.prompt_eval_count,
+                self.eval_count,
+                self.load_duration,
+                self.prompt_eval_duration,
+                self.eval_duration,
+                self.total_duration,
+            )
+        })
+    }
 }
 
 fn response_format_token(format: ResponseFormat) -> &'static str {

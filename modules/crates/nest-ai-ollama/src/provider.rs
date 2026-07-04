@@ -92,12 +92,14 @@ impl AiProvider for OllamaProvider {
             .as_ref()
             .map(|calls| tool_calls_from_ollama(calls))
             .unwrap_or_default();
+        let metrics = response.metrics();
 
         Ok(CompletionResponse {
             model: response.model,
             content: response.message.content,
             done: response.done,
             tool_calls,
+            metrics,
         })
     }
 
@@ -127,12 +129,16 @@ async fn collect_stream_response(
 ) -> AiResult<CompletionResponse> {
     let mut content = String::new();
     let mut tool_calls = Vec::new();
+    let mut metrics = None;
     while let Some(chunk) = stream.next().await {
         match chunk {
             Ok(chunk) => {
                 content.push_str(&chunk.content);
                 if !chunk.tool_calls.is_empty() {
                     merge_tool_calls(&mut tool_calls, &chunk.tool_calls);
+                }
+                if chunk.metrics.is_some() {
+                    metrics = chunk.metrics;
                 }
                 if chunk.done {
                     break;
@@ -150,6 +156,7 @@ async fn collect_stream_response(
         content,
         done: true,
         tool_calls,
+        metrics,
     })
 }
 

@@ -67,7 +67,7 @@ impl AgentLoop {
             if response.tool_calls.is_empty() {
                 let _ = tx
                     .send(AgentEvent::Finished {
-                        metrics: None,
+                        metrics: response.metrics,
                         content: response.content,
                     })
                     .await;
@@ -277,6 +277,7 @@ mod tests {
                     content: "fallback".into(),
                     done: true,
                     tool_calls: vec![],
+                    metrics: None,
                 });
             }
             Ok(responses.remove(0))
@@ -315,12 +316,14 @@ mod tests {
                         "nest_memory__search_project_memory",
                         json!({"query": "nest-core"}),
                     )],
+                    metrics: None,
                 },
                 CompletionResponse {
                     model: "mock".into(),
                     content: "nest-core is the module system".into(),
                     done: true,
                     tool_calls: vec![],
+                    metrics: None,
                 },
             ]),
         }));
@@ -370,6 +373,7 @@ mod tests {
                     "nest_context_memory__save_context_memory",
                     json!({"content": "x"}),
                 )],
+                metrics: None,
             }]),
         }));
 
@@ -418,6 +422,7 @@ mod tests {
                         "nest_memory__search_project_memory",
                         json!({"query": "a"}),
                     )],
+                    metrics: None,
                 },
                 CompletionResponse {
                     model: "mock".into(),
@@ -427,6 +432,7 @@ mod tests {
                         "nest_memory__search_project_memory",
                         json!({"query": "b"}),
                     )],
+                    metrics: None,
                 },
             ]),
         }));

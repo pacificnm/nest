@@ -159,6 +159,9 @@ pub struct CompletionResponse {
     /// Tool calls requested by the assistant, if any.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tool_calls: Vec<ToolCall>,
+    /// Token and timing stats when the provider supplies them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metrics: Option<crate::metrics::CompletionMetrics>,
 }
 
 impl CompletionResponse {
