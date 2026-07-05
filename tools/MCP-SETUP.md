@@ -23,12 +23,13 @@ From the repository root:
 3. Create `.venv`, install Python dependencies, and create `.env`.
 4. Index project docs: `./scripts/index-memory.sh`
 5. Verify all tables: `.venv/bin/python tools/verify_memory_schema.py`
-6. Index reference manuals: `./scripts/index-knowledge.sh` (requires `~/nest-knowledge`)
+6. Index reference manuals: `./scripts/index-knowledge.sh` (auto-fetches sources into `/data/nest-knowledge` or `$NEST_KNOWLEDGE`)
 
 ## Prerequisites
 
 - PostgreSQL with the `pgvector` extension
 - Python 3
+- Git (for `./scripts/fetch-knowledge.sh`)
 - An OpenAI API key
 - Cursor with MCP support
 
@@ -140,11 +141,27 @@ Verify search before wiring Cursor:
 
 ## 3b. Index Knowledge Base
 
-Reference manuals (Rust book, egui, eframe) live outside the repo, typically under
-`~/nest-knowledge`. Index them into the `knowledge_base` table:
+Reference manuals (Rust book, egui, eframe, webOS TV) live outside the repo under
+`/data/nest-knowledge` or `$NEST_KNOWLEDGE`. Fetch and index them:
 
 ```bash
 ./scripts/index-knowledge.sh
+```
+
+This runs `./scripts/fetch-knowledge.sh` first (git clones + webOS doc fetch), then
+indexes all collections. To skip re-fetching when sources are already present:
+
+```bash
+./scripts/index-knowledge.sh --skip-fetch
+```
+
+Fetch sources only (no indexing):
+
+```bash
+./scripts/fetch-knowledge.sh
+./scripts/fetch-knowledge.sh --git-only    # Rust + egui only
+./scripts/fetch-knowledge.sh --webos-only  # webOS TV docs only
+./scripts/fetch-knowledge.sh --force       # git pull + re-fetch webOS pages
 ```
 
 Override the root:
@@ -352,7 +369,7 @@ See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 | `relation "project_memory" does not exist` | Schema not created | Run `./scripts/setup-database-postgres.sh`. |
 | `Permission denied` on `psql -f ~/.../setup_database.sql` | postgres cannot read your home dir | Pipe SQL: `sed ... \| sudo -u postgres psql nest_memory` or use `./scripts/setup-database-postgres.sh`. |
 | Empty project-memory search results | Index not built | Run `./scripts/index-memory.sh`. |
-| Empty knowledge search results | Manuals not indexed | Run `./scripts/index-knowledge.sh`. |
+| Empty knowledge search results | Manuals not indexed | Run `./scripts/index-knowledge.sh` (fetches sources automatically). |
 | PostgreSQL connection errors | Service down or role mismatch | Confirm PostgreSQL is running and `DATABASE_URL` matches your setup. |
 
 ## Related Files

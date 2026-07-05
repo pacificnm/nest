@@ -5,6 +5,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KNOWLEDGE="${NEST_KNOWLEDGE:-/data/nest-knowledge}"
 PYTHON="${ROOT}/.venv/bin/python"
 CFG="${ROOT}/tools/knowledge.toml"
+SKIP_FETCH=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --skip-fetch) SKIP_FETCH=1 ;;
+  esac
+done
 
 if [[ ! -x "$PYTHON" ]]; then
   echo "ERROR: .venv not found. Run:" >&2
@@ -12,9 +19,13 @@ if [[ ! -x "$PYTHON" ]]; then
   exit 1
 fi
 
+if [[ "$SKIP_FETCH" -eq 0 ]]; then
+  "${ROOT}/scripts/fetch-knowledge.sh"
+fi
+
 if [[ ! -d "$KNOWLEDGE" ]]; then
   echo "ERROR: knowledge directory not found: ${KNOWLEDGE}" >&2
-  echo "Clone manuals into /data/nest-knowledge or set NEST_KNOWLEDGE." >&2
+  echo "Run ./scripts/fetch-knowledge.sh or set NEST_KNOWLEDGE." >&2
   exit 1
 fi
 

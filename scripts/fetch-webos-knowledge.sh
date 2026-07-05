@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch LG webOS TV docs into $NEST_KNOWLEDGE/webos-tv and index collection webos-tv.
+# Fetch webOS TV docs and index the webos-tv collection only.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,18 +19,12 @@ if [[ ! -x "$PYTHON" ]]; then
   exit 1
 fi
 
-mkdir -p "${KNOWLEDGE}/webos-tv"
-
-FETCH_ARGS=()
+FETCH_ARGS=(--webos-only)
 if [[ "$FORCE" -eq 1 ]]; then
   FETCH_ARGS+=(--force)
 fi
 
-echo "Fetching webOS TV docs into ${KNOWLEDGE}/webos-tv ..."
-"$PYTHON" "${ROOT}/tools/fetch_webos_knowledge.py" \
-  --config "${ROOT}/tools/webos-knowledge-urls.toml" \
-  --output "${KNOWLEDGE}/webos-tv" \
-  "${FETCH_ARGS[@]}"
+"${ROOT}/scripts/fetch-knowledge.sh" "${FETCH_ARGS[@]}"
 
 CFG="${ROOT}/tools/knowledge-webos.toml"
 cat >"$CFG" <<EOF

@@ -7,7 +7,7 @@
 #
 # Refresh:
 #   ./scripts/fetch-webos-knowledge.sh
-#   ./scripts/index-knowledge.sh
+#   ./scripts/index-knowledge.sh --skip-fetch
 #
 # Search:
 #   search_knowledge_base(query, collection="webos-tv")

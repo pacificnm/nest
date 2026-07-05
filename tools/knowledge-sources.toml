@@ -1,0 +1,24 @@
+# Git checkouts for nest-knowledge indexing.
+# Consumed by tools/fetch_knowledge.py (via scripts/fetch-knowledge.sh).
+#
+# Layout matches scripts/index-knowledge.sh collection paths under $NEST_KNOWLEDGE.
+
+[[repos]]
+name = "rust-book"
+url = "https://github.com/rust-lang/book.git"
+dest = "rust/rust-book"
+
+[[repos]]
+name = "rust-by-example"
+url = "https://github.com/rust-lang/rust-by-example.git"
+dest = "rust/rust-by-example"
+
+[[repos]]
+name = "rust-reference"
+url = "https://github.com/rust-lang/reference.git"
+dest = "rust/rust-reference"
+
+[[repos]]
+name = "egui"
+url = "https://github.com/emilk/egui.git"
+dest = "egui"

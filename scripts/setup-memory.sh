@@ -3,9 +3,22 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [[ ! -x "$ROOT/.venv/bin/python" ]]; then
-  echo "ERROR: .venv not found. Run:" >&2
-  echo "  python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt" >&2
-  exit 1
+  echo "Creating .venv..."
+  python3 -m venv "$ROOT/.venv" || {
+    echo "ERROR: could not create .venv (install python3-venv if needed)." >&2
+    exit 1
+  }
+fi
+
+if ! "$ROOT/.venv/bin/python" -m pip --version >/dev/null 2>&1; then
+  echo "Bootstrapping pip in .venv (ensurepip unavailable on this system)..."
+  curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/nest-get-pip.py
+  "$ROOT/.venv/bin/python" /tmp/nest-get-pip.py
+fi
+
+if ! "$ROOT/.venv/bin/python" -c "import mcp, psycopg" >/dev/null 2>&1; then
+  echo "Installing Python dependencies..."
+  "$ROOT/.venv/bin/pip" install -r "$ROOT/tools/requirements.txt"
 fi
 
 if "$ROOT/.venv/bin/python" "$ROOT/tools/setup_database.py"; then
@@ -43,7 +56,7 @@ cat <<EOF
 Next steps:
   1. cp .env.example .env   # set OPENAI_API_KEY (and DATABASE_URL if needed)
   2. ./scripts/index-memory.sh
-  3. ./scripts/index-knowledge.sh   # Rust / egui manuals in ~/nest-knowledge
+  3. ./scripts/index-knowledge.sh   # fetches Rust/egui/webOS sources, then indexes
   4. Update paths in .cursor/mcp.json for your machine
   5. Reload Cursor (Developer: Reload Window)
   6. Verify Tools & MCP: nest-memory, nest-knowledge, nest-context-memory
