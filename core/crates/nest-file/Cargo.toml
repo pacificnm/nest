@@ -10,6 +10,7 @@ description = "Sync file I/O service for the Nest framework"
 [dependencies]
 nest-core = { workspace = true  }
 nest-error = { workspace = true  }
+serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 
 [dev-dependencies]

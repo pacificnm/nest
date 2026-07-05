@@ -39,13 +39,27 @@ impl McpHub {
         path: impl AsRef<Path>,
         only: Option<&[String]>,
     ) -> NestResult<Self> {
+        Self::from_config_file_with_env(path, only, HashMap::new()).await
+    }
+
+    /// Loads MCP config and merges `extra_env` into every server before connecting.
+    pub async fn from_config_file_with_env(
+        path: impl AsRef<Path>,
+        only: Option<&[String]>,
+        extra_env: HashMap<String, String>,
+    ) -> NestResult<Self> {
         let path = path.as_ref();
         let base_dir = path
             .parent()
             .filter(|parent| !parent.as_os_str().is_empty())
             .unwrap_or_else(|| Path::new("."));
         let config = load_mcp_config(path)?;
-        let servers = config.servers(base_dir, only)?;
+        let mut servers = config.servers(base_dir, only)?;
+        for server in &mut servers {
+            for (key, value) in &extra_env {
+                server.env.entry(key.clone()).or_insert_with(|| value.clone());
+            }
+        }
         Self::connect_all(servers).await
     }
 

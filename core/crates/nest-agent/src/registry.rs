@@ -1,37 +1,38 @@
-//! MCP tool registry and model name mapping.
+//! Agent tool registry and model name mapping.
 
 use std::collections::HashMap;
 
 use nest_ai::ToolDefinition;
-use nest_mcp::McpTool;
 
-/// Maps MCP tools to model-visible function names.
+use crate::tool::AgentTool;
+
+/// Maps agent tools to model-visible function names.
 #[derive(Debug, Clone)]
 pub struct ToolRegistry {
-    tools: Vec<McpTool>,
+    tools: Vec<AgentTool>,
     model_to_qualified: HashMap<String, String>,
-    model_to_mcp: HashMap<String, McpTool>,
+    model_to_tool: HashMap<String, AgentTool>,
 }
 
 impl ToolRegistry {
-    /// Builds a registry from MCP tool metadata.
-    pub fn from_mcp_tools(tools: Vec<McpTool>) -> Self {
+    /// Builds a registry from agent tool metadata.
+    pub fn from_tools(tools: Vec<AgentTool>) -> Self {
         let mut model_to_qualified = HashMap::new();
-        let mut model_to_mcp = HashMap::new();
+        let mut model_to_tool = HashMap::new();
         for tool in &tools {
             let model_name = model_tool_name(&tool.server, &tool.name);
             model_to_qualified.insert(model_name.clone(), tool.qualified_name.clone());
-            model_to_mcp.insert(model_name, tool.clone());
+            model_to_tool.insert(model_name, tool.clone());
         }
         Self {
             tools,
             model_to_qualified,
-            model_to_mcp,
+            model_to_tool,
         }
     }
 
-    /// MCP tools in registry order.
-    pub fn tools(&self) -> &[McpTool] {
+    /// Tools in registry order.
+    pub fn tools(&self) -> &[AgentTool] {
         &self.tools
     }
 
@@ -49,7 +50,7 @@ impl ToolRegistry {
             .collect()
     }
 
-    /// Resolves a model function name to the MCP qualified name (`server/tool`).
+    /// Resolves a model function name to the qualified name (`server/tool`).
     pub fn qualified_name(&self, model_name: &str) -> Option<&str> {
         if let Some(qualified) = self.model_to_qualified.get(model_name) {
             return Some(qualified.as_str());
@@ -60,9 +61,9 @@ impl ToolRegistry {
             .map(|tool| tool.qualified_name.as_str())
     }
 
-    /// Returns MCP metadata for a model function name.
-    pub fn mcp_tool(&self, model_name: &str) -> Option<&McpTool> {
-        if let Some(tool) = self.model_to_mcp.get(model_name) {
+    /// Returns tool metadata for a model function name.
+    pub fn agent_tool(&self, model_name: &str) -> Option<&AgentTool> {
+        if let Some(tool) = self.model_to_tool.get(model_name) {
             return Some(tool);
         }
         self.tools.iter().find(|tool| tool.name == model_name)
@@ -77,6 +78,7 @@ pub fn model_tool_name(server: &str, tool: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tool::ToolOrigin;
     use serde_json::json;
 
     #[test]
@@ -89,7 +91,8 @@ mod tests {
 
     #[test]
     fn definitions_use_model_names() {
-        let registry = ToolRegistry::from_mcp_tools(vec![McpTool {
+        let registry = ToolRegistry::from_tools(vec![AgentTool {
+            origin: ToolOrigin::Mcp,
             server: "nest-memory".into(),
             name: "search_project_memory".into(),
             qualified_name: "nest-memory/search_project_memory".into(),
@@ -104,8 +107,9 @@ mod tests {
     }
 
     #[test]
-    fn resolves_bare_mcp_tool_name() {
-        let registry = ToolRegistry::from_mcp_tools(vec![McpTool {
+    fn resolves_bare_tool_name() {
+        let registry = ToolRegistry::from_tools(vec![AgentTool {
+            origin: ToolOrigin::Mcp,
             server: "nest-knowledge".into(),
             name: "list_knowledge_collections".into(),
             qualified_name: "nest-knowledge/list_knowledge_collections".into(),

@@ -28,9 +28,16 @@ pub fn show_status_bar(ctx: &egui::Context, app_ctx: &AppContext) {
     let kind = state.kind;
     let right = state.right;
 
+    let panel_fill = ctx.style().visuals.panel_fill;
+
     TopBottomPanel::bottom("nest-status-bar")
         .exact_height(height)
         .show_separator_line(false)
+        .frame(
+            egui::Frame::new()
+                .fill(panel_fill)
+                .inner_margin(egui::Margin::ZERO),
+        )
         .show(ctx, |ui| {
             let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
             let text_color = kind.text_color(ui.visuals());

@@ -11,6 +11,10 @@ Three MCP servers are provided:
 | `nest-knowledge` | `tools/mcp_knowledge_server.py` | Semantic search over Rust / egui reference manuals. |
 | `nest-context-memory` | `tools/mcp_context_memory_server.py` | Save, search, and retrieve agent session context across Cursor compaction. |
 
+File tools (`read_file`, `write_file`, etc.) are **native Rust** in `nest-agent` via
+`nest-file` — they are not an MCP server. Kiwi wires them in-process when running
+the agent loop.
+
 All servers use the same PostgreSQL database (`nest_memory`), Python virtual
 environment, and OpenAI embedding key.
 
@@ -344,6 +348,7 @@ mcp_config = "../../../.cursor/mcp.json"
 mcp_servers = ["nest-memory", "nest-knowledge", "nest-context-memory"]
 disabled_mcp_servers = []          # toggle off in Agent sidebar
 allow_save_context = false         # opt-in for save_context_memory
+allow_file_writes = false          # opt-in for write/update/delete/mkdir file tools
 agent_mode = true
 max_steps = 10
 ```
@@ -352,8 +357,8 @@ max_steps = 10
   `save_context_memory` auto-run.
 - **Tool Activity** tab — MCP call log with expandable results.
 - **Streaming** — final agent replies stream token-by-token when Ollama supports it.
-- **Read-only by default** — search/list/get tools auto-run; writes require
-  `allow_save_context = true`.
+- **Read-only by default** — search/list/get/read tools auto-run; writes require
+  `allow_save_context = true` or `allow_file_writes = true`.
 
 See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 

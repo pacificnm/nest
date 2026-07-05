@@ -251,6 +251,33 @@ impl FileService {
         result
     }
 
+    /// Deletes an empty directory, or a directory tree when `recursive` is true.
+    pub fn delete_dir(&self, path: impl AsRef<Path>, recursive: bool) -> NestResult<()> {
+        let started = Instant::now();
+        let input = path.as_ref();
+        let resolved = self.resolver.resolve(input).map_err(NestError::from)?;
+        let result = if recursive {
+            fs::remove_dir_all(&resolved)
+        } else {
+            fs::remove_dir(&resolved)
+        }
+        .map_err(|error| {
+            NestError::from(
+                FileError::delete(format!("delete directory failed: {}", input.display()))
+                    .with_source(error)
+                    .with_path(input),
+            )
+        });
+        debug!(
+            file.path = %input.display(),
+            file.recursive = recursive,
+            duration_ms = started.elapsed().as_millis() as u64,
+            success = result.is_ok(),
+            "directory delete"
+        );
+        result
+    }
+
     /// Returns whether a path exists.
     pub fn exists(&self, path: impl AsRef<Path>) -> NestResult<bool> {
         let resolved = self

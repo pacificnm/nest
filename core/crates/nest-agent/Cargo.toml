@@ -12,10 +12,13 @@ async-trait = "0.1"
 futures-util = "0.3"
 nest-ai = { workspace = true }
 nest-error = { workspace = true }
+nest-file = { workspace = true }
 nest-mcp = { workspace = true }
 serde_json = "1"
-tokio = { version = "1", features = ["sync", "time"] }
+tokio = { version = "1", features = ["rt", "sync", "time"] }
 tracing = "0.1"
 
 [dev-dependencies]
+nest-core = { workspace = true }
+tempfile = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

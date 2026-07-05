@@ -23,6 +23,8 @@ pub struct AgentConfig {
     pub auto_run_policy: AutoRunPolicy,
     /// When true, `save_context_memory` may auto-run under [`AutoRunPolicy::ReadOnlyOnly`].
     pub allow_save_context: bool,
+    /// When true, Nest file write/delete tools may auto-run under [`AutoRunPolicy::ReadOnlyOnly`].
+    pub allow_file_writes: bool,
     /// When true, independent tool calls may run concurrently (different MCP servers).
     pub parallel_tool_calls: bool,
 }
@@ -34,6 +36,7 @@ impl Default for AgentConfig {
             tool_timeout: Duration::from_secs(60),
             auto_run_policy: AutoRunPolicy::ReadOnlyOnly,
             allow_save_context: false,
+            allow_file_writes: false,
             parallel_tool_calls: true,
         }
     }
@@ -49,6 +52,12 @@ impl AgentConfig {
     /// Enables or disables auto-run for `save_context_memory`.
     pub fn with_allow_save_context(mut self, allow: bool) -> Self {
         self.allow_save_context = allow;
+        self
+    }
+
+    /// Enables or disables auto-run for Nest file write/delete tools.
+    pub fn with_allow_file_writes(mut self, allow: bool) -> Self {
+        self.allow_file_writes = allow;
         self
     }
 }

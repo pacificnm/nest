@@ -13,6 +13,7 @@ mod metadata;
 mod module;
 mod path;
 pub mod prelude;
+pub mod search;
 mod service;
 
 pub use config::{FileServiceConfig, WriteOptions};
@@ -20,6 +21,7 @@ pub use error::{FileError, FileErrorKind, FileResult};
 pub use metadata::{DirEntry, FileMetadata};
 pub use module::{FileModule, FILE_MODULE_ID};
 pub use path::SafePathResolver;
+pub use search::{search_files, FileSearchMatch, FileSearchOptions, DEFAULT_SEARCH_IGNORE};
 pub use service::FileService;
 
 pub use nest_core::{Module, ModuleId};

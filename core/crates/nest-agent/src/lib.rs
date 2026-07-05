@@ -7,20 +7,28 @@
 #![allow(clippy::result_large_err)]
 
 mod cancel;
+mod catalog;
+mod composite;
 mod config;
 mod event;
+mod file_tools;
 mod policy;
 mod registry;
 mod runner;
+mod tool;
 mod tools;
 mod validation;
 
 pub use cancel::CancelToken;
+pub use catalog::probe_tools;
+pub use composite::CompositeToolSource;
 pub use config::{AgentConfig, AutoRunPolicy};
 pub use event::AgentEvent;
+pub use file_tools::{FileToolSource, FILE_SERVER};
 pub use registry::ToolRegistry;
 pub use runner::AgentLoop;
-pub use tools::{SharedMcpHub, ToolSource};
+pub use tool::{AgentTool, ToolOrigin};
+pub use tools::{McpToolSource, SharedMcpHub, ToolSource};
 pub use validation::{looks_like_schema_arguments, parse_tool_calls_from_content, validate_tool_arguments};
 
 pub use nest_error::{NestError, NestResult};

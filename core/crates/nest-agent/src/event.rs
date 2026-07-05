@@ -15,23 +15,23 @@ pub enum AgentEvent {
         /// 1-based step index.
         step: u32,
     },
-    /// MCP tool invocation started.
+    /// Tool invocation started.
     ToolCallStarted {
         /// Model-visible tool name.
         tool: String,
         /// Arguments JSON.
         arguments: Value,
     },
-    /// MCP tool returned successfully.
+    /// Tool returned successfully.
     ToolCallFinished {
         /// Model-visible tool name.
         tool: String,
         /// Tool output text.
         result: String,
-        /// Wall time for the MCP call.
+        /// Wall time for the call.
         duration: Duration,
     },
-    /// MCP tool failed or was rejected by policy.
+    /// Tool failed or was rejected by policy.
     ToolCallFailed {
         /// Model-visible tool name.
         tool: String,

@@ -1,21 +1,23 @@
-//! MCP tool source abstraction.
+//! Agent tool source abstraction (MCP subprocess and native in-process).
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use nest_mcp::{McpHub, McpTool};
+use nest_mcp::McpHub;
 use serde_json::Value;
 use tokio::sync::Mutex;
 
+use crate::tool::AgentTool;
 use nest_error::NestResult;
 
-/// Lists and invokes MCP tools for the agent loop.
+/// Lists and invokes agent tools for the agent loop.
 #[async_trait]
 pub trait ToolSource: Send {
-    /// Lists available MCP tools.
-    async fn list_tools(&mut self) -> NestResult<Vec<McpTool>>;
+    /// Lists available tools.
+    async fn list_tools(&mut self) -> NestResult<Vec<AgentTool>>;
 
-    /// Calls a qualified MCP tool (`server/tool`).
+    /// Calls a qualified tool (`server/tool`).
     async fn call_tool(&mut self, qualified_name: &str, arguments: Value) -> NestResult<String>;
 
     /// Whether this source supports concurrent tool calls (via shared locking).
@@ -24,7 +26,7 @@ pub trait ToolSource: Send {
     }
 
     /// Clone handle for concurrent tool calls when [`Self::supports_parallel_calls`] is true.
-    fn shared(&self) -> Option<SharedMcpHub> {
+    fn shared_mcp(&self) -> Option<SharedMcpHub> {
         None
     }
 }
@@ -32,6 +34,9 @@ pub trait ToolSource: Send {
 /// Thread-safe MCP hub wrapper for parallel tool calls.
 #[derive(Clone)]
 pub struct SharedMcpHub(Arc<Mutex<McpHub>>);
+
+/// MCP subprocess tool source.
+pub type McpToolSource = SharedMcpHub;
 
 impl SharedMcpHub {
     /// Wraps a connected hub for concurrent access.
@@ -44,13 +49,27 @@ impl SharedMcpHub {
         path: impl AsRef<std::path::Path>,
         only: Option<&[String]>,
     ) -> NestResult<Self> {
-        McpHub::from_config_file(path, only)
+        Self::from_config_file_with_env(path, only, HashMap::new()).await
+    }
+
+    /// Loads MCP config with extra environment variables for all MCP servers.
+    pub async fn from_config_file_with_env(
+        path: impl AsRef<std::path::Path>,
+        only: Option<&[String]>,
+        extra_env: HashMap<String, String>,
+    ) -> NestResult<Self> {
+        McpHub::from_config_file_with_env(path, only, extra_env)
             .await
             .map(Self::new)
     }
 
-    async fn list_tools_locked(&self) -> NestResult<Vec<McpTool>> {
-        self.0.lock().await.list_tools().await
+    async fn list_tools_locked(&self) -> NestResult<Vec<AgentTool>> {
+        self.0
+            .lock()
+            .await
+            .list_tools()
+            .await
+            .map(|tools| tools.into_iter().map(AgentTool::from_mcp).collect())
     }
 
     async fn call_tool_locked(
@@ -68,7 +87,7 @@ impl SharedMcpHub {
 
 #[async_trait]
 impl ToolSource for SharedMcpHub {
-    async fn list_tools(&mut self) -> NestResult<Vec<McpTool>> {
+    async fn list_tools(&mut self) -> NestResult<Vec<AgentTool>> {
         self.list_tools_locked().await
     }
 
@@ -80,15 +99,17 @@ impl ToolSource for SharedMcpHub {
         true
     }
 
-    fn shared(&self) -> Option<SharedMcpHub> {
+    fn shared_mcp(&self) -> Option<SharedMcpHub> {
         Some(self.clone())
     }
 }
 
 #[async_trait]
 impl ToolSource for McpHub {
-    async fn list_tools(&mut self) -> NestResult<Vec<McpTool>> {
-        McpHub::list_tools(self).await
+    async fn list_tools(&mut self) -> NestResult<Vec<AgentTool>> {
+        McpHub::list_tools(self)
+            .await
+            .map(|tools| tools.into_iter().map(AgentTool::from_mcp).collect())
     }
 
     async fn call_tool(&mut self, qualified_name: &str, arguments: Value) -> NestResult<String> {

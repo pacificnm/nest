@@ -10,7 +10,7 @@ use tracing::debug;
 use crate::cancel::CancelToken;
 use crate::config::AgentConfig;
 use crate::event::AgentEvent;
-use crate::policy::may_auto_run;
+use crate::policy::{is_file_tool, may_auto_run};
 use crate::registry::ToolRegistry;
 use crate::tools::{SharedMcpHub, ToolSource};
 use crate::validation::{parse_tool_calls_from_content, validate_tool_arguments};
@@ -37,21 +37,32 @@ impl AgentLoop {
         tx: mpsc::Sender<AgentEvent>,
         cancel: CancelToken,
     ) -> NestResult<()> {
-        let mcp_tools = tools.list_tools().await?;
+        let agent_tools = tools.list_tools().await?;
         let attached_files = has_attached_files(&messages);
         let search_with_attachments = attached_files
             && latest_user_message_requests_external_search(&messages);
-        let exposed_tools: Vec<_> = if attached_files && !search_with_attachments {
-            // File contents are already in the user message; tools distract weak models.
-            Vec::new()
-        } else {
-            mcp_tools
-                .into_iter()
-                .filter(|tool| may_auto_run(&self.config, tool))
-                .collect()
-        };
-        let registry = ToolRegistry::from_mcp_tools(exposed_tools);
-        ensure_system_prompt(&mut messages, registry.tools().len(), attached_files);
+        let edit_with_attachments = attached_files
+            && latest_user_message_requests_file_edit(&messages);
+        let exposed_tools: Vec<_> = agent_tools
+            .into_iter()
+            .filter(|tool| {
+                if !may_auto_run(&self.config, tool) {
+                    return false;
+                }
+                if attached_files && !search_with_attachments {
+                    // Keep file tools when the user attached files — especially for edits.
+                    return is_file_tool(&tool.server, &tool.name);
+                }
+                true
+            })
+            .collect();
+        let registry = ToolRegistry::from_tools(exposed_tools);
+        ensure_system_prompt(
+            &mut messages,
+            registry.tools(),
+            attached_files,
+            edit_with_attachments,
+        );
 
         for step in 1..=self.config.max_steps {
             if cancel.is_cancelled() {
@@ -193,7 +204,7 @@ impl AgentLoop {
         }
 
         if self.config.parallel_tool_calls && tool_calls.len() > 1 {
-            if let Some(shared) = tools.shared() {
+            if let Some(shared) = tools.shared_mcp() {
                 return self
                     .run_tool_calls_parallel(shared, registry, tool_calls, tx.clone())
                     .await;
@@ -258,7 +269,7 @@ impl AgentLoop {
             })
             .await;
 
-        let Some(_mcp_tool) = registry.mcp_tool(&call.name) else {
+        let Some(_agent_tool) = registry.agent_tool(&call.name) else {
             let error = format!("unknown tool: {}", call.name);
             let _ = tx
                 .send(AgentEvent::ToolCallFailed {
@@ -284,7 +295,7 @@ impl AgentLoop {
             .expect("tool exists in registry")
             .to_string();
 
-        debug!(tool = %call.name, qualified = %qualified, "executing MCP tool");
+        debug!(tool = %call.name, qualified = %qualified, "executing agent tool");
         let started = Instant::now();
         let result = match tokio::time::timeout(
             self.config.tool_timeout,
@@ -343,7 +354,7 @@ async fn parallel_tool_call(
         })
         .await;
 
-    let Some(_mcp_tool) = registry.mcp_tool(&call.name) else {
+    let Some(_agent_tool) = registry.agent_tool(&call.name) else {
         let error = format!("unknown tool: {}", call.name);
         let _ = tx
             .send(AgentEvent::ToolCallFailed {
@@ -369,7 +380,7 @@ async fn parallel_tool_call(
         .expect("tool exists in registry")
         .to_string();
 
-    debug!(tool = %call.name, qualified = %qualified, "executing MCP tool (parallel)");
+    debug!(tool = %call.name, qualified = %qualified, "executing agent tool (parallel)");
     let started = Instant::now();
     let mut tools = hub;
     let outcome = match tokio::time::timeout(
@@ -437,7 +448,43 @@ fn latest_user_message_requests_external_search(messages: &[ChatMessage]) -> boo
     .any(|phrase| lower.contains(phrase))
 }
 
-fn ensure_system_prompt(messages: &mut Vec<ChatMessage>, tool_count: usize, attached_files: bool) {
+fn latest_user_message_requests_file_edit(messages: &[ChatMessage]) -> bool {
+    let Some(message) = messages
+        .iter()
+        .rev()
+        .find(|message| message.role == ChatRole::User)
+    else {
+        return false;
+    };
+
+    let lower = message.content.to_ascii_lowercase();
+    [
+        "edit ",
+        "update ",
+        "change ",
+        "modify ",
+        "fix ",
+        "write ",
+        "rewrite ",
+        "refactor ",
+        "add ",
+        "remove ",
+        "delete ",
+        "create file",
+        "save ",
+        "patch ",
+        "implement ",
+    ]
+    .iter()
+    .any(|phrase| lower.contains(phrase))
+}
+
+fn ensure_system_prompt(
+    messages: &mut Vec<ChatMessage>,
+    tools: &[crate::tool::AgentTool],
+    attached_files: bool,
+    edit_with_attachments: bool,
+) {
     if messages
         .first()
         .is_some_and(|message| message.role == ChatRole::System)
@@ -445,26 +492,49 @@ fn ensure_system_prompt(messages: &mut Vec<ChatMessage>, tool_count: usize, atta
         return;
     }
 
-    let prompt = if attached_files && tool_count == 0 {
+    let tool_count = tools.len();
+    let has_file_tools = tools.iter().any(|tool| is_file_tool(&tool.server, &tool.name));
+    let has_file_write_tools = tools
+        .iter()
+        .any(|tool| is_file_tool(&tool.server, &tool.name) && tool.name != "read_file" && tool.name != "list_directory");
+
+    let prompt = if attached_files && has_file_write_tools && edit_with_attachments {
+        "You are Kiwi, a coding assistant with file editing tools. The user's message includes \
+         attached file contents in <file path=\"...\"> blocks. When asked to edit, fix, or update \
+         those files, you MUST persist changes using write_file or update_file with the exact path \
+         from the file tag — do not only describe changes in text. Use structured tool calls with \
+         concrete argument values. After editing, briefly confirm what changed."
+            .to_string()
+    } else if attached_files && has_file_tools {
+        format!(
+            "You are Kiwi, a coding assistant with access to {tool_count} file tools. The user's \
+             message includes attached file contents in <file path=\"...\"> blocks — read those \
+             first. Use read_file, write_file, update_file, list_directory, create_directory, or \
+             delete_path when you need to inspect or persist workspace changes. Use the path from \
+             the file tag or a project-relative path. Use structured tool calls with concrete \
+             argument values. When you have enough context, reply with a clear final answer."
+        )
+    } else if attached_files && tool_count == 0 {
         "You are Kiwi, a coding assistant. The user's message includes attached file contents \
          inside <file path=\"...\">...</file> blocks. Read and answer from those attachments \
-         directly. Do not call tools or claim you cannot access the files."
+         directly. Do not claim you cannot access the files."
             .to_string()
-    } else if attached_files {
+    } else if has_file_write_tools {
         format!(
-            "You are Kiwi, a coding assistant with access to {tool_count} read/search tools. \
-             The user's message includes attached file contents in <file path=\"...\"> blocks — \
-             read those first. Only call tools when the user explicitly asks to search project \
-             memory or the knowledge base beyond what is attached. Use structured tool calls with \
-             concrete argument values, never JSON Schema fragments. When you have enough context, \
-             reply with a clear final answer in plain text."
+            "You are Kiwi, a coding assistant with access to {tool_count} tools including file \
+             read/write/update/delete. When the user asks you to change code or files, use \
+             write_file or update_file to persist edits — do not only show code in the reply. \
+             Use search_files to locate paths, then read_file before editing. Paths are relative \
+             to the project root. For update_file: call read_file first, then pass old_string \
+             copied exactly from the file (whitespace included). To insert at the start of a file, \
+             use empty old_string. Use structured tool calls with concrete argument values, never \
+             JSON Schema fragments. When done, reply with a brief summary."
         )
     } else {
         format!(
-            "You are Kiwi, a coding assistant with access to {tool_count} read/search tools. \
-             Use structured tool calls with concrete argument values (strings, numbers), \
-             never JSON Schema fragments. When you have enough context, reply with a clear final \
-             answer in plain text."
+            "You are Kiwi, a coding assistant with access to {tool_count} tools. Use structured \
+             tool calls with concrete argument values (strings, numbers), never JSON Schema \
+             fragments. When you have enough context, reply with a clear final answer in plain text."
         )
     };
 
@@ -485,18 +555,18 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     use nest_ai::{AiProvider, AiResult, CompletionResponse};
-    use nest_mcp::McpTool;
+    use crate::tool::{AgentTool, ToolOrigin};
     use serde_json::json;
     use std::sync::{Arc, Mutex};
 
     struct MockTools {
-        tools: Vec<McpTool>,
+        tools: Vec<AgentTool>,
         calls: Vec<(String, serde_json::Value)>,
     }
 
     #[async_trait]
     impl ToolSource for MockTools {
-        async fn list_tools(&mut self) -> NestResult<Vec<McpTool>> {
+        async fn list_tools(&mut self) -> NestResult<Vec<AgentTool>> {
             Ok(self.tools.clone())
         }
 
@@ -535,8 +605,9 @@ mod tests {
         }
     }
 
-    fn search_tool() -> McpTool {
-        McpTool {
+    fn search_tool() -> AgentTool {
+        AgentTool {
+            origin: ToolOrigin::Mcp,
             server: "nest-memory".into(),
             name: "search_project_memory".into(),
             qualified_name: "nest-memory/search_project_memory".into(),
@@ -545,8 +616,9 @@ mod tests {
         }
     }
 
-    fn save_tool() -> McpTool {
-        McpTool {
+    fn save_tool() -> AgentTool {
+        AgentTool {
+            origin: ToolOrigin::Mcp,
             server: "nest-context-memory".into(),
             name: "save_context_memory".into(),
             qualified_name: "nest-context-memory/save_context_memory".into(),
@@ -771,6 +843,68 @@ mod tests {
         }
         assert_eq!(tools.calls.len(), 1);
         assert_eq!(finished.as_deref(), Some("found it"));
+    }
+
+    #[tokio::test]
+    async fn agent_keeps_file_tools_when_file_attached_in_message() {
+        fn write_tool() -> AgentTool {
+            AgentTool {
+                origin: ToolOrigin::Native,
+                server: "nest-file".into(),
+                name: "write_file".into(),
+                qualified_name: "nest-file/write_file".into(),
+                description: "Write".into(),
+                input_schema: json!({"type": "object"}),
+            }
+        }
+
+        let ai = AiService::new(Arc::new(MockAi {
+            responses: Mutex::new(vec![
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: String::new(),
+                    done: true,
+                    tool_calls: vec![ToolCall::new(
+                        "nest_file__write_file",
+                        json!({"path": "foo.rs", "content": "fn main() {}"}),
+                    )],
+                    metrics: None,
+                },
+                CompletionResponse {
+                    model: "mock".into(),
+                    content: "updated foo.rs".into(),
+                    done: true,
+                    tool_calls: vec![],
+                    metrics: None,
+                },
+            ]),
+        }));
+
+        let (tx, mut rx) = mpsc::channel(8);
+        let mut tools = MockTools {
+            tools: vec![search_tool(), write_tool()],
+            calls: vec![],
+        };
+        let message = ChatMessage::user(
+            "Edit this file\n<file path=\"foo.rs\">\nold\n</file>",
+        );
+        AgentLoop::new(
+            ai,
+            AgentConfig::default().with_allow_file_writes(true),
+        )
+        .run(&mut tools, vec![message], None, tx, CancelToken::new())
+        .await
+        .unwrap();
+
+        let mut finished = None;
+        while let Ok(event) = rx.try_recv() {
+            if let AgentEvent::Finished { content, .. } = event {
+                finished = Some(content);
+            }
+        }
+        assert_eq!(tools.calls.len(), 1);
+        assert_eq!(tools.calls[0].0, "nest-file/write_file");
+        assert_eq!(finished.as_deref(), Some("updated foo.rs"));
     }
 
     #[tokio::test]
