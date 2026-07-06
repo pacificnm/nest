@@ -6,6 +6,8 @@ members = [
     "core/crates/nest-cli",
     "core/crates/nest-tui",
     "core/crates/nest-gui",
+    "core/crates/nest-tauri",
+    "core/crates/nest-react-theme",
     "core/crates/nest-config",
     "core/crates/nest-error",
     "core/crates/nest-logging",
@@ -29,6 +31,7 @@ members = [
     "core/crates/nest-image",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
+    "modules/crates/nest-data-postgres",
     "modules/crates/nest-media-library",
     "modules/crates/nest-tmdb",
     "modules/crates/nest-ai-ollama",
@@ -63,11 +66,14 @@ nest-logging = { path = "core/crates/nest-logging" }
 nest-task = { path = "core/crates/nest-task" }
 nest-task-runtime = { path = "core/crates/nest-task-runtime" }
 nest-theme = { path = "core/crates/nest-theme" }
+nest-tauri = { path = "core/crates/nest-tauri" }
+nest-react-theme = { path = "core/crates/nest-react-theme" }
 nest-icon = { path = "core/crates/nest-icon" }
 nest-image = { path = "core/crates/nest-image" }
 nest-validation = { path = "core/crates/nest-validation" }
 nest-airtable = { path = "modules/crates/nest-airtable" }
 nest-data-sqlite = { path = "modules/crates/nest-data-sqlite" }
+nest-data-postgres = { path = "modules/crates/nest-data-postgres" }
 nest-media-library = { path = "modules/crates/nest-media-library" }
 nest-tmdb = { path = "modules/crates/nest-tmdb" }
 nest-ai-ollama = { path = "modules/crates/nest-ai-ollama" }

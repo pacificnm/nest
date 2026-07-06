@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Remote image fetch and disk cache for Nest egui applications"
+description = "Remote image fetch and disk cache for Nest applications"
 
 [dependencies]
 egui = { version = "0.31", optional = true }
@@ -17,7 +17,7 @@ reqwest = { version = "0.12", default-features = false, features = ["blocking", 
 tracing = "0.1"
 
 [features]
-default = ["egui"]
+default = []
 egui = ["dep:egui"]
 
 [dev-dependencies]

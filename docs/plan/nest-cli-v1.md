@@ -6,7 +6,7 @@ See [nest-cli docs](../nest-cli/README.md).
 
 ## Context
 
-Command-line host for Nest applications — the CLI equivalent of `nest-gui` for egui. Wires modules, parses commands, initializes logging and configuration before the module graph, renders errors, and exits cleanly.
+Command-line host for Nest applications — the non-interactive host alongside `nest-tui` (terminal) and `nest-tauri` (desktop). Wires modules, parses commands, initializes logging and configuration before the module graph, renders errors, and exits cleanly.
 
 ## Crate boundaries
 

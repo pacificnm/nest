@@ -2,7 +2,7 @@
 //!
 //! `nest-design` owns the token schema. Runtime theme loading and lifecycle
 //! live in `nest-theme`; platform-specific rendering conversion lives in
-//! adapter crates such as `nest-egui-theme`.
+//! adapter crates such as `nest-react-theme`.
 
 #![warn(missing_docs)]
 

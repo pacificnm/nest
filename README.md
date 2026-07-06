@@ -13,7 +13,7 @@ nest/
 ├── docs/
 ├── examples/
 ├── core/crates/            # Framework (stable, reviewed)
-│   ├── nest-core, nest-app, nest-cli, nest-tui, nest-gui
+│   ├── nest-core, nest-app, nest-cli, nest-tui, nest-tauri
 │   ├── nest-config, nest-error, nest-logging
 │   ├── nest-task, nest-task-runtime
 │   ├── nest-file, nest-file-csv
@@ -56,12 +56,23 @@ nest-core          primitives (AppBuilder, Module, services, lifecycle)
     ↓
 nest-app           host-agnostic container (metadata, startup/shutdown)
     ↓
-nest-cli / nest-tui / nest-gui   presentation hosts
+nest-cli / nest-tui / nest-tauri   presentation hosts
 ```
 
 Modules (`nest-airtable`, `nest-data-sqlite`, …) plug into the container; apps compose hosts + modules.
 
 Hosts own CLI parsing, event loops, logging initialization, and config file loading.
+
+## Desktop frontend platform
+
+Nest **desktop** apps use **Tauri + React + TypeScript + Tailwind**:
+
+| Layer | Path |
+|-------|------|
+| Tauri shell + Nest modules | `src-tauri/` |
+| React UI + Tailwind | `ui/` |
+
+Rust business logic stays in Nest modules; React is the presentation tier. See [docs/architecture.md](docs/architecture.md#desktop-frontend-platform).
 
 ---
 
@@ -80,7 +91,7 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-cli** | Command-line host: clap parsing, config/logging init, command dispatch, exit codes. | [docs](docs/nest-cli/README.md) |
 | **nest-tui** | Terminal UI host: Ratatui event loop, file-only logging, config merge. | [docs](docs/nest-tui/README.md) |
-| **nest-gui** | Desktop GUI host: eframe/egui main loop, window options, file-only logging. | [docs](docs/nest-gui/README.md) |
+| **nest-tauri** | Desktop host: Tauri shell, IPC, `ui/` + React + Tailwind frontend. | [docs](docs/nest-tauri/README.md) |
 
 ### Foundation
 
@@ -125,7 +136,7 @@ Hosts own CLI parsing, event loops, logging initialization, and config file load
 |-------|---------|------|
 | **nest-design** | Design token schema and built-in theme definitions (no runtime or UI deps). | [docs](docs/nest-design/README.md) |
 | **nest-theme** | Runtime theme loading, validation, and `ThemeService` lifecycle. | [docs](docs/nest-theme/README.md) |
-| **nest-icon** | Font Awesome icon fonts and egui widgets (`Icon`, `IconButton`, `IconModule`). | [docs](docs/nest-icon/README.md) |
+| **nest-react-theme** | Theme tokens → CSS variables + Tailwind preset for React `ui/`. | [docs](docs/nest-react-theme/README.md) |
 
 ### Validation
 
@@ -161,30 +172,30 @@ Planned: `kiwi`, `finch`, …
 
 ---
 
-## Quick start
+## Quick start (desktop)
+
+Nest desktop apps use **Tauri + React + TypeScript + Tailwind**. Rust modules run in `src-tauri/`; UI lives in `ui/`.
 
 ```rust
-use nest_gui::{GuiApp, GuiView};
-use nest_core::AppContext;
-use nest_error::NestResult;
+// src-tauri/src/main.rs
+use nest_tauri::TauriApp;
 use nest_theme::ThemeModule;
 
-struct MainView;
-
-impl GuiView for MainView {
-    fn ui(&mut self, ui: &mut egui::Ui, _ctx: &AppContext) -> NestResult<()> {
-        ui.heading("Hello, Nest");
-        Ok(())
-    }
-}
-
 fn main() {
-    GuiApp::new("my-app")
+    TauriApp::new("my-app")
         .module(ThemeModule::default())
-        .view(MainView)
-        .run();
+        .run(tauri::generate_context!());
 }
 ```
+
+```tsx
+// ui/src/App.tsx
+export function App() {
+  return <h1 className="text-nest-foreground">Hello, Nest</h1>;
+}
+```
+
+See [nest-tauri](docs/nest-tauri/README.md) and [architecture — desktop frontend platform](docs/architecture.md#desktop-frontend-platform).
 
 Workspace dependencies use `{ workspace = true }` — paths are defined in the root [`Cargo.toml`](Cargo.toml).
 
@@ -192,7 +203,7 @@ Workspace dependencies use `{ workspace = true }` — paths are defined in the r
 
 ## Development / agent tools
 
-Local MCP servers (Cursor) provide semantic search over project docs, reference manuals (Rust, egui), and persistent agent context:
+Local MCP servers (Cursor) provide semantic search over project docs, reference manuals (Rust, Tauri, React, Tailwind), and persistent agent context:
 
 - [`tools/MCP-SETUP.md`](tools/MCP-SETUP.md) — PostgreSQL, Python venv, Cursor MCP, hooks
 - [`AGENTS.md`](AGENTS.md) — agent workflow and memory usage

@@ -1,28 +1,42 @@
 //! Native workspace file tools backed by [`nest_file::FileService`].
 
+use std::collections::HashSet;
+use std::sync::{Arc, Mutex};
+
 use async_trait::async_trait;
-use nest_file::{search_files, FileSearchOptions, FileService};
+use nest_file::{grep_files, search_files, FileSearchOptions, GrepOptions, FileService, WriteOptions};
 use nest_mcp::split_qualified_tool_name;
 use serde_json::{json, Value};
 use tokio::task;
 
 use crate::tool::AgentTool;
 use crate::{NestError, NestResult};
+use crate::file_ops::normalize_workspace_path;
 use crate::tools::ToolSource;
 
 /// Virtual server id for in-process file tools.
 pub const FILE_SERVER: &str = "nest-file";
 
+/// Tracks files read during an agent run so blind overwrites are rejected.
+#[derive(Default)]
+struct FileToolSession {
+    read_paths: HashSet<String>,
+}
+
 /// Executes scoped file operations for the agent loop.
 #[derive(Clone)]
 pub struct FileToolSource {
     files: FileService,
+    session: Arc<Mutex<FileToolSession>>,
 }
 
 impl FileToolSource {
     /// Creates a file tool source over the given service.
     pub fn new(files: FileService) -> Self {
-        Self { files }
+        Self {
+            files,
+            session: Arc::new(Mutex::new(FileToolSession::default())),
+        }
     }
 
     /// Tool metadata exposed to the model.
@@ -31,22 +45,26 @@ impl FileToolSource {
             tool("read_file", "Read a UTF-8 text file from the project workspace.", json!({
                 "type": "object",
                 "properties": {
-                    "path": { "type": "string", "description": "Path relative to the project root" }
+                    "path": { "type": "string", "description": "Path relative to the project root (no .. segments)" }
                 },
                 "required": ["path"]
             })),
-            tool("write_file", "Write UTF-8 text to a file (creates or overwrites).", json!({
+            tool("write_file", "Create a NEW file or replace an existing file after read_file. \
+                 Parent directories are created automatically. For partial edits to an existing file, \
+                 prefer update_file instead.", json!({
                 "type": "object",
                 "properties": {
-                    "path": { "type": "string" },
+                    "path": {
+                        "type": "string",
+                        "description": "Path relative to the project root. Use a path that does not exist yet to create a new file."
+                    },
                     "content": { "type": "string" }
                 },
                 "required": ["path", "content"]
             })),
-            tool("update_file", "Replace text in an existing file. Call read_file first and copy \
+            tool("update_file", "Edit part of an EXISTING file. Call read_file first and copy \
                  old_string exactly (including whitespace). Set replace_all to true for every match. \
-                 Empty old_string prepends new_string to the file. Empty new_string deletes the first \
-                 match (or all matches when replace_all is true).", json!({
+                 Empty old_string prepends new_string. Empty new_string deletes the first match.", json!({
                 "type": "object",
                 "properties": {
                     "path": { "type": "string", "description": "Path relative to the project root" },
@@ -70,7 +88,8 @@ impl FileToolSource {
                 },
                 "required": ["path"]
             })),
-            tool("create_directory", "Create a directory and any missing parents.", json!({
+            tool("create_directory", "Create a directory and any missing parents. Safe to call when \
+                 the directory already exists.", json!({
                 "type": "object",
                 "properties": {
                     "path": { "type": "string" }
@@ -103,6 +122,37 @@ impl FileToolSource {
                 },
                 "required": ["query"]
             })),
+            tool("search_code", "Search file contents for lines matching all query words \
+                 (case-insensitive). Returns path, line number, and snippet. Use to find symbols, \
+                 functions, or strings in source files.", json!({
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Terms that must all appear on the same line, e.g. \"AgentLoop run\""
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Directory scope (default: project root)"
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "description": "Maximum matches (default 30, max 200)"
+                    }
+                },
+                "required": ["query"]
+            })),
+            tool("cargo_check", "Run `cargo check` in the workspace root and return compiler \
+                 errors/warnings. Call after editing Rust files to verify the project still \
+                 compiles.", json!({
+                "type": "object",
+                "properties": {
+                    "package": {
+                        "type": "string",
+                        "description": "Optional crate name for `cargo check -p` (e.g. kiwi, nest-agent)"
+                    }
+                }
+            })),
         ]
     }
 }
@@ -127,27 +177,50 @@ impl ToolSource for FileToolSource {
         }
 
         let files = self.files.clone();
+        let session = Arc::clone(&self.session);
         let tool = tool.to_string();
-        task::spawn_blocking(move || execute_file_tool(&files, &tool, &arguments))
+        task::spawn_blocking(move || execute_file_tool(&files, &session, &tool, &arguments))
             .await
             .map_err(|error| NestError::network(error.to_string()).with_module("nest-agent"))?
     }
 }
 
-fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> NestResult<String> {
+fn execute_file_tool(
+    files: &FileService,
+    session: &Arc<Mutex<FileToolSession>>,
+    tool: &str,
+    arguments: &Value,
+) -> NestResult<String> {
     match tool {
         "read_file" => {
-            let path = required_str(arguments, "path")?;
-            Ok(files.read_text(path)?)
+            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let content = files.read_text(&path)?;
+            session
+                .lock()
+                .map_err(|error| NestError::validation(error.to_string()))?
+                .read_paths
+                .insert(path);
+            Ok(content)
         }
         "write_file" => {
-            let path = required_str(arguments, "path")?;
-            let content = required_str(arguments, "content")?;
-            files.write_text(path, content)?;
-            Ok(format!("Wrote {} bytes to {path}.", content.len()))
+            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let content = optional_str(arguments, "content");
+            if files.exists(&path)? {
+                let read = session
+                    .lock()
+                    .map_err(|error| NestError::validation(error.to_string()))?;
+                if !read.read_paths.contains(&path) {
+                    return Err(NestError::validation(format!(
+                        "`{path}` already exists. Call read_file on it first before write_file, \
+                         or use update_file for partial edits. To create a new file, use a path \
+                         that does not exist yet."
+                    )));
+                }
+            }
+            write_with_backup(files, &path, content)
         }
         "update_file" => {
-            let path = required_str(arguments, "path")?;
+            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
             let old = optional_str(arguments, "old_string");
             let new = optional_str(arguments, "new_string");
             let replace_all = arguments
@@ -161,32 +234,37 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
                         "update_file requires non-empty new_string when old_string is empty",
                     ));
                 }
-                let mut content = files.read_text(path)?;
+                let mut content = files.read_text(&path)?;
                 content = prepend_text(content, new);
-                files.write_text(path, &content)?;
+                files.write_text(&path, &content)?;
                 return Ok(format!("Prepended to {path}."));
             }
 
-            let mut content = files.read_text(path)?;
+            let mut content = files.read_text(&path)?;
             let count = if new.is_empty() {
-                delete_matches(&mut content, old, replace_all, path)?
+                delete_matches(&mut content, old, replace_all, &path)?
             } else if replace_all {
-                replace_all_matches(&mut content, old, new, path)?
+                replace_all_matches(&mut content, old, new, &path)?
             } else {
-                replace_first_match(&mut content, old, new, path)?
+                replace_first_match(&mut content, old, new, &path)?
             };
-            files.write_text(path, &content)?;
+            files.write_text(&path, &content)?;
+            session
+                .lock()
+                .map_err(|error| NestError::validation(error.to_string()))?
+                .read_paths
+                .insert(path.clone());
             Ok(format!("Updated {count} occurrence(s) in {path}."))
         }
         "delete_path" => {
-            let path = required_str(arguments, "path")?;
+            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
             let recursive = arguments
                 .get("recursive")
                 .and_then(Value::as_bool)
                 .unwrap_or(false);
-            let metadata = files.metadata(path)?;
+            let metadata = files.metadata(&path)?;
             if metadata.is_dir {
-                files.delete_dir(path, recursive)?;
+                files.delete_dir(&path, recursive)?;
                 Ok(format!("Deleted directory {path}."))
             } else if metadata.is_file {
                 if recursive {
@@ -194,7 +272,7 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
                         "{path} is a file; omit recursive to delete files"
                     )));
                 }
-                files.delete_file(path)?;
+                files.delete_file(&path)?;
                 Ok(format!("Deleted file {path}."))
             } else {
                 Err(NestError::validation(format!(
@@ -203,16 +281,17 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
             }
         }
         "create_directory" => {
-            let path = required_str(arguments, "path")?;
-            files.create_dir_all(path)?;
-            Ok(format!("Created directory {path}."))
+            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            crate::file_ops::ensure_directory(files, &path)
         }
         "list_directory" => {
             let path = arguments
                 .get("path")
                 .and_then(Value::as_str)
-                .unwrap_or(".");
-            let entries = files.list_dir(path)?;
+                .map(normalize_workspace_path)
+                .transpose()?
+                .unwrap_or_else(|| ".".into());
+            let entries = files.list_dir(&path)?;
             let payload: Vec<Value> = entries
                 .into_iter()
                 .map(|entry| {
@@ -229,11 +308,14 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
             })
         }
         "search_files" => {
-            let query = required_str(arguments, "query")?;
-            let path = arguments
+            let query = search_query(arguments)?;
+            let scope = arguments
                 .get("path")
                 .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
                 .unwrap_or(".");
+            let path = normalize_workspace_path(scope)?;
             let max_results = arguments
                 .get("max_results")
                 .and_then(Value::as_u64)
@@ -241,7 +323,7 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
                 .unwrap_or(50);
             let matches = search_files(
                 files,
-                &FileSearchOptions::for_query(query).with_scope(path, max_results),
+                &FileSearchOptions::for_query(query).with_scope(&path, max_results),
             )?;
             let payload: Vec<Value> = matches
                 .into_iter()
@@ -256,8 +338,57 @@ fn execute_file_tool(files: &FileService, tool: &str, arguments: &Value) -> Nest
                 NestError::validation(format!("failed to encode search results: {error}"))
             })
         }
+        "search_code" => {
+            let query = search_query(arguments)?;
+            let scope = arguments
+                .get("path")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .unwrap_or(".");
+            let path = normalize_workspace_path(scope)?;
+            let max_results = arguments
+                .get("max_results")
+                .and_then(Value::as_u64)
+                .map(|value| value as usize)
+                .unwrap_or(30);
+            let matches = grep_files(
+                files,
+                &GrepOptions::for_query(query).with_scope(&path, max_results),
+            )?;
+            serde_json::to_string_pretty(&matches).map_err(|error| {
+                NestError::validation(format!("failed to encode search results: {error}"))
+            })
+        }
+        "cargo_check" => {
+            let root = files.config().root.as_ref().ok_or_else(|| {
+                NestError::validation("workspace root is not configured for file tools")
+            })?;
+            let package = arguments
+                .get("package")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|value| !value.is_empty());
+            crate::workspace_ops::cargo_check(root.as_path(), package)
+        }
         other => Err(NestError::network(format!("unknown file tool: {other}"))
             .with_module("nest-agent")),
+    }
+}
+
+fn write_with_backup(files: &FileService, path: &str, content: &str) -> NestResult<String> {
+    let options = WriteOptions::from_config(files.config())
+        .create_parents()
+        .backup();
+    if files.exists(path)? {
+        files.write_bytes_with_options(path, content.as_bytes(), options)?;
+        Ok(format!(
+            "Wrote {} bytes to {path} (previous content saved as {path}.bak).",
+            content.len()
+        ))
+    } else {
+        files.write_bytes_with_options(path, content.as_bytes(), options)?;
+        Ok(format!("Wrote {} bytes to {path}.", content.len()))
     }
 }
 
@@ -267,6 +398,39 @@ fn required_str<'a>(arguments: &'a Value, field: &str) -> NestResult<&'a str> {
         .and_then(Value::as_str)
         .filter(|value| !value.is_empty())
         .ok_or_else(|| NestError::validation(format!("missing or empty `{field}`")))
+}
+
+fn search_query(arguments: &Value) -> NestResult<String> {
+    if let Some(query) = arguments
+        .get("query")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        return Ok(query.to_string());
+    }
+
+    if let Some(path) = arguments
+        .get("path")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        let terms: Vec<&str> = path
+            .trim_matches('/')
+            .split('/')
+            .filter(|segment| !segment.is_empty() && *segment != ".")
+            .collect();
+        if !terms.is_empty() {
+            return Ok(terms.join(" "));
+        }
+    }
+
+    Err(NestError::validation(
+        "search_files requires a non-empty `query` (path words to match). \
+         Example: {\"query\": \"agent loop_config mod.rs\"}. Use `path` only as an optional \
+         directory scope, not as the search terms.",
+    ))
 }
 
 fn optional_str<'a>(arguments: &'a Value, field: &str) -> &'a str {
@@ -352,6 +516,44 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn write_file_rejects_blind_overwrite() {
+        let dir = tempdir().unwrap();
+        std::fs::write(dir.path().join("mod.rs"), "original").unwrap();
+        let mut source = FileToolSource::new(scoped_files(dir.path()));
+
+        let error = source
+            .call_tool(
+                "nest-file/write_file",
+                json!({"path": "mod.rs", "content": "replacement"}),
+            )
+            .await
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("already exists"));
+        assert!(error.contains("read_file"));
+    }
+
+    #[tokio::test]
+    async fn write_file_allows_new_path_without_read() {
+        let dir = tempdir().unwrap();
+        let mut source = FileToolSource::new(scoped_files(dir.path()));
+
+        source
+            .call_tool(
+                "nest-file/write_file",
+                json!({"path": "docs/agent/agent.md", "content": "# Docs\n"}),
+            )
+            .await
+            .unwrap();
+
+        let content = source
+            .call_tool("nest-file/read_file", json!({"path": "docs/agent/agent.md"}))
+            .await
+            .unwrap();
+        assert_eq!(content, "# Docs\n");
+    }
+
+    #[tokio::test]
     async fn write_and_read_via_tool_source() {
         let dir = tempdir().unwrap();
         let mut source = FileToolSource::new(scoped_files(dir.path()));
@@ -402,6 +604,37 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(content, "//! Module docs.\nfn main() {}");
+    }
+
+    #[test]
+    fn search_query_requires_terms_when_query_missing() {
+        let error = search_query(&json!({"path": ""}))
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("requires a non-empty `query`"));
+    }
+
+    #[test]
+    fn search_query_derives_terms_from_path_when_query_missing() {
+        let query = search_query(&json!({"path": "docs/agent/agent.md"})).unwrap();
+        assert_eq!(query, "docs agent agent.md");
+    }
+
+    #[tokio::test]
+    async fn write_normalizes_internal_parent_segments() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("src")).unwrap();
+        std::fs::write(dir.path().join("src/foo.txt"), "ok").unwrap();
+        let mut source = FileToolSource::new(scoped_files(dir.path()));
+
+        let content = source
+            .call_tool(
+                "nest-file/read_file",
+                json!({"path": "src/../src/foo.txt"}),
+            )
+            .await
+            .unwrap();
+        assert_eq!(content, "ok");
     }
 
     #[tokio::test]

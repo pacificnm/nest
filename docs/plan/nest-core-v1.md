@@ -1,13 +1,15 @@
 # nest-core v1 Implementation Plan
 
+> **Note (2026-07):** Nest desktop UI uses **Tauri + React + Tailwind** (`nest-tauri`). This plan remains accurate for **nest-core** boundaries (no UI deps). See [nest-tauri v1](./nest-tauri-v1.md).
+
 ## Context
 
-The [README.md](../../README.md) defines Nest as a modular Rust/egui desktop framework. This plan scopes **nest-core v1** only—the foundation crate that defines contracts, not features.
+The [README.md](../../README.md) defines Nest as a modular Rust application framework. This plan scopes **nest-core v1** only—the foundation crate that defines contracts, not features.
 
 **Design decisions (confirmed):**
 - Runtime registration + typed lookup (not constructor injection, macros, or scoped lifetimes)
 - Sync lifecycle in core; async execution deferred to future `nest-tasks`
-- Core stays small: few dependencies, no egui, no Tokio
+- Core stays small: few dependencies, no UI frameworks, no Tokio
 
 ---
 
@@ -25,9 +27,14 @@ flowchart TB
         ExtensionTraits["Extension traits: Service, Panel, Command, ..."]
     end
 
-    subgraph app [nest-app - later]
-        AppRun["App::new().module(...).run()"]
-        EguiLoop[egui event loop]
+    subgraph app [nest-app]
+        AppRun["NestApp container + lifecycle"]
+    end
+
+    subgraph hosts [Host crates]
+        NestTauri["nest-tauri (Tauri + React ui/)"]
+        NestCli[nest-cli]
+        NestTui[nest-tui]
     end
 
     subgraph tasks [nest-tasks - later]
@@ -50,12 +57,13 @@ flowchart TB
     tasks -.->|implements later| AsyncLifecycle
     core -.->|defines stub traits| tasks
     app --> core
+    hosts --> app
 ```
 
 | In nest-core v1 | Out of scope (later crates) |
 |-----------------|----------------------------|
 | `ServiceRegistry`, typed `service::<T>()` | Constructor injection, auto-wiring |
-| `Module::configure` | egui window / render loop (`nest-app`) |
+| `Module::configure` | Desktop host / render loop (`nest-tauri` + `ui/`) |
 | Sync `Lifecycle` hooks | Tokio, task runner (`nest-tasks`) |
 | `AppBuilder` registration API | `register_panel`, `register_command` implementations |
 | Extension traits (empty contracts) | Trait-object DI (`dyn Repository`) |
@@ -96,7 +104,7 @@ nest/
 |-------|---------|-----------|
 | `thiserror` | `NestError` derive | Yes |
 | `std` only | `HashMap` + `TypeId` registry | Yes |
-| `egui`, `tokio`, `async-trait` | — | **No** |
+| UI frameworks, `tokio`, `async-trait` | — | **No** |
 
 **MSRV:** Pin Rust **1.75+** (edition 2021) in workspace `rust-version`. No nightly features.
 
@@ -208,7 +216,7 @@ impl AppContext {
 }
 ```
 
-`AppContext` is created once at build completion and shared (via `Arc<AppContext>` or `&AppContext`) with modules during lifecycle. **Decision for v1:** use `Arc<AppContext>` so egui UI closures and background modules can hold a handle; registry interior is immutable after startup (no `register` on context post-build).
+`AppContext` is created once at build completion and shared (via `Arc<AppContext>` or `&AppContext`) with modules during lifecycle. **Decision for v1:** use `Arc<AppContext>` so host crates and background modules can hold a handle; registry interior is immutable after startup (no `register` on context post-build).
 
 ---
 
@@ -357,7 +365,7 @@ sequenceDiagram
     Builder->>Built: freeze ServiceRegistry into Arc AppContext
     Dev->>Built: startup()
     Built->>Ctx: on_startup hooks
-    Note over Dev: nest-app runs egui loop using Ctx
+    Note over Dev: nest-tauri runs webview + React ui/ using Ctx
     Dev->>Built: shutdown()
     Built->>Ctx: on_shutdown hooks
 ```
@@ -366,14 +374,14 @@ sequenceDiagram
 
 ```rust
 App::new().module(UiModule).run();
-// internally: build() -> startup() -> egui loop -> shutdown()
+// internally: build() -> startup() -> host event loop -> shutdown()
 ```
 
 ---
 
 ## Testing Strategy
 
-All tests in `nest-core` (no egui):
+All tests in `nest-core` (no UI dependencies):
 
 | Test | Validates |
 |------|-----------|
@@ -435,7 +443,7 @@ Within crate (not new top-level markdown files unless requested):
 - Scoped / transient lifetimes
 - `dyn Trait` service lookup
 - Tokio, async traits, or task execution
-- egui integration
+- UI framework integration (Tauri + React lives in `nest-tauri`)
 - Plugin dynamic loading (`.so` / DLL)
 - Feature flags beyond optional `std` (always on for desktop)
 
@@ -446,7 +454,7 @@ Within crate (not new top-level markdown files unless requested):
 nest-core v1 is complete when:
 
 1. A consumer crate can depend on `nest-core`, define a `Module`, register singleton services, `build()`, run sync lifecycle, and resolve `ctx.service::<T>()?` without panics.
-2. The crate has **zero** egui/Tokio dependencies and **< 10** direct dependencies total.
+2. The crate has **zero** UI-framework/Tokio dependencies and **< 10** direct dependencies total.
 3. All unit/integration tests pass; public API is documented.
 4. Extension traits exist so `nest-app` and `nest-ui` can be planned without changing core's DI model.
 
@@ -456,7 +464,8 @@ nest-core v1 is complete when:
 
 | Crate | Depends on | Adds |
 |-------|------------|------|
-| `nest-app` | `nest-core`, `eframe`/`egui` | `App::run()`, window, main loop |
+| `nest-app` | `nest-core` | Container, metadata, lifecycle (no UI deps) |
+| `nest-tauri` | `nest-core`, `nest-app`, Tauri | Desktop host: Tauri + React + Tailwind |
 | `nest-events` | `nest-core` | event bus implementing core event traits |
 | `nest-tasks` | `nest-core` | Tokio, `AsyncLifecycle`, `Job` runner |
 | `nest-plugins` | `nest-core` | `Plugin` orchestration, optional dynamic load |

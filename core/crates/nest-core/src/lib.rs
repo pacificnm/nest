@@ -13,7 +13,7 @@
 //! - **Explicit registration** — `register_service(instance)`, lookup via `service::<T>()?`
 //! - **Singleton only** — services are `Send + Sync + 'static`
 //! - **Sync lifecycle** — async execution belongs in `nest-task-runtime`
-//! - **No egui, no Tokio** — core stays dependency-light
+//! - **No UI frameworks, no Tokio** — core stays dependency-light
 //!
 //! ## Example
 //!

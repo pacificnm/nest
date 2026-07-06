@@ -11,6 +11,7 @@ mod catalog;
 mod composite;
 mod config;
 mod event;
+mod file_ops;
 mod file_tools;
 mod policy;
 mod registry;
@@ -18,12 +19,17 @@ mod runner;
 mod tool;
 mod tools;
 mod validation;
+mod workspace_ops;
 
 pub use cancel::CancelToken;
 pub use catalog::probe_tools;
 pub use composite::CompositeToolSource;
 pub use config::{AgentConfig, AutoRunPolicy};
 pub use event::AgentEvent;
+pub use file_ops::{
+    create_directory, create_file, ensure_directory, join_rel_path,
+    write_file as write_workspace_file,
+};
 pub use file_tools::{FileToolSource, FILE_SERVER};
 pub use registry::ToolRegistry;
 pub use runner::AgentLoop;

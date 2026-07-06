@@ -24,19 +24,19 @@ source = "/data/nest-knowledge/rust/rust-reference/src"
 extensions = ["md"]
 
 [[collections]]
-name = "egui"
-source = "/data/nest-knowledge/egui/crates/egui/src"
-extensions = ["rs", "md"]
+name = "tauri"
+source = "/data/nest-knowledge/tauri/tauri-docs/src/content/docs"
+extensions = ["md", "mdx"]
 
 [[collections]]
-name = "eframe"
-source = "/data/nest-knowledge/egui/crates/eframe/src"
-extensions = ["rs", "md"]
-
-[[collections]]
-name = "egui-docs"
-source = "/data/nest-knowledge/egui/docs"
+name = "react"
+source = "/data/nest-knowledge/react/react.dev/src/content"
 extensions = ["md"]
+
+[[collections]]
+name = "tailwind"
+source = "/data/nest-knowledge/tailwind/tailwindcss.com/src/docs"
+extensions = ["md", "mdx"]
 
 # Uncomment after running ./scripts/fetch-webos-knowledge.sh
 # [[collections]]

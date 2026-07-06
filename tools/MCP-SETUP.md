@@ -8,7 +8,7 @@ Three MCP servers are provided:
 | Server | Script | Purpose |
 | --- | --- | --- |
 | `nest-memory` | `tools/mcp_memory_server.py` | Semantic search over indexed project docs and plans. |
-| `nest-knowledge` | `tools/mcp_knowledge_server.py` | Semantic search over Rust / egui reference manuals. |
+| `nest-knowledge` | `tools/mcp_knowledge_server.py` | Semantic search over Rust, Tauri, React, Tailwind reference manuals. |
 | `nest-context-memory` | `tools/mcp_context_memory_server.py` | Save, search, and retrieve agent session context across Cursor compaction. |
 
 File tools (`read_file`, `write_file`, etc.) are **native Rust** in `nest-agent` via
@@ -140,12 +140,12 @@ Verify search before wiring Cursor:
 
 ```bash
 .venv/bin/python tools/search_memory.py "nest-core module system"
-.venv/bin/python tools/search_knowledge.py "egui response" --collection egui
+.venv/bin/python tools/search_knowledge.py "invoke command" --collection tauri
 ```
 
 ## 3b. Index Knowledge Base
 
-Reference manuals (Rust book, egui, eframe, webOS TV) live outside the repo under
+Reference manuals (Rust book, Tauri, React, Tailwind, webOS TV) live outside the repo under
 `/data/nest-knowledge` or `$NEST_KNOWLEDGE`. Fetch and index them:
 
 ```bash
@@ -163,7 +163,7 @@ Fetch sources only (no indexing):
 
 ```bash
 ./scripts/fetch-knowledge.sh
-./scripts/fetch-knowledge.sh --git-only    # Rust + egui only
+./scripts/fetch-knowledge.sh --git-only    # Rust + Tauri/React/Tailwind only
 ./scripts/fetch-knowledge.sh --webos-only  # webOS TV docs only
 ./scripts/fetch-knowledge.sh --force       # git pull + re-fetch webOS pages
 ```
@@ -175,7 +175,7 @@ NEST_KNOWLEDGE=/path/to/manuals ./scripts/index-knowledge.sh
 ```
 
 This writes `tools/knowledge.toml` and indexes collections: `rust-book`,
-`rust-by-example`, `rust-reference`, `egui`, `eframe`, `egui-docs`.
+`rust-by-example`, `rust-reference`, `tauri`, `react`, `tailwind`.
 
 List indexed collections:
 
@@ -315,10 +315,10 @@ echo '{"conversation_id":"test"}' | .cursor/hooks/memory_stop.sh | jq .
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
-| `search_knowledge_base` | `query: str`, `limit: int = 8`, `collection: str = ""` | Matching manual snippets (Rust, egui, …). |
+| `search_knowledge_base` | `query: str`, `limit: int = 8`, `collection: str = ""` | Matching manual snippets (Rust, Tauri, React, Tailwind, …). |
 | `list_knowledge_collections` | — | Indexed collection names. |
 
-Pass `collection` to narrow (e.g. `"egui"`, `"rust-book"`, `"webos-tv"`).
+Pass `collection` to narrow (e.g. `"tauri"`, `"react"`, `"tailwind"`, `"rust-book"`, `"webos-tv"`).
 
 **Loon webOS client:** hooks require `search_knowledge_base` with `collection="webos-tv"`
 before editing `apps/loon/client/`. Index with `./scripts/fetch-webos-knowledge.sh`.
@@ -387,7 +387,7 @@ See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 | `AGENTS.md` | Agent workflow and memory usage rules. |
 | `tools/setup_database.sql` | One-time DDL for all memory tables. |
 | `scripts/index-memory.sh` | Index project documentation. |
-| `scripts/index-knowledge.sh` | Index Rust / egui reference manuals. |
+| `scripts/index-knowledge.sh` | Index Rust / Tauri / React / Tailwind reference manuals. |
 | `tools/index_knowledge.py` | Knowledge indexer (TOML collections). |
 | `tools/search_knowledge.py` | CLI search against knowledge_base. |
 | `tools/mcp_knowledge_server.py` | MCP server for reference manuals. |

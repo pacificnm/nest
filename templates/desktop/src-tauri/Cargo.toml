@@ -1,0 +1,19 @@
+[package]
+name = "nest-desktop-template"
+version = "0.1.0"
+description = "Nest desktop app template (Tauri + React)"
+edition = "2021"
+rust-version = "1.75"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+nest-cache = { path = "../../../core/crates/nest-cache" }
+nest-cache-file = { path = "../../../modules/crates/nest-cache-file" }
+nest-image = { path = "../../../core/crates/nest-image" }
+nest-tauri = { path = "../../../core/crates/nest-tauri", features = ["runtime", "images"] }
+nest-theme = { path = "../../../core/crates/nest-theme" }
+tauri = { version = "2", features = [] }
+
+[workspace]

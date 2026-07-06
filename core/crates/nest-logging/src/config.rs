@@ -166,6 +166,11 @@ impl LoggingConfig {
     pub fn for_gui(app_name: impl Into<String>) -> Self {
         Self::new(app_name).with_file("./logs")
     }
+
+    /// Sensible Tauri desktop defaults: same as GUI (file logging only).
+    pub fn for_tauri(app_name: impl Into<String>) -> Self {
+        Self::for_gui(app_name)
+    }
 }
 
 impl fmt::Debug for LoggingConfig {

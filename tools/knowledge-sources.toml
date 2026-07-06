@@ -19,6 +19,16 @@ url = "https://github.com/rust-lang/reference.git"
 dest = "rust/rust-reference"
 
 [[repos]]
-name = "egui"
-url = "https://github.com/emilk/egui.git"
-dest = "egui"
+name = "tauri-docs"
+url = "https://github.com/tauri-apps/tauri-docs.git"
+dest = "tauri/tauri-docs"
+
+[[repos]]
+name = "react-dev"
+url = "https://github.com/reactjs/react.dev.git"
+dest = "react/react.dev"
+
+[[repos]]
+name = "tailwindcss-com"
+url = "https://github.com/tailwindlabs/tailwindcss.com.git"
+dest = "tailwind/tailwindcss.com"

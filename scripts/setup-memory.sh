@@ -56,7 +56,7 @@ cat <<EOF
 Next steps:
   1. cp .env.example .env   # set OPENAI_API_KEY (and DATABASE_URL if needed)
   2. ./scripts/index-memory.sh
-  3. ./scripts/index-knowledge.sh   # fetches Rust/egui/webOS sources, then indexes
+  3. ./scripts/index-knowledge.sh   # fetches Rust/Tauri/React/Tailwind/webOS sources, then indexes
   4. Update paths in .cursor/mcp.json for your machine
   5. Reload Cursor (Developer: Reload Window)
   6. Verify Tools & MCP: nest-memory, nest-knowledge, nest-context-memory

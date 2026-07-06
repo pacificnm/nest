@@ -22,6 +22,8 @@ pub fn is_read_only_tool(server: &str, tool: &str) -> bool {
             | (FILE_SERVER, "read_file")
             | (FILE_SERVER, "list_directory")
             | (FILE_SERVER, "search_files")
+            | (FILE_SERVER, "search_code")
+            | (FILE_SERVER, "cargo_check")
     )
 }
 

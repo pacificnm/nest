@@ -11,7 +11,9 @@ and post-response saves.
 
 Hooks **block** file edits, shell commands, and other tools until both complete.
 
-Optional when using Rust/egui: **`search_knowledge_base`** (`nest-knowledge`).
+Optional when using Rust APIs: **`search_knowledge_base`** (`nest-knowledge`).
+
+When building **desktop UI** (`ui/`, Tauri): search collections `tauri`, `react`, `tailwind`.
 
 When editing **`apps/loon/client/`**: **`search_knowledge_base`** with
 `collection="webos-tv"` (hook-enforced). See `.cursor/rules/webos-tv-knowledge.mdc`.
@@ -44,7 +46,7 @@ automatic transcript snapshot, but you must still save an explicit summary.
 1. [docs/architecture.md](docs/architecture.md) — layering and dependency rules
 2. `docs/plan/` — implementation plans
 3. MCP project memory
-4. MCP knowledge base (Rust/egui APIs)
+4. MCP knowledge base (Rust, Tauri, React, Tailwind APIs)
 5. MCP context memory (resume prior work)
 6. `docs/nest-<crate>/` and source under `core/crates/` and `modules/crates/` (apps are separate repos — see `apps/README.md`)
 

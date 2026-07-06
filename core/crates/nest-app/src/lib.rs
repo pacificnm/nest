@@ -1,7 +1,7 @@
 //! Host-agnostic application container for the Nest framework.
 //!
 //! `nest-app` wraps [`nest_core::AppBuilder`] with metadata and lifecycle
-//! orchestration. Host crates (`nest-cli`, `nest-tui`, `nest-gui`) execute the
+//! orchestration. Host crates (`nest-cli`, `nest-tui`, `nest-tauri`) execute the
 //! container; they do not replace it.
 
 #![deny(missing_docs)]

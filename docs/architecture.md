@@ -17,10 +17,34 @@ Core          core/crates/       framework hosts and contracts (nest-core, nest-
 Within **core**, the runtime stack flows:
 
 ```text
-nest-core → nest-app → nest-cli / nest-tui / nest-gui
+nest-core → nest-app → nest-cli / nest-tui / nest-tauri
 ```
 
-Hosts own presentation (CLI parsing, event loops, logging init). Modules register services into the Nest container. Apps wire hosts, modules, and product-specific code together — in their **own repos**, not here.
+Hosts own presentation (CLI parsing, event loops, logging init). **Desktop apps** use the [desktop frontend platform](#desktop-frontend-platform) below.
+
+Modules register services into the Nest container. Apps wire hosts, modules, and product-specific code together — in their **own repos**, not here.
+
+## Desktop frontend platform
+
+All Nest **desktop** applications share one frontend stack:
+
+| Layer | Technology | Crate / path |
+|-------|------------|--------------|
+| Host | **Tauri** | `nest-tauri`, `src-tauri/` |
+| UI | **React** + **TypeScript** | `ui/src/` (typically Vite) |
+| Styling | **Tailwind CSS** | `ui/tailwind.config.ts`, `nest-react-theme` |
+| Icons | React icon library | `ui/` (Lucide, Font Awesome React) — replaces `nest-icon` |
+| Remote images | `nest-image` + React | Rust `ImageService` + `<RemoteImage>` in `ui/` — replaces egui widget |
+| Tokens | `nest-design` / `nest-theme` | Rust services → CSS variables in webview |
+
+```text
+src-tauri/          Rust: nest-tauri, Nest modules, Tauri commands
+ui/                 React + TypeScript + Tailwind (product UX)
+```
+
+CLI and TUI apps do not use this stack — they use `nest-cli` and `nest-tui` respectively.
+
+See [nest-tauri plan](plan/nest-tauri-v1.md) and [nest-tauri docs](nest-tauri/README.md).
 
 ## Dependency rules
 
@@ -46,11 +70,11 @@ Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`.
 
 ### Apps
 
-End-user products in **separate repositories**. An app chooses a host (`nest-cli`, `nest-gui`, …), enables modules, and adds commands, views, or domain logic.
+End-user products in **separate repositories**. An app chooses a host (`nest-cli`, `nest-tauri`, `nest-tui`, …), enables modules, and adds commands, views, or domain logic.
 
-Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) — clone locally to `apps/airtable-sync/` (gitignored by nest). Planned: `kiwi`, `finch`.
+Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) — clone locally to `apps/airtable-sync/` (gitignored by nest). **Swift** ([apps/swift/docs/README.md](../apps/swift/docs/README.md)) is the reference Tauri + React desktop product; source at `apps/swift/` when checked out locally. Planned: `kiwi`, `finch`.
 
-Typical product layout: `crates/core`, `crates/cli`, `crates/gui`. Nest crates via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest), or `path` patch in `.cargo/config.toml` when checked out under `apps/<product>/` (see [apps/README.md](../apps/README.md)).
+Typical **CLI** layout: `crates/core`, `crates/cli`. Typical **desktop** layout: `ui/` (React + Tailwind) + `src-tauri/` (`nest-tauri` + modules). Nest crates via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest), or `path` patch in `.cargo/config.toml` when checked out under `apps/<product>/` (see [apps/README.md](../apps/README.md)).
 
 Apps may depend on any core crate and any module they need. Core and modules must never depend back on an app. **No product source code belongs in the nest monorepo.**
 
@@ -76,5 +100,8 @@ The root workspace `members` list includes **only** `core/crates/*` and `modules
 
 - [README](../README.md) — crate catalog
 - [apps/README.md](../apps/README.md) — external product repositories
+- [nest-tauri plan](plan/nest-tauri-v1.md) — desktop host shift (Tauri + React + Tailwind)
 - [nest-core](nest-core/README.md) — `AppBuilder`, modules, services
 - [nest-app](nest-app/README.md) — application container
+- [nest-tauri](nest-tauri/README.md) — desktop host (Tauri + React + Tailwind)
+- [Swift](../apps/swift/docs/README.md) — reference desktop product (PM + knowledge + AI)

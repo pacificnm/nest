@@ -9,6 +9,7 @@ PATHS = [
     "README.md",
     "AGENTS.md",
     "docs",
+    "apps/swift/docs",
     "tools/MCP-SETUP.md",
     "tools/mcp-memory-setup.md",
 ]

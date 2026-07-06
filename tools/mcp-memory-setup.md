@@ -90,12 +90,12 @@ The `knowledge_base` table is indexed via `./scripts/index-knowledge.sh` and
 searched through MCP `nest-knowledge` (`search_knowledge_base`,
 `list_knowledge_collections`).
 
-Collections: `rust-book`, `rust-by-example`, `rust-reference`, `egui`,
-`eframe`, `egui-docs`. Manuals live under `~/nest-knowledge` by default.
+Collections: `rust-book`, `rust-by-example`, `rust-reference`, `tauri`,
+`react`, `tailwind`. Manuals live under `~/nest-knowledge` by default.
 
 ```bash
 ./scripts/index-knowledge.sh
-.venv/bin/python tools/search_knowledge.py "Widget" --collection egui
+.venv/bin/python tools/search_knowledge.py "useState" --collection react
 ```
 
 ## Troubleshooting

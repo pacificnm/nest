@@ -20,7 +20,7 @@ nest-task is the execution engine for asynchronous, long-running work. Domain cr
 
 | Host | Pattern |
 |------|---------|
-| nest-cli / nest-tui / nest-gui / Kiwi | `TaskRuntimeModule::owned(RuntimeConfig::default())` |
+| nest-cli / nest-tui / nest-tauri / Kiwi | `TaskRuntimeModule::owned(RuntimeConfig::default())` |
 | nest-http-server / axum / tests | `TaskRuntimeModule::from_current()` |
 
 ## v1 limitations

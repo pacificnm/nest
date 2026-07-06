@@ -27,6 +27,8 @@ pub struct AgentConfig {
     pub allow_file_writes: bool,
     /// When true, independent tool calls may run concurrently (different MCP servers).
     pub parallel_tool_calls: bool,
+    /// Open workspace root shown to the model for file tool paths.
+    pub workspace_root: Option<std::path::PathBuf>,
 }
 
 impl Default for AgentConfig {
@@ -38,6 +40,7 @@ impl Default for AgentConfig {
             allow_save_context: false,
             allow_file_writes: false,
             parallel_tool_calls: true,
+            workspace_root: None,
         }
     }
 }
@@ -58,6 +61,18 @@ impl AgentConfig {
     /// Enables or disables auto-run for Nest file write/delete tools.
     pub fn with_allow_file_writes(mut self, allow: bool) -> Self {
         self.allow_file_writes = allow;
+        self
+    }
+
+    /// Sets the workspace root injected into the agent system prompt for file tools.
+    pub fn with_workspace_root(mut self, root: impl Into<std::path::PathBuf>) -> Self {
+        self.workspace_root = Some(root.into());
+        self
+    }
+
+    /// Sets per-tool call timeout (for example `cargo check`).
+    pub fn with_tool_timeout(mut self, timeout: Duration) -> Self {
+        self.tool_timeout = timeout;
         self
     }
 }

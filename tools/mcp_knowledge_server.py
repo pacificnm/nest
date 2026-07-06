@@ -14,7 +14,7 @@ mcp = FastMCP("nest-knowledge")
 
 @mcp.tool()
 def search_knowledge_base(query: str, limit: int = 8, collection: str = "") -> str:
-    """Search indexed reference manuals (Rust book, egui, eframe, etc.)."""
+    """Search indexed reference manuals (Rust book, Tauri, React, Tailwind, etc.)."""
     rows = search_knowledge(query, limit=limit, collection=collection)
     return format_results(query, rows, collection=collection)
 

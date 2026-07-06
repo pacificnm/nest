@@ -5,8 +5,7 @@ use nest_error::NestResult;
 
 /// Converts a [`ThemeDefinition`] into a platform-specific representation.
 ///
-/// Implemented by adapter crates such as `nest-egui-theme`, `nest-react-theme`,
-/// and `nest-cli-theme`.
+/// Implemented by adapter crates such as `nest-react-theme` and `nest-cli-theme`.
 pub trait ThemeAdapter<TOutput> {
     /// Adapts the theme into the host output type.
     fn adapt(theme: &ThemeDefinition) -> NestResult<TOutput>;

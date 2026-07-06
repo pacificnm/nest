@@ -52,3 +52,4 @@ primary = "#2563EB"
 
 - [Implementation plan](../plan/nest-design-theme-v1.md)
 - [nest-theme](../nest-theme/README.md) — runtime loading and lifecycle
+- [nest-react-theme](../nest-react-theme/README.md) — CSS/Tailwind adapter (desktop)

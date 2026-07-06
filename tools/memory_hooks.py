@@ -31,7 +31,7 @@ commands, or making implementation changes:
 2. **`search_context_memory`** OR **`list_context_memory`** (`nest-context-memory`)
    with `session_key="{SESSION_KEY_HINT}"` — resume prior work for this branch/session.
 
-Optional when using Rust/egui APIs: **`search_knowledge_base`** (`nest-knowledge`).
+Optional when using Rust, Tauri, React, or Tailwind APIs: **`search_knowledge_base`** (`nest-knowledge`).
 
 ### webOS TV client (`apps/loon/client/`)
 

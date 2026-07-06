@@ -6,11 +6,11 @@ See [nest-app docs](../nest-app/README.md).
 
 ## Context
 
-`nest-app` is the host-agnostic application container layered between `nest-core` and presentation hosts (`nest-cli`, `nest-tui`, `nest-gui`, future `nest-http-server`). It wraps `nest_core::AppBuilder` with metadata, bootstrap validation, and lifecycle orchestration.
+`nest-app` is the host-agnostic application container layered between `nest-core` and presentation hosts (`nest-cli`, `nest-tui`, `nest-tauri`, future `nest-http-server`). It wraps `nest_core::AppBuilder` with metadata, bootstrap validation, and lifecycle orchestration.
 
 **Core rule:** `nest-core` defines building blocks. `nest-app` builds the standard container. Hosts decide how it is presented and executed.
 
-`nest-gui` remains the **desktop host** (eframe loop). `nest-app` is **not** a GUI host.
+**Desktop host:** [`nest-tauri`](./nest-tauri-v1.md) + React + Tailwind `ui/`. `nest-app` is **not** a GUI host.
 
 ## Crate boundaries
 

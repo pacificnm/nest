@@ -1,6 +1,6 @@
 # Getting started
 
-This guide walks through building a minimal application using nest-core directly. In production, `nest-gui` wraps this flow with an egui main loop.
+This guide walks through building a minimal application using nest-core directly. In production, a **host crate** wraps this flow: [`nest-cli`](../nest-cli/README.md), [`nest-tui`](../nest-tui/README.md), or [`nest-tauri`](../nest-tauri/README.md) + React `ui/` for desktop.
 
 ## Add the dependency
 

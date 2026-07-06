@@ -1,4 +1,4 @@
-"""Clone or update git-based nest-knowledge sources (Rust book, egui, …)."""
+"""Clone or update git-based nest-knowledge sources (Rust book, Tauri, React, Tailwind, …)."""
 
 from __future__ import annotations
 

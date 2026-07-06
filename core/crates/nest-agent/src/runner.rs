@@ -43,6 +43,7 @@ impl AgentLoop {
             && latest_user_message_requests_external_search(&messages);
         let edit_with_attachments = attached_files
             && latest_user_message_requests_file_edit(&messages);
+        let persist_requested = latest_user_message_requests_file_persist(&messages);
         let exposed_tools: Vec<_> = agent_tools
             .into_iter()
             .filter(|tool| {
@@ -62,6 +63,8 @@ impl AgentLoop {
             registry.tools(),
             attached_files,
             edit_with_attachments,
+            persist_requested,
+            &self.config,
         );
 
         for step in 1..=self.config.max_steps {
@@ -127,6 +130,35 @@ impl AgentLoop {
         tx: &mpsc::Sender<AgentEvent>,
         cancel: &CancelToken,
     ) -> NestResult<(String, Vec<ToolCall>, Option<nest_ai::CompletionMetrics>)> {
+        // Ollama tool calling is more reliable with a single non-stream response.
+        if !request.tools.is_empty() {
+            if cancel.is_cancelled() {
+                return Err(nest_error::NestError::network("agent run cancelled")
+                    .with_module("nest-agent"));
+            }
+
+            let response = self
+                .ai
+                .complete(request.clone())
+                .await
+                .map_err(ai_to_nest)?;
+
+            let mut content = response.content;
+            let mut tool_calls = response.tool_calls;
+            if tool_calls.is_empty() {
+                if let Some(parsed) = parse_tool_calls_from_content(&content) {
+                    tool_calls = parsed;
+                    content.clear();
+                }
+            }
+
+            if !content.is_empty() {
+                let _ = tx.send(AgentEvent::TextDelta(content.clone())).await;
+            }
+
+            return Ok((content, tool_calls, response.metrics));
+        }
+
         if let Ok(mut stream) = self.ai.stream_complete(request.clone()).await {
             let mut content = String::new();
             let mut tool_calls = Vec::new();
@@ -479,11 +511,43 @@ fn latest_user_message_requests_file_edit(messages: &[ChatMessage]) -> bool {
     .any(|phrase| lower.contains(phrase))
 }
 
+fn latest_user_message_requests_file_persist(messages: &[ChatMessage]) -> bool {
+    let Some(message) = messages
+        .iter()
+        .rev()
+        .find(|message| message.role == ChatRole::User)
+    else {
+        return false;
+    };
+
+    let lower = message.content.to_ascii_lowercase();
+    [
+        "save ",
+        "save the",
+        "write_file",
+        "write file",
+        "create file",
+        "create the file",
+        "document ",
+        "document the",
+        "markdown",
+        "write to ",
+        "persist ",
+        "docs/",
+        "docs/agent",
+    ]
+    .iter()
+    .any(|phrase| lower.contains(phrase))
+        || latest_user_message_requests_file_edit(messages)
+}
+
 fn ensure_system_prompt(
     messages: &mut Vec<ChatMessage>,
     tools: &[crate::tool::AgentTool],
     attached_files: bool,
     edit_with_attachments: bool,
+    persist_requested: bool,
+    config: &AgentConfig,
 ) {
     if messages
         .first()
@@ -498,21 +562,39 @@ fn ensure_system_prompt(
         .iter()
         .any(|tool| is_file_tool(&tool.server, &tool.name) && tool.name != "read_file" && tool.name != "list_directory");
 
-    let prompt = if attached_files && has_file_write_tools && edit_with_attachments {
-        "You are Kiwi, a coding assistant with file editing tools. The user's message includes \
-         attached file contents in <file path=\"...\"> blocks. When asked to edit, fix, or update \
-         those files, you MUST persist changes using write_file or update_file with the exact path \
-         from the file tag — do not only describe changes in text. Use structured tool calls with \
-         concrete argument values. After editing, briefly confirm what changed."
-            .to_string()
+    let workspace = workspace_context(config.workspace_root.as_deref());
+    let file_guidance = if has_file_write_tools {
+        file_tool_guidance()
+    } else {
+        String::new()
+    };
+    let task_hint = task_hint_from_messages(messages);
+
+    let prompt = if persist_requested && has_file_write_tools {
+        format!(
+            "You are Kiwi, a coding assistant with file write tools. The user asked you to create \
+             or save files on disk. You MUST: (1) read every source file the user named with \
+             read_file; (2) call write_file for new paths or update_file for existing paths; \
+             (3) only reply after the write tool succeeds. Never claim a file was saved unless \
+             a write tool returned success in this run.{file_guidance}{task_hint}{workspace}"
+        )
+    } else if attached_files && has_file_write_tools && edit_with_attachments {
+        format!(
+            "You are Kiwi, a coding assistant with file editing tools. The user's message includes \
+             attached file contents in <file path=\"...\"> blocks. When asked to edit, fix, or update \
+             those files, you MUST persist changes using write_file or update_file with the exact path \
+             from the file tag — do not only describe changes in text. Use structured tool calls with \
+             concrete argument values. After editing, briefly confirm what changed.{file_guidance}{workspace}"
+        )
     } else if attached_files && has_file_tools {
         format!(
             "You are Kiwi, a coding assistant with access to {tool_count} file tools. The user's \
              message includes attached file contents in <file path=\"...\"> blocks — read those \
              first. Use read_file, write_file, update_file, list_directory, create_directory, or \
              delete_path when you need to inspect or persist workspace changes. Use the path from \
-             the file tag or a project-relative path. Use structured tool calls with concrete \
-             argument values. When you have enough context, reply with a clear final answer."
+             the file tag or a project-relative path. Use search_files with a query to locate paths. \
+             Use structured tool calls with concrete argument values. When you have enough context, \
+             reply with a clear final answer.{file_guidance}{workspace}"
         )
     } else if attached_files && tool_count == 0 {
         "You are Kiwi, a coding assistant. The user's message includes attached file contents \
@@ -524,11 +606,12 @@ fn ensure_system_prompt(
             "You are Kiwi, a coding assistant with access to {tool_count} tools including file \
              read/write/update/delete. When the user asks you to change code or files, use \
              write_file or update_file to persist edits — do not only show code in the reply. \
-             Use search_files to locate paths, then read_file before editing. Paths are relative \
-             to the project root. For update_file: call read_file first, then pass old_string \
-             copied exactly from the file (whitespace included). To insert at the start of a file, \
-             use empty old_string. Use structured tool calls with concrete argument values, never \
-             JSON Schema fragments. When done, reply with a brief summary."
+             Use search_files with a query to locate paths, then read_file before editing. Paths \
+             are relative to the workspace root below — never use .. to escape it. For update_file: \
+             call read_file first, then pass old_string copied exactly from the file (whitespace \
+             included). To insert at the start of a file, use empty old_string. Use structured tool \
+             calls with concrete argument values, never JSON Schema fragments. When done, reply with \
+             a brief summary.{file_guidance}{task_hint}{workspace}"
         )
     } else {
         format!(
@@ -539,6 +622,59 @@ fn ensure_system_prompt(
     };
 
     messages.insert(0, ChatMessage::system(prompt));
+}
+
+fn file_tool_guidance() -> String {
+    "\n\nFile tools — pick the right one:\n\
+     • search_files(query): locate paths when unsure\n\
+     • search_code(query): find lines in source files by content\n\
+     • read_file: always before editing an existing file\n\
+     • write_file: create a NEW file (path must not exist yet) or replace a file after read_file\n\
+     • update_file: partial edits to an EXISTING file (read_file first; copy old_string exactly)\n\
+     • create_directory: create a folder tree before writing files inside it\n\
+     • delete_path: remove a file or directory\n\
+     • cargo_check: run after Rust edits to verify compilation\n\
+     Parent directories are created automatically on write_file."
+        .to_string()
+}
+
+fn task_hint_from_messages(messages: &[ChatMessage]) -> String {
+    let Some(text) = messages
+        .iter()
+        .rev()
+        .find(|message| message.role == ChatRole::User)
+        .map(|message| message.content.as_str())
+    else {
+        return String::new();
+    };
+
+    let lower = text.to_ascii_lowercase();
+    if lower.contains("document") || lower.contains("markdown") || lower.contains("docs/") {
+        let output = text
+            .split_whitespace()
+            .map(|token| token.trim_matches(|c: char| !c.is_alphanumeric() && c != '/' && c != '.'))
+            .find(|token| token.starts_with("docs/") && token.ends_with(".md"))
+            .unwrap_or("docs/agent/agent.md");
+        return format!(
+            "\n\nTask hint: the user wants markdown documentation written to `{output}` (or another \
+             path under docs/). Read the named source files; do not overwrite them — write the doc \
+             to the output path."
+        );
+    }
+
+    String::new()
+}
+
+fn workspace_context(workspace_root: Option<&std::path::Path>) -> String {
+    let Some(root) = workspace_root else {
+        return String::new();
+    };
+    format!(
+        "\n\nWorkspace root: {}. All file tool paths are relative to this directory (not the Kiwi \
+         app folder). Do not use .. segments. Call search_files with query before read/write when \
+         you are unsure of the path.",
+        root.display()
+    )
 }
 
 fn truncate_preview(text: &str) -> String {

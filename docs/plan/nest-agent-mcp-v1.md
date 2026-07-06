@@ -92,7 +92,7 @@ implement integrations; **apps** wire UX.
 | --- | --- | --- |
 | `nest-mcp` | **core** | MCP protocol types, stdio transport, session lifecycle (no Tokio required in types crate — see split note below) |
 | `nest-mcp-runtime` | **core** | Async process spawn, read/write loops, `McpClient`, `McpHub` (Tokio) — *or* fold into `nest-mcp` if small |
-| `nest-agent` | **core** | `AgentLoop`, `ToolRegistry`, events, step limits, cancellation (no egui) |
+| `nest-agent` | **core** | `AgentLoop`, `ToolRegistry`, events, step limits, cancellation (host-agnostic) |
 | `nest-ai` | **core** | Extend with tool-aware messages, `ToolDefinition`, `CompletionRequest.tools`, provider trait |
 | `nest-ai-ollama` | **module** | Ollama `tools` request field, parse `tool_calls` from stream + final chunk |
 | `nest-mcp-module` | **module** | `McpModule`, load config, register `McpHubService` — *optional v1.1; Kiwi can construct hub directly* |
@@ -467,7 +467,7 @@ GUI shows tool steps for the same path.
 
 1. PostgreSQL + indexed memory running ([MCP-SETUP.md](../../tools/MCP-SETUP.md))
 2. Ollama running with tool-capable model
-3. `kiwi agent "Search project memory for nest-gui workbench"` shows tool call + answer
+3. `kiwi agent "Search project memory for nest-tauri desktop platform"` shows tool call + answer
 4. Kiwi GUI agent mode shows tool block + streaming final answer
 5. Disabled MCP server → clear error in chat
 6. Chat mode (non-agent) unchanged — no regression

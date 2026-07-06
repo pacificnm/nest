@@ -33,7 +33,7 @@ the transcript, but an explicit agent save is still required.
 
 ## Optional
 
-**`search_knowledge_base`** (`nest-knowledge`) when using Rust, egui, or eframe APIs.
+**`search_knowledge_base`** (`nest-knowledge`) when using Rust, Tauri, React, or Tailwind APIs.
 
 **`search_knowledge_base`** with `collection="webos-tv"` when editing `apps/loon/client/`
 (hook-enforced). See [webos-tv-knowledge.mdc](./webos-tv-knowledge.mdc).

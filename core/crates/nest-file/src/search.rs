@@ -88,7 +88,7 @@ pub fn search_files(files: &FileService, options: &FileSearchOptions) -> NestRes
     Ok(results)
 }
 
-fn query_tokens(query: &str) -> Vec<String> {
+pub(crate) fn query_tokens(query: &str) -> Vec<String> {
     query
         .split_whitespace()
         .map(|token| token.to_ascii_lowercase())

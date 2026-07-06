@@ -2,7 +2,7 @@
 
 ## What is nest-core?
 
-Nest is a modular application framework for Rust desktop apps built on top of egui. **nest-core** sits at the bottom of the stack. It does not render UI, run async tasks, or load plugins dynamically. Instead, it defines the contracts and infrastructure that other Nest crates build on.
+Nest is a modular application framework for Rust. **nest-core** sits at the bottom of the stack. It does not render UI, run async tasks, or load plugins dynamically. Instead, it defines the contracts and infrastructure that other Nest crates build on.
 
 nest-core answers three questions for every Nest application:
 
@@ -34,7 +34,7 @@ Lifecycle hooks in nest-core are synchronous. Background work, cancellation, and
 
 ### Dependency-light
 
-nest-core has a single external dependency (`thiserror`). It does not depend on egui, Tokio, or proc-macro crates.
+nest-core has a single external dependency (`thiserror`). It does not depend on UI frameworks, Tokio, or proc-macro crates.
 
 | Dependency | Purpose |
 |------------|---------|
@@ -57,7 +57,7 @@ flowchart TB
     end
 
     subgraph consumers [Downstream crates]
-        nest_gui[nest-gui]
+        nest_tauri[nest-tauri]
         nest_ui[nest-ui]
         nest_tasks[nest-tasks]
         nest_plugins[nest-plugins]
@@ -86,7 +86,7 @@ flowchart TB
 
 | Feature | Planned crate |
 |---------|---------------|
-| egui window and event loop | `nest-gui` |
+| Desktop window and Tauri bridge | `nest-tauri` |
 | UI components | `nest-ui` |
 | Background tasks, Tokio | `nest-tasks` |
 | Event bus implementation | `nest-events` |

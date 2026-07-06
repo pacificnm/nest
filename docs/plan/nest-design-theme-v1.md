@@ -6,7 +6,7 @@ See [nest-design docs](../nest-design/README.md) and [nest-theme docs](../nest-t
 
 ## Context
 
-Shared theme language before platform adapters. `nest-design` owns the token schema; `nest-theme` owns lifecycle; adapter crates (`nest-egui-theme`, `nest-react-theme`, `nest-cli-theme`) are deferred.
+Shared theme language before platform adapters. `nest-design` owns the token schema; `nest-theme` owns lifecycle; `nest-react-theme` (desktop) and `nest-cli-theme` (terminal) are platform adapters.
 
 ## Crate boundaries
 
@@ -41,6 +41,7 @@ Shared theme language before platform adapters. `nest-design` owns the token sch
 
 ## Follow-up
 
-- `nest-egui-theme`, `nest-react-theme`, `nest-cli-theme`
+- `nest-react-theme` — CSS vars + Tailwind preset for Tauri/React apps (see [plan](./nest-tauri-v1.md))
+- `nest-cli-theme` — Ratatui styling
 - `ThemeChanged` event
 - Settings integration for persisted theme preference

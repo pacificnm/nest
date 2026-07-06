@@ -32,14 +32,20 @@ Database-agnostic data contract layer. nest-data defines what data access means;
 
 ## v1 limitations
 
-- No `nest-data-sqlx`, `nest-data-postgres`, ORM adapters
+- No `nest-data-sqlx` shared layer (postgres uses sqlx directly)
 - No `nest-data-sqlite/async` implementation (feature gate only for future)
 - Minimal `ListQuery` (limit/offset only)
 - No trait-object repository lookup in nest-core
 
+## Providers
+
+| Crate | Status |
+|-------|--------|
+| `nest-data-sqlite` | Sync SQLite (implemented) |
+| **`nest-data-postgres`** | Async PostgreSQL + pgvector (implemented) |
+
 ## Follow-up
 
-- `nest-data-postgres` (async default)
-- Extract `nest-data-sqlx` when second SQL provider lands
+- Extract `nest-data-sqlx` when a second SQL provider needs shared sqlx helpers
 - `nest-data-sqlite/async` via sqlx + tokio
 - Richer query/filter contracts

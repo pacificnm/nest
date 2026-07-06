@@ -16,7 +16,7 @@ Configuration loading extracted from `nest-cli::config` into a standalone founda
 |-------|------|
 | `nest-config` | `ConfigLoader`, `ConfigDocument`, `ConfigService`, paths, format detection |
 | `nest-error` | `NEST_CONFIG_*` error codes |
-| Hosts (`nest-cli`, `nest-tui`, `nest-gui`) | Call `ConfigLoader`, register `ConfigService` via `nest-core` |
+| Hosts (`nest-cli`, `nest-tui`, `nest-tauri`) | Call `ConfigLoader`, register `ConfigService` via `nest-core` |
 
 `nest-config` has **no** `nest-core` dependency. `ConfigService` is a plain `Clone` type; hosts call `app.register_service(ConfigService::new(loaded))`.
 

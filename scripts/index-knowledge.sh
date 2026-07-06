@@ -48,19 +48,19 @@ source = "${KNOWLEDGE}/rust/rust-reference/src"
 extensions = ["md"]
 
 [[collections]]
-name = "egui"
-source = "${KNOWLEDGE}/egui/crates/egui/src"
-extensions = ["rs", "md"]
+name = "tauri"
+source = "${KNOWLEDGE}/tauri/tauri-docs/src/content/docs"
+extensions = ["md", "mdx"]
 
 [[collections]]
-name = "eframe"
-source = "${KNOWLEDGE}/egui/crates/eframe/src"
-extensions = ["rs", "md"]
-
-[[collections]]
-name = "egui-docs"
-source = "${KNOWLEDGE}/egui/docs"
+name = "react"
+source = "${KNOWLEDGE}/react/react.dev/src/content"
 extensions = ["md"]
+
+[[collections]]
+name = "tailwind"
+source = "${KNOWLEDGE}/tailwind/tailwindcss.com/src/docs"
+extensions = ["md", "mdx"]
 
 [[collections]]
 name = "webos-tv"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch all nest-knowledge sources (Rust/egui git checkouts + webOS TV docs).
+# Fetch all nest-knowledge sources (Rust git checkouts + Tauri/React/Tailwind + webOS TV docs).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -24,7 +24,7 @@ if [[ ! -x "$PYTHON" ]]; then
 fi
 
 if ! command -v git >/dev/null 2>&1; then
-  echo "ERROR: git is required to fetch Rust/egui knowledge sources." >&2
+  echo "ERROR: git is required to fetch knowledge git sources." >&2
   exit 1
 fi
 
@@ -43,7 +43,7 @@ if [[ "$FORCE" -eq 1 ]]; then
 fi
 
 if [[ "$FETCH_GIT" -eq 1 ]]; then
-  echo "Fetching Rust / egui git sources into ${KNOWLEDGE} ..."
+  echo "Fetching Rust / Tauri / React / Tailwind git sources into ${KNOWLEDGE} ..."
   "$PYTHON" "${ROOT}/tools/fetch_knowledge.py" "${FETCH_ARGS[@]}"
 fi
 

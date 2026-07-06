@@ -12,20 +12,10 @@ Host-agnostic application container for the [Nest framework](../../README.md).
 use nest_app::{AppEnvironment, NestApp};
 use nest_config::{ConfigLoader, ConfigService};
 use nest_file::FileModule;
-use nest_gui::{GuiApp, GuiView};
-
-struct MainView;
-
-impl GuiView for MainView {
-    fn ui(&mut self, ui: &mut egui::Ui, _ctx: &nest_core::AppContext) -> nest_error::NestResult<()> {
-        ui.heading("Hello");
-        Ok(())
-    }
-}
 
 fn main() {
-    let loaded = ConfigLoader::file_or_search("kiwi", None).load().unwrap();
-    let nest_app = NestApp::builder("kiwi")
+    let loaded = ConfigLoader::file_or_search("my-app", None).load().unwrap();
+    let mut nest_app = NestApp::builder("my-app")
         .version(env!("CARGO_PKG_VERSION"))
         .environment(AppEnvironment::Development)
         .register_service(ConfigService::new(loaded))
@@ -34,9 +24,9 @@ fn main() {
         .build()
         .unwrap();
 
-    GuiApp::from_nest_app(nest_app)
-        .view(MainView)
-        .run();
+    nest_app.startup().unwrap();
+    // Host runs presentation: nest-cli, nest-tui, or nest-tauri + React ui/
+    nest_app.shutdown().unwrap();
 }
 ```
 
@@ -95,7 +85,7 @@ Each host exposes `from_nest_app` / `with_nest_app`:
 |------|----------------------------|
 | `nest-cli` | Skips `AppBuilder` module loop; uses container context for dispatch |
 | `nest-tui` | Skips module registration in `prepare_runtime` |
-| `nest-gui` | Same as TUI |
+| `nest-tauri` | Attaches container before Tauri command bridge and webview |
 
 **Service injection constraint:** register `ConfigService` and other services **before** `build()`. Hosts still own config file discovery when no `ConfigService` is present.
 
@@ -106,12 +96,12 @@ Each host exposes `from_nest_app` / `with_nest_app`:
 | Module dependency validation | `nest-core` (`configure_modules`) |
 | App name validation | `nest-app` (`AppBootstrapper`) |
 | Startup/shutdown tracing | `nest-app` (`AppLifecycleRunner`) |
-| CLI / TUI / GUI presentation | Host crates |
+| CLI / TUI / desktop presentation | Host crates (`nest-tauri` for desktop) |
 | Logging initialization | Host crates |
 | Config file loading | Host crates (or pre-register `ConfigService`) |
 
 ## Related docs
 
 - [nest-core application](../nest-core/application.md)
-- [nest-cli](../nest-cli/README.md) · [nest-tui](../nest-tui/README.md) · [nest-gui](../nest-gui/README.md)
+- [nest-cli](../nest-cli/README.md) · [nest-tui](../nest-tui/README.md) · [nest-tauri](../nest-tauri/README.md)
 - [Implementation plan](../plan/nest-app-v1.md)

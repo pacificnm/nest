@@ -46,7 +46,7 @@ CREATE INDEX IF NOT EXISTS agent_context_memory_session_created_idx
 CREATE INDEX IF NOT EXISTS agent_context_memory_created_idx
     ON agent_context_memory (created_at DESC);
 
--- External reference docs (Rust book, egui, etc.) — indexer deferred
+-- External reference docs (Rust book, Tauri, React, Tailwind, etc.) — indexer deferred
 CREATE TABLE IF NOT EXISTS knowledge_base (
     id bigserial PRIMARY KEY,
     collection text NOT NULL,

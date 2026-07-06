@@ -51,7 +51,7 @@ pub trait ThemeAdapter<TOutput> {
 }
 ```
 
-Deferred v2+ crates: `nest-egui-theme`, `nest-react-theme`, `nest-cli-theme`.
+Deferred v2+ crates: `nest-react-theme` (desktop — **implemented**), `nest-cli-theme` (terminal).
 
 ## Error codes
 

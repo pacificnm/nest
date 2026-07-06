@@ -126,8 +126,11 @@ pub const NEST_TUI_TERMINAL_INIT_FAILED: &str = "NEST_TUI_TERMINAL_INIT_FAILED";
 /// TUI event loop failed.
 pub const NEST_TUI_EVENT_LOOP_FAILED: &str = "NEST_TUI_EVENT_LOOP_FAILED";
 
-/// GUI eframe startup failed.
+/// Legacy GUI host startup failed.
 pub const NEST_GUI_EFRAME_START_FAILED: &str = "NEST_GUI_EFRAME_START_FAILED";
+
+/// Tauri runtime failed to start.
+pub const NEST_TAURI_START_FAILED: &str = "NEST_TAURI_START_FAILED";
 
 /// Application container was already started.
 pub const NEST_APP_ALREADY_STARTED: &str = "NEST_APP_ALREADY_STARTED";

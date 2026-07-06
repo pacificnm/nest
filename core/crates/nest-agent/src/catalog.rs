@@ -28,7 +28,9 @@ pub async fn probe_tools(
 
     let mut source = CompositeToolSource::new(hub);
     if let Some(root) = project_root {
-        if let Ok(files) = FileService::with_config(FileServiceConfig::scoped(root)) {
+        if let Ok(files) =
+            FileService::with_config(FileServiceConfig::scoped(root).allow_create_dirs(true))
+        {
             source = source.with_files(files);
         }
     }
