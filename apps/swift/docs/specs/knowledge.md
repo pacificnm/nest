@@ -15,7 +15,7 @@
 | `slack` | planned | Imported channel/DM messages |
 | `doc` | yes | Project docs, specs, pasted documentation |
 
-All types map to [`knowledge_items`](data-model.md) with a shared search index.
+All types map to [`knowledge_articles`](database-schema.md) with categories and revision history.
 
 ## Note editor (UI)
 
@@ -27,18 +27,18 @@ Markdown notes are the primary authoring surface in v1:
 | `project_id` | yes (defaults to focus project; omit for workspace search) |
 | Folder organization | optional (v1.1) |
 
-On save, note content syncs to `knowledge_items` with `kind = note` and triggers embedding refresh.
+On save, note content syncs to `knowledge_articles` (`source_type = manual`) and appends a `knowledge_revisions` row; embedding refresh follows.
 
 ## Linking
 
-- Attach knowledge items to tasks via `task_notes`
+- Attach knowledge articles to tasks via `task_knowledge_links`
 - Wiki-style `[[links]]` parsed on save for backlinks (notes only in v1)
 
 ## Search
 
 ### Vector search (primary)
 
-- **pgvector** similarity on `knowledge_items.embedding`
+- **pgvector** similarity on `knowledge_articles.embedding`
 - Default: **focus project**; workspace-wide when user or agent omits `project_id`
 - Used by AI assistant and in-app “semantic search”
 
@@ -61,7 +61,7 @@ On save, note content syncs to `knowledge_items` with `kind = note` and triggers
 | Email | v1.1+ |
 | Slack | v1.1+ |
 
-Ingest pipeline: normalize → insert `knowledge_items` → generate embedding (Ollama `/api/embed`) → update `indexed_at`.
+Ingest pipeline: normalize → insert `knowledge_articles` + revision → generate embedding (Ollama `/api/embed`) → update `indexed_at`.
 
 ## Embeddings
 

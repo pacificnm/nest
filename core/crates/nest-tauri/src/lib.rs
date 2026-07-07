@@ -23,6 +23,8 @@ mod startup;
 mod state;
 
 pub use app::TauriApp;
+#[cfg(feature = "runtime")]
+pub use app::BuilderExtensionFn;
 pub use bootstrap::PreparedRuntime;
 pub use config::TauriRuntimeConfig;
 pub use module::{TauriModule, TAURI_MODULE_ID};

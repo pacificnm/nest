@@ -12,7 +12,7 @@ Phase **3** of [swift-v1](./swift-v1.md). Knowledge UI, vector search, note auth
 
 ## Prerequisites
 
-- [swift-data-v1](./swift-data-v1.md) — `knowledge_items` + pgvector
+- [swift-data-v1](./swift-data-v1.md) — `knowledge_articles` + pgvector
 - [nest-data-postgres v1](../../../docs/plan/nest-data-postgres-v1.md) — complete
 - [swift-pm-v1](./swift-pm-v1.md) — project context
 

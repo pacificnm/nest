@@ -1,5 +1,7 @@
 /target/
 core/crates/*/logs/
+# Scratch / build caches (node compile cache, tauri temp)
+.tmp/
 # Local product checkouts — never part of the Nest framework repo
 apps/*
 !apps/README.md

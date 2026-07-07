@@ -42,10 +42,16 @@ Depends on: `nest-data`, `nest-data-postgres`, `nest-core`, `nest-error`, `tokio
 
 ## Migrations (v1)
 
-1. `001_enable_vector.sql` — `CREATE EXTENSION IF NOT EXISTS vector`
-2. `002_projects_tasks.sql` — includes `pinned`, indexes on `projects` and `tasks`
-3. `003_knowledge_items.sql` — includes `vector(768)` (or `[embeddings].dimensions`), `tsvector`, indexes
-4. `004_app_settings.sql`
+Designed to match UI mocks — see [database-schema](../specs/database-schema.md).
+
+| File | Contents |
+|------|----------|
+| `001_extensions.sql` | `pgcrypto`, `vector` |
+| `002_calendars.sql` | `calendars` + Standard seed |
+| `003_projects.sql` | `projects` (manager, status_date, percent_complete, …) |
+| `004_tasks.sql` | `tasks`, `task_links` |
+| `005_knowledge.sql` | categories, articles, revisions, task_knowledge_links |
+| `006_app_settings.sql` | `app_settings` + default rows from `settingsDemo.ts` |
 
 ## Phases
 

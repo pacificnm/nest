@@ -13,6 +13,18 @@ use crate::bootstrap::prepare_runtime;
 #[cfg(feature = "runtime")]
 use crate::bootstrap::{exit_with_error, run_with_context};
 
+/// Extends the Tauri builder after Nest's built-in IPC handler is attached.
+///
+/// The closure receives the builder with [`crate::NestHostState`] already
+/// managed and the built-in commands registered, so it must **not** call
+/// `invoke_handler` (that would overwrite the built-ins). Instead, register
+/// application state with `manage` and application IPC commands as a Tauri
+/// **plugin** (`tauri::plugin::Builder::new(name).invoke_handler(...)`), whose
+/// commands the UI invokes as `plugin:<name>|<command>`.
+#[cfg(feature = "runtime")]
+pub type BuilderExtensionFn =
+    Box<dyn FnOnce(tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> + Send>;
+
 /// Desktop Tauri host for Nest applications.
 pub struct TauriApp {
     pub(crate) app_name: Option<&'static str>,
@@ -23,6 +35,8 @@ pub struct TauriApp {
     pub(crate) modules: Vec<Box<dyn Module>>,
     #[cfg(feature = "async")]
     pub(crate) with_task_runtime: bool,
+    #[cfg(feature = "runtime")]
+    pub(crate) builder_extension: Option<BuilderExtensionFn>,
 }
 
 impl TauriApp {
@@ -37,6 +51,8 @@ impl TauriApp {
             modules: Vec::new(),
             #[cfg(feature = "async")]
             with_task_runtime: false,
+            #[cfg(feature = "runtime")]
+            builder_extension: None,
         }
     }
 
@@ -51,6 +67,8 @@ impl TauriApp {
             modules: Vec::new(),
             #[cfg(feature = "async")]
             with_task_runtime: false,
+            #[cfg(feature = "runtime")]
+            builder_extension: None,
         }
     }
 
@@ -89,6 +107,31 @@ impl TauriApp {
     #[cfg(feature = "async")]
     pub fn with_task_runtime(mut self, enabled: bool) -> Self {
         self.with_task_runtime = enabled;
+        self
+    }
+
+    /// Extends the Tauri builder after the built-in IPC handler is attached.
+    ///
+    /// Use this to register application state (`manage`) and application IPC
+    /// commands packaged as a Tauri plugin. Do **not** call `invoke_handler`
+    /// inside the closure — that overwrites Nest's built-in commands. Plugin
+    /// commands are invoked from the UI as `plugin:<name>|<command>`.
+    ///
+    /// ```ignore
+    /// TauriApp::new("my-app")
+    ///     .with_builder(|builder| {
+    ///         builder
+    ///             .manage(MyState::new())
+    ///             .plugin(my_app::plugin())
+    ///     })
+    ///     .run(tauri::generate_context!());
+    /// ```
+    #[cfg(feature = "runtime")]
+    pub fn with_builder<F>(mut self, extension: F) -> Self
+    where
+        F: FnOnce(tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> + Send + 'static,
+    {
+        self.builder_extension = Some(Box::new(extension));
         self
     }
 

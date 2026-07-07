@@ -42,15 +42,20 @@ pub struct PreparedRuntime {
 /// Runs the full Tauri bootstrap pipeline including the webview event loop.
 #[cfg(feature = "runtime")]
 pub fn run_with_context(
-    app: TauriApp,
+    mut app: TauriApp,
     args: Vec<OsString>,
     context: tauri::Context<tauri::Wry>,
 ) -> NestResult<()> {
+    let builder_extension = app.builder_extension.take();
     let prepared = prepare_runtime(app, args)?;
     let runtime_config = prepared.runtime_config.clone();
     let host_state = NestHostState::new(prepared.nest_app, prepared.runtime_config);
 
     let builder = attach_invoke_handler(tauri::Builder::default().manage(host_state));
+    let builder = match builder_extension {
+        Some(extend) => extend(builder),
+        None => builder,
+    };
 
     let tauri_app = builder
         .setup(move |tauri_app| {
