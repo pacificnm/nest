@@ -13,7 +13,32 @@ templates/desktop/
 - [`nest-tauri`](../../core/crates/nest-tauri) bootstrap with `ThemeModule` + `ImageModule`
 - Built-in IPC: `nest_app_metadata`, `nest_theme_css`, `nest_image_fetch`, `nest_image_invalidate_tag`
 - [`RemoteImage`](ui/src/components/RemoteImage.tsx) React component (cached remote images via Rust)
-- [Lucide React](https://lucide.dev) icons
+- [Font Awesome](https://fontawesome.com) icons (via [`Icon`](ui/src/components/Icon.tsx) + [`lib/fontawesome.ts`](ui/src/lib/fontawesome.ts))
+- Default **`cbre-light`** theme (Nest framework default) via `nest-react-theme` CSS variables
+- Shared desktop shell (see below)
+
+## Shared shell components
+
+Product-agnostic UI promoted from the Swift app. Import from the [`shell`](ui/src/shell/index.ts) barrel:
+
+```tsx
+import { AppShell, Ribbon, RibbonGroup, RibbonButton, ConfirmDialog, DatePicker, useToast, useStatusBar } from "./shell";
+```
+
+| Component / API | File | Notes |
+|-----------------|------|-------|
+| `AppShell` | [`components/AppShell.tsx`](ui/src/components/AppShell.tsx) | Ribbon slot + main + optional rail + status + toasts |
+| `Ribbon`, `RibbonGroup`, `RibbonButton`, `RibbonButtonStack`, `RibbonMenuButton` | [`components/Ribbon.tsx`](ui/src/components/Ribbon.tsx) | Tabs are passed as `tabs` prop (not hardcoded) |
+| `StatusBar` | [`components/StatusBar.tsx`](ui/src/components/StatusBar.tsx) | Slot-based (`left` / `right`); center shows live status |
+| `ToastProvider` / `useToast` / `ToastViewport` | [`context/ToastContext.tsx`](ui/src/context/ToastContext.tsx), [`components/ToastViewport.tsx`](ui/src/components/ToastViewport.tsx) | success/info/warning/error |
+| `StatusBarProvider` / `useStatusBar` | [`context/StatusBarContext.tsx`](ui/src/context/StatusBarContext.tsx) | Transient footer messages |
+| `ConfirmDialog` | [`components/ConfirmDialog.tsx`](ui/src/components/ConfirmDialog.tsx) | Confirm/delete modal (Esc to cancel) |
+| `DatePicker` | [`components/DatePicker.tsx`](ui/src/components/DatePicker.tsx) | Calendar popover; uses [`lib/date.ts`](ui/src/lib/date.ts) |
+| `ErrorBoundary` | [`components/ErrorBoundary.tsx`](ui/src/components/ErrorBoundary.tsx) | Recovery screen for render errors |
+| `Icon` | [`components/Icon.tsx`](ui/src/components/Icon.tsx) | Font Awesome wrapper |
+
+Wrap the app in `ToastProvider` + `StatusBarProvider` (and `ErrorBoundary`) at the root — see [`main.tsx`](ui/src/main.tsx). `App.tsx` demos the full shell.
+
 - Tailwind preset aligned with [`nest-react-theme`](../../core/crates/nest-react-theme)
 
 ## Quick start

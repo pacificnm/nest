@@ -19,12 +19,19 @@ pub use tokens::{
 #[cfg(test)]
 mod tests {
     use super::*;
-    use themes::{dark, light};
+    use themes::{cbre_light, dark, light};
 
     #[test]
     fn light_theme_has_expected_id() {
         let theme = light();
         assert_eq!(theme.id.as_str(), "nest-light");
+        assert_eq!(theme.mode, ThemeMode::Light);
+    }
+
+    #[test]
+    fn cbre_light_theme_has_expected_id() {
+        let theme = cbre_light();
+        assert_eq!(theme.id.as_str(), "cbre-light");
         assert_eq!(theme.mode, ThemeMode::Light);
     }
 
@@ -52,8 +59,16 @@ mod tests {
     }
 
     #[test]
+    fn serde_round_trip_cbre_light() {
+        let theme = cbre_light();
+        let json = serde_json::to_string(&theme).unwrap();
+        let parsed: ThemeDefinition = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed, theme);
+    }
+
+    #[test]
     fn all_builtin_colors_validate() {
-        for theme in [light(), dark()] {
+        for theme in [light(), dark(), cbre_light()] {
             theme.colors.background.validate().unwrap();
             theme.colors.foreground.validate().unwrap();
             theme.colors.primary.validate().unwrap();

@@ -1,6 +1,9 @@
 # Swift template feedback v1
 
-## Status: Planned
+## Status: In progress
+
+Shell chrome promoted (see **Promoted — shell chrome (done)** below). PM-specific
+primitives (Kanban, agent panel) remain candidates.
 
 Phase **5** of [swift-v1](./swift-v1.md). Promote reusable UI from Swift to [`templates/desktop/`](../../../templates/desktop/).
 
@@ -21,6 +24,29 @@ For each component:
 3. Copy to `templates/desktop/ui/src/components/`
 4. Document in template README
 5. Swift imports from local copy or shared path until `@nest/ui` exists
+
+## Promoted — shell chrome (done)
+
+Product-agnostic chrome now lives in [`templates/desktop/ui/src/`](../../../templates/desktop/ui/src)
+and is re-exported from the [`shell`](../../../templates/desktop/ui/src/shell/index.ts) barrel.
+The Swift app keeps its own local copies for now (separate npm package); the template
+is the canonical source for new apps (e.g. `airtable-sync`).
+
+| Component | Template path | Generalization from Swift |
+|-----------|---------------|---------------------------|
+| `Ribbon` + parts | `components/Ribbon.tsx` | Tabs passed via `tabs` prop instead of hardcoded PM tabs |
+| `StatusBar` | `components/StatusBar.tsx` | Slot-based `left`/`right`; center = live status |
+| `ToastProvider` / `ToastViewport` | `context/ToastContext.tsx`, `components/ToastViewport.tsx` | Copied verbatim |
+| `StatusBarProvider` | `context/StatusBarContext.tsx` | Copied verbatim |
+| `ConfirmDialog` | `components/ConfirmDialog.tsx` | Copied verbatim |
+| `DatePicker` | `components/DatePicker.tsx` | Date helpers moved to `lib/date.ts` (was `mock/demo`) |
+| `ErrorBoundary` | `components/ErrorBoundary.tsx` | Generic log label (was "Swift UI") |
+| `Icon` + FA setup | `components/Icon.tsx`, `lib/fontawesome.ts` | Trimmed icon set for shell |
+| `AppShell` | `components/AppShell.tsx` | Layout-only: ribbon/rail/status slots, no PM wiring |
+
+Also promoted: [`lib/tauri.ts`](../../../templates/desktop/ui/src/lib/tauri.ts) (`isTauri`, `quitApp`)
+and the `cbre-light` theme, now the Nest framework default in
+[`nest-design`](../../../core/crates/nest-design/src/themes/cbre_light.rs).
 
 ## Target promotions (v1)
 

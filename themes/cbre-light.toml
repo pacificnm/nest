@@ -1,0 +1,56 @@
+id = "cbre-light"
+mode = "light"
+
+[colors]
+background = "#FFFFFF"
+foreground = "#1C293C"
+primary = "#003F2D"
+secondary = "#006A4D"
+border = "#B8BFC6"
+surface = "#F4F4F1"
+accent = "#69BE28"
+muted = "#4A5568"
+
+[spacing]
+xs = 4.0
+sm = 8.0
+md = 16.0
+lg = 24.0
+xl = 32.0
+xxl = 48.0
+
+[radius]
+sm = 2.0
+md = 4.0
+lg = 6.0
+full = 9999.0
+
+[typography.body]
+font_family = "Segoe UI, system-ui, -apple-system, sans-serif"
+size = 14.0
+line_height = 20.0
+weight = 400
+
+[typography.heading]
+font_family = "Segoe UI, system-ui, -apple-system, sans-serif"
+size = 20.0
+line_height = 28.0
+weight = 600
+
+[typography.caption]
+font_family = "Segoe UI, system-ui, -apple-system, sans-serif"
+size = 12.0
+line_height = 16.0
+weight = 400
+
+[typography.mono]
+font_family = "Consolas, Menlo, monospace"
+size = 12.0
+line_height = 16.0
+weight = 400
+
+[status]
+success = "#006A4D"
+warning = "#B45309"
+error = "#B91C1C"
+info = "#003F2D"

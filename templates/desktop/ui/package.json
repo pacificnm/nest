@@ -12,8 +12,11 @@
     "tauri:build": "cd .. && npm exec --prefix ui tauri build"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.3.0",
+    "@fortawesome/free-regular-svg-icons": "^7.3.0",
+    "@fortawesome/free-solid-svg-icons": "^7.3.0",
+    "@fortawesome/react-fontawesome": "^3.3.1",
     "@tauri-apps/api": "^2.4.0",
-    "lucide-react": "^0.487.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

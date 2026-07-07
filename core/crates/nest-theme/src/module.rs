@@ -69,8 +69,8 @@ mod tests {
             .build()
             .unwrap();
         let themes = built.context.service::<ThemeService>().unwrap();
-        assert_eq!(themes.list_themes().len(), 2);
-        assert_eq!(themes.active_id().unwrap().as_str(), "nest-light");
+        assert_eq!(themes.list_themes().len(), 3);
+        assert_eq!(themes.active_id().unwrap().as_str(), "cbre-light");
     }
 
     #[test]
