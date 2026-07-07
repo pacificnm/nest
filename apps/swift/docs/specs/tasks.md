@@ -4,73 +4,94 @@
 
 ## Scope
 
-Task and subtask tracking within projects — list view, kanban board, labels, and filters.
+**Microsoft Project–style** task scheduling within projects. Primary surface is the **Gantt Chart** (entry table + timeline); alternate views match Project where practical.
 
-## Requirements
+## UX reference
 
-### Task entity
+Swift follows **Microsoft Project** interaction patterns:
+
+| Project concept | Swift equivalent |
+|-----------------|------------------|
+| Gantt Chart | Default view — grid + timeline split |
+| Task Sheet | Spreadsheet-only task table |
+| Summary tasks | `is_summary` + outline indent |
+| Predecessors | Dependency links (`FS` default) |
+| % Complete | `percent_complete` |
+| Task Information dialog | Task detail / properties panel |
+| Indent / Outdent | Outline level on ribbon **Task** tab |
+| Mark on Track | Schedule update (deferred) |
+
+Kanban is **not** a primary view; optional board may come later for ad-hoc work.
+
+## Task entity
 
 | Field | Required | Notes |
 |-------|----------|-------|
 | `id` | yes | UUID |
 | `project_id` | yes | FK to project |
-| `parent_id` | no | Subtask parent |
-| `title` | yes | |
-| `description` | no | Markdown body |
-| `status` | yes | Workflow column |
-| `priority` | no | `none`, `low`, `medium`, `high`, `urgent` |
-| `due_date` | no | Date only |
-| `sort_order` | yes | Within status column / list |
+| `parent_id` | no | Summary / outline parent |
+| `outline_level` | yes | 0 = top level; indent depth |
+| `is_summary` | yes | Roll-up row (bold in grid) |
+| `is_milestone` | no | Zero-duration diamond on Gantt |
+| `title` | yes | Task Name column |
+| `notes` | no | Rich text / linked knowledge |
+| `duration_minutes` | no | Working duration; milestone = 0 |
+| `start_at` | no | Scheduled start (project calendar) |
+| `finish_at` | no | Scheduled finish |
+| `percent_complete` | yes | 0–100, default 0 |
+| `priority` | no | Optional; not shown in v1 Gantt columns |
+| `sort_order` | yes | Row order within outline |
 | `created_at` / `updated_at` | yes | |
-| `completed_at` | no | Set when entering done status |
+| `actual_start` / `actual_finish` | no | Tracking (phase 2b+) |
 
-### Status workflow (default)
+### Predecessors (dependencies)
 
-| Status | Kanban column |
-|--------|---------------|
-| `backlog` | Backlog |
-| `todo` | To Do |
-| `in_progress` | In Progress |
-| `review` | Review |
-| `done` | Done |
+Separate table `task_links`:
 
-Projects may override labels in v1.1; v1 uses workspace defaults.
+| Field | Notes |
+|-------|-------|
+| `predecessor_id` | Task that must complete/start first |
+| `successor_id` | Dependent task |
+| `link_type` | `FS` (default), `SS`, `FF`, `SF` |
+| `lag_minutes` | Optional lag |
 
-### Labels
+Displayed in **Predecessors** column as Project-style ids (e.g. `3FS+2d` deferred; v1 shows predecessor task row numbers).
 
-- Many-to-many tags on tasks (`labels` table + join)
-- Filter by one or more labels
-- Color optional per label
+### Resources (deferred)
 
-### Views
+Resource assignment sheet like Project is **v1.1**. v1 may show a single **Resource Names** text column for the solo user.
 
-| View | Behavior |
-|------|----------|
-| **List** | Sortable columns; group by status optional |
-| **Kanban** | Drag card between columns updates `status` + `sort_order` |
-| **Detail** | Side panel or route: title, description, subtasks, linked notes |
+## Views (ribbon **View** tab)
 
-### Filters
+| View | Route | Behavior |
+|------|-------|----------|
+| **Gantt Chart** | `/gantt` | Entry grid + timeline (default) |
+| **Task Sheet** | `/task-sheet` | Full-width column grid |
+| **Calendar** | `/calendar` | Month/week task bars |
+| **Network Diagram** | `/network` | PERT chart (deferred after Gantt) |
+| **Notes & Knowledge** | `/knowledge` | Swift extension — not in Project |
 
-- By project (including “all active”)
-- By status, priority, label
-- Due: overdue, today, this week, none
-- Text search on title + description
+## Ribbon **Task** tab (v1 targets)
 
-### Subtasks
+- New Task, Delete, Indent, Outdent
+- Task Information
+- Mark on Track, Respect Links (deferred)
 
-- Shown nested under parent in detail view
-- Subtask inherits `project_id`; `parent_id` set
-- Completing all subtasks does not auto-complete parent (v1)
+## Filters
+
+- By outline level / summary vs detail
+- By date range, % complete, resource (later)
+- Text search on task name
 
 ## Non-goals (v1)
 
-- Dependencies between tasks
+- Full resource leveling and cost tables
+- Baselines / earned value
 - Recurring tasks
-- Gantt/timeline
-- External issue import
+- Jira/GitHub issue import
 
 ## Related plans
 
 - [swift-pm-v1](../plan/swift-pm-v1.md)
 - [swift-data-v1](../plan/swift-data-v1.md)
+- [ui-platform](ui-platform.md)

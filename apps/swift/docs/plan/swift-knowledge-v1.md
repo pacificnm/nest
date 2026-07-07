@@ -21,7 +21,7 @@ Phase **3** of [swift-v1](./swift-v1.md). Knowledge UI, vector search, note auth
 | Service | Role |
 |---------|------|
 | `KnowledgeService` | CRUD, re-index embeddings, `search` (vector + keyword) |
-| `EmbeddingService` | Generate vectors on save |
+| `EmbeddingService` | Ollama `/api/embed` on save (extend `nest-ai-ollama` or thin HTTP client) |
 
 ### Tauri commands
 

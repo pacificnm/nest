@@ -15,32 +15,38 @@ In-app **agent panel** using [`nest-agent`](../../../../docs/nest-agent/README.m
 | **Agent rail** | Collapsible right panel; persists width |
 | **Chat thread** | User messages + assistant replies + tool step blocks |
 | **Model picker** | List Ollama models from config; default in `config.toml` |
-| **Context chips** | Show active project, optional attached task/knowledge item |
+| **Context chips** | Show focus project, optional attached task/knowledge item |
 | **Cancel** | Stop in-flight agent run |
 
 Tool steps show: tool name, truncated args, result preview, duration.
 
-### LLM
+### LLM and embeddings
 
-- Provider: **Ollama** via `nest-ai-ollama` (chat + tool calling)
-- Embedding provider: configurable (default OpenAI API for `text-embedding-3-small`) — used by knowledge indexing, not necessarily the chat model
-- Config: `[agent]`, `[ollama]`, `[embeddings]`
+- **Chat:** Ollama via `nest-ai-ollama` (tool calling)
+- **Embeddings:** **Ollama by default** — same `[ollama].base_url`, `POST /api/embed` (e.g. `nomic-embed-text`, 768 dims)
+- Optional **`[embeddings] provider = "openai"`** for cloud embeddings (requires API key; use `dimensions = 1536` and re-index)
+- Config: `[agent]`, `[ollama]`, `[embeddings]` (`provider`, `model`, `dimensions`)
 
-### MCP tools (read-heavy, auto-run)
+### MCP (optional)
 
-| Server | Tools |
-|--------|-------|
-| `nest-memory` | `search_project_memory` |
-| `nest-knowledge` | `search_knowledge_base` |
-| `nest-context-memory` | `search_context_memory`, `save_context_memory` |
+Swift’s agent gets **project context from native tools** (`swift_search_knowledge`, task tools) over PostgreSQL — that is the main path.
 
-Session key: `swift:{project_slug}`.
+**MCP is optional** for wiring extra stdio tool servers (custom integrations, future email/Slack MCP, etc.). Swift reads its **own** `mcp.json` next to `config.toml`, **not** Cursor’s `.cursor/mcp.json`.
+
+| Source | Role in Swift |
+|--------|----------------|
+| **Swift-native tools** | Primary — vector search, tasks, notes |
+| **`mcp.json`** | Optional extensions (`[agent.mcp] enabled = true`) |
+
+Nest dev tools (`nest-memory`, `nest-knowledge`, `nest-context-memory`) belong in **Cursor** or a dev-only `mcp.json` if you want the in-app agent to search Nest framework docs while building Swift itself. End users do not need them.
+
+Session key for context memory (if enabled): `swift:{project_slug}`.
 
 ### Swift-native tools
 
 | Tool | Auto-run | Description |
 |------|----------|-------------|
-| `swift_search_knowledge` | yes | **Vector + keyword** search over `knowledge_items` in active project; filter by `kind` optional |
+| `swift_search_knowledge` | yes | **Vector + keyword** over `knowledge_items`; default focus project, optional workspace-wide |
 | `swift_search_tasks` | yes | Keyword/filter on tasks |
 | `swift_get_knowledge_item` | yes | Full body + metadata by id |
 | `swift_get_task` | yes | Task by id |
@@ -56,7 +62,7 @@ Session key: `swift:{project_slug}`.
 
 ### System prompt context
 
-Inject: active project name/slug, available knowledge kinds, write policy, current date.
+Inject: focus project name/slug (if any), available knowledge kinds, write policy, current date.
 
 ### IPC
 
@@ -66,7 +72,7 @@ Inject: active project name/slug, available knowledge kinds, write policy, curre
 ## Non-goals (v1)
 
 - Multiple concurrent agent threads
-- Cloud chat LLM providers (embeddings API OK)
+- Cloud chat LLM providers (Ollama for chat + embeddings; OpenAI embeddings optional)
 - Agent run history persistence
 
 ## Related plans

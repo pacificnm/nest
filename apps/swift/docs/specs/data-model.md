@@ -12,9 +12,12 @@ PostgreSQL persistence via [`nest-data`](../../../../docs/nest-data/README.md) a
 |---------|-------|
 | Engine | PostgreSQL 15+ |
 | Extension | **pgvector** |
-| Database | `swift` (default; configurable via `[database].url`) |
+| Host | **Remote server** (LAN/VPN); not embedded in the desktop app |
+| Database | `swift` (configurable via `[database].url` or `DATABASE_URL`) |
 | Migrations | `_nest_migrations` via `PostgresMigrationRunner` |
 | Pool | sqlx + Tokio (async) |
+
+Swift connects to PostgreSQL over the network (same pattern as Ollama on `server.lan`). No local Postgres install required on the workstation running the Tauri app.
 
 Swift PM tables (projects, tasks) and knowledge tables share one database. Vector index is **scoped by `project_id`**.
 
@@ -23,9 +26,11 @@ Swift PM tables (projects, tasks) and knowledge tables share one database. Vecto
 ### Project management
 
 ```text
-projects          (id, slug, name, description, color, icon, archived, sort_order, created_at, updated_at)
-tasks             (id, project_id, parent_id, title, description, status, priority, due_date, sort_order,
-                   created_at, updated_at, completed_at)
+projects          (id, slug, name, description, color, icon, archived, pinned, sort_order, created_at, updated_at)
+tasks             (id, project_id, parent_id, outline_level, is_summary, is_milestone,
+                   title, duration_minutes, start_at, finish_at, percent_complete,
+                   sort_order, created_at, updated_at, actual_start, actual_finish)
+task_links        (id, predecessor_id, successor_id, link_type, lag_minutes)
 labels            (id, project_id, name, color)
 task_labels       (task_id, label_id)
 task_notes        (task_id, knowledge_item_id)   -- link tasks to knowledge rows
@@ -38,7 +43,7 @@ All content the AI must search — notes, emails, Slack messages, imported docs 
 ```text
 knowledge_items   (id, project_id, kind, title, body, metadata_json,
                    source_uri, source_external_id,
-                   embedding vector(1536),     -- pgvector; null until indexed
+                   embedding vector(768),      -- pgvector; dims match [embeddings].dimensions (default: nomic-embed-text)
                    search_text tsvector,       -- generated for keyword hybrid search
                    created_at, updated_at, indexed_at)
 ```
@@ -74,10 +79,23 @@ app_settings      (key, value_json)
 
 | Rule | Detail |
 |------|--------|
-| Scope | Every similarity query filters `WHERE project_id = $active` (optional `NULL` for workspace-wide) |
-| Embedding model | Configurable; default OpenAI `text-embedding-3-small` (1536 dims) — generation in app layer, not in nest-data-postgres |
-| Re-index | On create/update of `body`, enqueue re-embed; store `indexed_at` |
-| Agent access | Via `swift_search_knowledge` tool (vector + optional keyword) |
+| Scope | Default: filter `WHERE project_id = $focus`. Omit `project_id` for **workspace-wide** search (agent + library search) |
+| Embedding model | **Ollama** default (`nomic-embed-text`, **768** dims) via `[embeddings]` + same server as chat; optional OpenAI (`1536` dims) |
+| Re-index | On create/update of `body`, enqueue re-embed; store `indexed_at`. **Re-index all rows** if embedding model or dimensions change |
+| Agent access | Via `swift_search_knowledge` tool (vector + optional keyword); optional `project_id` |
+
+## Indexes (v1)
+
+Portfolio scale — hundreds of projects, tasks scoped per project:
+
+| Table | Index | Purpose |
+|-------|-------|---------|
+| `projects` | `(archived, pinned DESC, sort_order)` | Library + sidebar daily set |
+| `projects` | `slug` UNIQUE | Routing |
+| `tasks` | `(project_id, status, sort_order)` | Kanban/list per project |
+| `tasks` | `(project_id, due_date)` WHERE `completed_at IS NULL` | Due filters |
+| `knowledge_items` | `(project_id, kind)` | Scoped lists |
+| `knowledge_items` | HNSW or IVFFlat on `embedding` | Vector search (with `project_id` filter when set) |
 
 ## Repositories (Rust)
 
@@ -101,7 +119,7 @@ Registered via `SwiftDataModule` → depends on `PostgresDataModule`.
 
 - SQLite / offline-only mode
 - Encryption at rest
-- Cross-project vector search in agent tools (workspace search deferred)
+- Full-text search across all tasks in UI (cross-project task inbox deferred to v1.1)
 
 ## Related plans
 

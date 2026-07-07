@@ -29,7 +29,8 @@ Already provided when using `nest-tauri` with `runtime` (+ `images` optional):
 | `swift_create_project` | `CreateProjectRequest` | `Project` |
 | `swift_update_project` | `UpdateProjectRequest` | `Project` |
 | `swift_archive_project` | `{ id: string }` | `Project` |
-| `swift_set_active_project` | `{ id: string }` | `{ ok: true }` |
+| `swift_pin_project` | `{ id: string, pinned: bool }` | `Project` |
+| `swift_set_focus_project` | `{ id: string }` | `{ ok: true }` — agent default + last route hint (stored in `app_settings`) |
 
 ### Tasks
 

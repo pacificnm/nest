@@ -167,9 +167,10 @@ impl LoggingConfig {
         Self::new(app_name).with_file("./logs")
     }
 
-    /// Sensible Tauri desktop defaults: same as GUI (file logging only).
+    /// Sensible Tauri desktop defaults: file logging only, with logs outside
+    /// `src-tauri/` so `tauri dev` does not rebuild on every log write.
     pub fn for_tauri(app_name: impl Into<String>) -> Self {
-        Self::for_gui(app_name)
+        Self::new(app_name).with_file("../logs")
     }
 }
 
@@ -216,6 +217,14 @@ mod tests {
         let config = LoggingConfig::for_gui("kiwi");
         assert!(!config.has_console());
         assert!(config.has_file());
+    }
+
+    #[test]
+    fn for_tauri_logs_outside_src_tauri() {
+        let config = LoggingConfig::for_tauri("swift");
+        assert!(!config.has_console());
+        assert!(config.has_file());
+        assert_eq!(config.directory.as_deref(), Some(std::path::Path::new("../logs")));
     }
 
     #[test]

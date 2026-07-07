@@ -31,12 +31,12 @@ Enable `nest-tauri` feature **`async`** for Tokio agent runs.
 
 `CompositeToolSource`:
 
-1. **MCP hub** — load from repo `.cursor/mcp.json` or Swift config `mcp_servers`
-2. **SwiftToolSource** — in-process: vector knowledge search, task search/get, gated writes
+1. **MCP hub** (optional) — load from Swift **`mcp.json`** beside `config.toml` when `[agent.mcp] enabled = true`; not Cursor config
+2. **SwiftToolSource** — in-process: vector knowledge search, task search/get, gated writes (primary)
 
 Implement [ai-assistant tool table](../specs/ai-assistant.md).
 
-Key tool: **`swift_search_knowledge`** — embeds the query, runs pgvector similarity search scoped to active project, optional `kind` filter.
+Key tool: **`swift_search_knowledge`** — embeds the query, runs pgvector similarity search scoped to focus project (or workspace-wide when `project_id` omitted), optional `kind` filter.
 
 ### Agent runner
 
@@ -54,11 +54,13 @@ allow_writes = false
 allow_file_writes = false
 
 [agent.mcp]
-config_path = ".cursor/mcp.json"  # or absolute when run from apps/swift
+enabled = false
+config_path = "mcp.json"
 
 [embeddings]
-provider = "openai"
-model = "text-embedding-3-small"
+provider = "ollama"
+model = "nomic-embed-text"
+dimensions = 768
 ```
 
 ## React

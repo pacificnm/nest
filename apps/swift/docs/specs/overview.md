@@ -4,27 +4,28 @@
 
 ## Scope
 
-Swift is a **personal** project management and **knowledge hub**. It supports **multiple projects**, tracks tasks, ingests notes/emails/Slack/docs per project, and provides an **AI assistant** (Ollama + vector search) over that knowledge.
+Swift is a **personal** project management and **knowledge hub**, with a **Microsoft Project–familiar** UI (ribbon, Gantt Chart, Task Sheet). It supports a large project portfolio, per-project scheduling, knowledge per project, and an AI assistant with vector search.
 
 ## Personas
 
 | Persona | Needs |
 |---------|-------|
-| **Solo builder** | Track projects, search all context (notes, mail, chat), ask AI across sources |
+| **Solo builder** | Jump between several projects daily; archive finished work; search across portfolio |
 | **Nest contributor** | Dogfood Tauri + React; manage framework work with semantic search over docs |
 
 ## Vision
 
-1. **Project management** — projects, tasks, kanban/list
-2. **Knowledge** — unified store for notes, emails, Slack, documentation per project
-3. **AI** — agent with **vector search** + MCP tools; answers from project knowledge, not just chat memory
+1. **Project portfolio** — Project Center; many projects; archive-first
+2. **Scheduling** — Gantt Chart, Task Sheet, predecessors, % complete (MS Project model)
+3. **Knowledge** — notes/docs per project (Swift extension via View → Notes)
+4. **AI** — agent with vector search + MCP tools
 
 ## Success criteria (v1)
 
-- Multi-project workspace with task management
+- Portfolio-scale workspace (pinned, recents, archive, searchable library)
 - Notes and project docs stored in PostgreSQL with **pgvector** embeddings
 - Agent searches project knowledge semantically (`swift_search_knowledge`)
-- PostgreSQL + pgvector required; Ollama for chat; embedding API for index
+- PostgreSQL + pgvector on **remote server**; **Ollama** on server for chat **and embeddings**; OpenAI embeddings optional
 - Reusable UI patterns documented for desktop template
 
 ## Non-goals (v1)

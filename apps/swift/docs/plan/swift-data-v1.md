@@ -43,8 +43,8 @@ Depends on: `nest-data`, `nest-data-postgres`, `nest-core`, `nest-error`, `tokio
 ## Migrations (v1)
 
 1. `001_enable_vector.sql` — `CREATE EXTENSION IF NOT EXISTS vector`
-2. `002_projects_tasks.sql`
-3. `003_knowledge_items.sql` — includes `vector(1536)`, `tsvector`, indexes
+2. `002_projects_tasks.sql` — includes `pinned`, indexes on `projects` and `tasks`
+3. `003_knowledge_items.sql` — includes `vector(768)` (or `[embeddings].dimensions`), `tsvector`, indexes
 4. `004_app_settings.sql`
 
 ## Phases
@@ -72,13 +72,25 @@ Depends on: `nest-data`, `nest-data-postgres`, `nest-core`, `nest-error`, `tokio
 
 ```toml
 [database]
-url = "postgresql:///swift?host=/var/run/postgresql"
-
-[embeddings]
-provider = "openai"
-model = "text-embedding-3-small"
-# api_key from env OPENAI_API_KEY
+# Remote server — pgvector enabled on the `swift` database
+url = "postgresql://swift:CHANGE_ME@server.lan:5432/swift"
 ```
+
+Or set `DATABASE_URL` in the environment (takes precedence when wired in phase 1).
+
+Server setup (once): create database `swift`, run `CREATE EXTENSION vector`, grant the app user connect + DDL for migrations.
+
+```toml
+[embeddings]
+provider = "ollama"
+model = "nomic-embed-text"
+dimensions = 768
+# Uses [ollama].base_url — no API key
+```
+
+Optional OpenAI: `provider = "openai"`, `model = "text-embedding-3-small"`, `dimensions = 1536`, `OPENAI_API_KEY` in env.
+
+Server: `ollama pull nomic-embed-text` (or your chosen embed model). Migration `vector(dimensions)` must match config.
 
 ## Tests
 

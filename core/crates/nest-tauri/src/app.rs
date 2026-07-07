@@ -11,7 +11,7 @@ use nest_logging::LoggingConfig;
 use crate::bootstrap::prepare_runtime;
 
 #[cfg(feature = "runtime")]
-use crate::bootstrap::run_with_context;
+use crate::bootstrap::{exit_with_error, run_with_context};
 
 /// Desktop Tauri host for Nest applications.
 pub struct TauriApp {
@@ -95,7 +95,7 @@ impl TauriApp {
     /// Runs the application using process arguments and a Tauri context from
     /// `tauri::generate_context!()` in the app `src-tauri` crate.
     #[cfg(feature = "runtime")]
-    pub fn run<C: tauri::Runtime>(self, context: tauri::Context<C>) -> ! {
+    pub fn run(self, context: tauri::Context<tauri::Wry>) -> ! {
         match self.try_run(context) {
             Ok(()) => std::process::exit(0),
             Err(error) => exit_with_error(error),
@@ -104,16 +104,16 @@ impl TauriApp {
 
     /// Runs the application and returns errors instead of exiting.
     #[cfg(feature = "runtime")]
-    pub fn try_run<C: tauri::Runtime>(self, context: tauri::Context<C>) -> NestResult<()> {
+    pub fn try_run(self, context: tauri::Context<tauri::Wry>) -> NestResult<()> {
         let args: Vec<OsString> = std::env::args_os().collect();
         self.try_run_with(context, args)
     }
 
     /// Runs the application with explicit arguments (useful for tests).
     #[cfg(feature = "runtime")]
-    pub fn try_run_with<C: tauri::Runtime, I, S>(
+    pub fn try_run_with<I, S>(
         self,
-        context: tauri::Context<C>,
+        context: tauri::Context<tauri::Wry>,
         args: I,
     ) -> NestResult<()>
     where

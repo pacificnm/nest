@@ -4,7 +4,7 @@
 
 ## Scope
 
-Defines the **project** entity and multi-project workspace behavior.
+Defines the **project** entity and multi-project workspace behavior. Swift is a **project portfolio** (hundreds of projects over a career, many archived), not a single mega backlog. Users work across **multiple projects daily** — navigation optimizes for quick switching among a small active set, not one deep project context.
 
 ## Requirements
 
@@ -21,20 +21,24 @@ Each project has:
 | `color` | no | Accent for UI (hex or token name) |
 | `icon` | no | Lucide icon name |
 | `archived` | yes | Default `false` |
+| `pinned` | no | Default `false`; pinned projects surface in sidebar / daily set |
 | `created_at` / `updated_at` | yes | UTC timestamps |
 
 ### Workspace
 
-- User maintains an ordered list of **active** projects
-- **Archived** projects are hidden from default switcher but recoverable
-- Exactly one **active project** context at a time drives task/note default scope
-- Global view (all projects) available for search and task filters
+- Portfolio grows to **100s of projects** over time; **archive is the normal end state** for finished work
+- **Active** projects are the small set you touch regularly; most rows are archived but searchable
+- **Pinned** projects (user-chosen) plus **recents** (last opened, client-side OK in v1) form the daily working set
+- **Focus project** — current route scope for tasks/knowledge (`/p/:slug/…`); user switches often within a session
+- **Global views** — cross-project task filters and workspace knowledge search (see [tasks](tasks.md), [data-model](data-model.md))
 
 ### Project switcher (UI)
 
-- Accessible from shell sidebar header
+- **Searchable command palette** — typeahead over active + archived; not a flat list of every project
+- Sidebar shows **pinned** projects and **recents** only (typically &lt; 10 items)
+- “All projects…” opens full **project library** (search, filter archived, pin/unpin)
+- Keyboard shortcut to open switcher (defined in [ui-platform](ui-platform.md))
 - Shows name, color dot, optional icon
-- Keyboard shortcut to open (defined in [ui-platform](../specs/ui-platform.md))
 
 ### Per-project settings
 
@@ -46,7 +50,7 @@ Each project has:
 
 ```text
 projects
-  id, slug, name, description, color, icon, archived, sort_order, created_at, updated_at
+  id, slug, name, description, color, icon, archived, pinned, sort_order, created_at, updated_at
 ```
 
 ## Non-goals (v1)

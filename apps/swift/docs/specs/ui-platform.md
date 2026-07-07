@@ -1,10 +1,12 @@
 # Swift — UI platform
 
-**Status:** Planned
+**Status:** In progress (scaffold)
 
 ## Scope
 
-React + Tailwind shell layout and design conventions. Swift **dogfoods** [`templates/desktop/`](../../../../templates/desktop/) and feeds improvements back ([swift-template-feedback-v1](../plan/swift-template-feedback-v1.md)).
+React + Tailwind shell modeled on **Microsoft Project** (ribbon, Gantt-first workspace, status bar). Swift **dogfoods** [`templates/desktop/`](../../../../templates/desktop/) and feeds improvements back ([swift-template-feedback-v1](../plan/swift-template-feedback-v1.md)).
+
+Portfolio scale (many projects) uses **Project Center** (File / Project ribbon) — not a persistent sidebar.
 
 ## Stack
 
@@ -16,62 +18,85 @@ React + Tailwind shell layout and design conventions. Swift **dogfoods** [`templ
 | Icons | Lucide React |
 | Routing | React Router (v1) |
 
-## Shell layout
+## Shell layout (MS Project–style)
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │ Title bar (Tauri)                                           │
-├──────────┬──────────────────────────────────┬───────────────┤
-│ Sidebar  │ Main content                     │ Agent rail    │
-│          │                                  │ (collapsible) │
-│ Project  │  Tasks / Notes / Settings        │               │
-│ switcher │                                  │ Chat + tools  │
-│ Nav      │                                  │               │
-│          │                                  │               │
-└──────────┴──────────────────────────────────┴───────────────┘
+├─────────────────────────────────────────────────────────────┤
+│ [Save][Undo][Redo]     Project Name              [Agent]    │
+│ File | Task | View | Project | Help                         │
+│ Ribbon panels (contextual groups)                           │
+│ Active view label (e.g. Gantt Chart)                        │
+├──────────────────────────────────────────────┬──────────────┤
+│ Entry table │ Timeline / Gantt               │ Agent rail   │
+│ (Task Name, Duration, Start, Finish, …)      │ (optional)   │
+├──────────────────────────────────────────────┴──────────────┤
+│ New Tasks: 0 │ status message…          │ Gantt Chart │100%│
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Sidebar
+### Quick Access Toolbar
 
-- Project switcher (top)
-- Nav: Tasks, Knowledge, Activity (phase 6), Settings
-- Collapse to icons on narrow width
+- Save, Undo, Redo (top row; wired in later phases)
 
-### Main
+### Ribbon
 
-- Route-driven views per project context
-- Breadcrumb: Project name → view
+Tabs mirror Project: **File**, **Task**, **View**, **Project**, **Help**
+
+| Tab | Groups (v1 scaffold) |
+|-----|----------------------|
+| File | New, Open, Save; Close, Exit |
+| Task | Schedule; Tasks (New, Delete, Indent, Outdent); Properties |
+| View | Task Views (Gantt, Task Sheet, Calendar, Network); Notes; Show/Hide |
+| Project | Project Information; Project Center |
+| Help | About |
+
+### Main workspace
+
+- **Gantt Chart** (default): ~48% entry grid + timeline with timescale header
+- **Task Sheet**: full-width grid, same columns
+- **Project Center**: open/pin/archive portfolio (phase 2)
+- No left sidebar — navigation via ribbon and views
+
+### Status bar
+
+Three zones (like Project):
+
+| Zone | Content |
+|------|---------|
+| Left | `New Tasks: N` |
+| Center | Transient messages via `useStatusBar()` |
+| Right | Active view name + zoom % |
 
 ### Agent rail
 
-- Toggle button in shell header
-- Resizable width (localStorage pref)
+Swift-specific extension — toggle from ribbon **View** or quick-access row. Not part of MS Project.
 
 ## Design tokens
 
 Use CSS variables from `nest_theme_css` + Tailwind `nest-*` utilities. No hard-coded palette in components.
 
-## Shared components (candidates for template)
+## Shared components
 
-| Component | Used in |
-|-----------|---------|
-| `AppShell` | All views |
-| `ProjectSwitcher` | Sidebar |
-| `KanbanBoard` / `TaskCard` | Tasks |
-| `TaskList` | Tasks |
-| `MarkdownEditor` | Notes |
-| `AgentPanel` | Agent rail |
-| `SearchCommand` | Global ⌘K (deferred v1.1) |
-
-Document each promotion in [swift-template-feedback-v1](../plan/swift-template-feedback-v1.md).
+| Component | Role |
+|-----------|------|
+| `AppShell` | Full MS Project–style frame |
+| `ProjectRibbon` / `Ribbon` | Tabs + ribbon groups |
+| `GanttChartView` | Entry grid + Gantt split |
+| `TaskSheetView` | Grid-only view |
+| `StatusBar` | Three-zone footer |
+| `ProjectCenter` | Portfolio browser (phase 2) |
+| `AgentPanel` | Agent rail (phase 4) |
 
 ## Non-goals (v1)
 
+- Full Office backstage for File tab
+- Resource / Report ribbon tabs
 - `@nest/ui` npm package (extract in phase 5)
-- Dark/light toggle beyond nest-theme (follow system via ThemeModule)
 
 ## Related plans
 
 - [swift-scaffold-v1](../plan/swift-scaffold-v1.md)
 - [swift-pm-v1](../plan/swift-pm-v1.md)
-- [swift-template-feedback-v1](../plan/swift-template-feedback-v1.md)
+- [tasks](tasks.md)

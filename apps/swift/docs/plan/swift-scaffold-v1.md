@@ -1,6 +1,6 @@
 # Swift scaffold v1
 
-## Status: Planned
+## Status: Implemented
 
 Phase **0** of [swift-v1](./swift-v1.md). Scaffold `apps/swift/` from [desktop template](../../../templates/desktop/).
 

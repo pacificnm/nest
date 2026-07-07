@@ -23,11 +23,12 @@ pub fn nest_theme_css(state: State<'_, NestHostState>) -> NestResult<ThemeCssRes
     let themes = state.context.service::<ThemeService>()?;
     let active = themes.active_theme()?;
     let css = ReactThemeAdapter::adapt(&active)?;
+    let root_block = css.to_root_block();
     Ok(ThemeCssResponse {
         id: css.id,
         mode: css.mode,
         variables: css.variables,
-        root_block: css.to_root_block(),
+        root_block,
     })
 }
 
@@ -53,6 +54,26 @@ pub fn nest_image_invalidate_tag(
     request: crate::image::ImageInvalidateTagRequest,
 ) -> NestResult<crate::image::ImageInvalidateTagResponse> {
     crate::image::invalidate_image_tag(state.context.as_ref(), &request.tag)
+}
+
+/// Registers built-in Nest IPC handlers on a Tauri builder.
+///
+/// `generate_handler!` must live in the same module as `#[tauri::command]` functions.
+pub fn attach_invoke_handler<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    #[cfg(feature = "images")]
+    {
+        builder.invoke_handler(tauri::generate_handler![
+            nest_app_metadata,
+            nest_theme_css,
+            nest_image_fetch,
+            nest_image_invalidate_tag,
+        ])
+    }
+
+    #[cfg(not(feature = "images"))]
+    {
+        builder.invoke_handler(tauri::generate_handler![nest_app_metadata, nest_theme_css])
+    }
 }
 
 /// Serializable app metadata for IPC.

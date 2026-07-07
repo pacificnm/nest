@@ -14,8 +14,8 @@ Swift is the **reference desktop product** for the Nest frontend platform. It do
 
 | Area | Summary |
 |------|---------|
-| **Projects** | Multi-project workspace; switch, archive, per-project settings |
-| **Tasks** | Tasks/subtasks, kanban + list, labels, due dates, filters |
+| **Projects** | Portfolio at scale — pin, archive, searchable library, daily switching |
+| **Tasks** | Gantt / Task Sheet, outline, predecessors, % complete |
 | **Knowledge** | Notes, emails, Slack, docs per project — unified store with **vector search** |
 | **Tracking** | Personal activity log, optional time-on-task, summaries |
 | **AI assistant** | Agent panel with Ollama + MCP + **`swift_search_knowledge`** (vector) |

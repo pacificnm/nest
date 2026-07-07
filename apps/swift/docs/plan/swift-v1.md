@@ -44,7 +44,7 @@ flowchart TB
         AgentMod[nest-agent CompositeToolSource]
     end
 
-    subgraph external [External]
+    subgraph external [External server]
         PG[(PostgreSQL pgvector)]
         Ollama[Ollama]
         MCP[MCP memory knowledge context]
@@ -106,18 +106,18 @@ Phase 2+3+4 ──► Phase 6
 
 **External:**
 
-- **PostgreSQL 15+ with pgvector** — required from phase 1
-- **Embedding API** (e.g. OpenAI) — required from phase 3 for vector index
-- **Ollama** — required from phase 4 for chat
+- **PostgreSQL 15+ with pgvector** on **remote server** — required from phase 1 (desktop connects over TCP; no local DB)
+- **Embedding API** — **Ollama** on server (default); OpenAI optional from phase 3
+- **Ollama** on server — required from phase 4 for chat
 - `./scripts/index-memory.sh` — for MCP memory tools in agent
 
 ## Cross-cutting decisions
 
 | Topic | Decision |
 |-------|----------|
-| Persistence | **PostgreSQL + pgvector** via **`nest-data-postgres`** |
+| Persistence | **PostgreSQL + pgvector** on **remote server** via **`nest-data-postgres`** |
 | Knowledge | Unified `knowledge_items` per project (`note`, `email`, `slack`, `doc`) |
-| AI chat | `nest-agent` + `nest-ai-ollama`; MCP stdio |
+| AI chat + embeddings | **Ollama** on server (`nest-ai-ollama` + `/api/embed`); OpenAI embeddings optional |
 | Search | **Vector similarity** (primary) + tsvector keyword (hybrid) |
 | Agent writes | Gated by `allow_writes` config |
 | UI | Lucide + Tailwind + nest-react-theme |
@@ -127,7 +127,7 @@ Phase 2+3+4 ──► Phase 6
 | Risk | Mitigation |
 |------|------------|
 | `nest-data-postgres` not built yet | [nest-data-postgres v1](../../../docs/plan/nest-data-postgres-v1.md) is phase 1 blocker |
-| PostgreSQL setup friction | Document local install; optional Docker compose for dev |
+| PostgreSQL unreachable / LAN down | Configurable `[database].url`; health check + clear UI error |
 | Tauri system deps on Linux | Document apt packages; CI optional |
 | Ollama tool-calling quality | Document tested models; fallback to read-only tools |
 | Scope creep (team PM features) | Spec non-goals; personal-first |

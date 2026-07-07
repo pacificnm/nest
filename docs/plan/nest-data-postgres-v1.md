@@ -78,18 +78,23 @@ Swift [swift-data-v1](../apps/swift/docs/plan/swift-data-v1.md) **blocks** on ne
 
 ## Setup (dev)
 
+PostgreSQL runs on the **server** (not on the Swift workstation). On the server:
+
 ```bash
 sudo apt install postgresql postgresql-contrib postgresql-XX-pgvector
-createdb swift
-psql swift -c "CREATE EXTENSION vector;"
+sudo -u postgres createdb swift
+sudo -u postgres psql swift -c "CREATE EXTENSION vector;"
+# Create role + grants for the Swift app user
 ```
 
 Config in Swift `config.toml`:
 
 ```toml
 [database]
-url = "postgresql:///swift?host=/var/run/postgresql"
+url = "postgresql://swift:CHANGE_ME@server.lan:5432/swift"
 ```
+
+Optional: `export DATABASE_URL=...` overrides the config URL when the app loads settings.
 
 ## Non-goals (v1)
 

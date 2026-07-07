@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "tauri": "tauri -C ../src-tauri",
-    "tauri:dev": "tauri -C ../src-tauri dev",
-    "tauri:build": "tauri -C ../src-tauri build"
+    "tauri": "cd .. && npm exec --prefix ui tauri",
+    "tauri:dev": "cd .. && npm exec --prefix ui tauri dev",
+    "tauri:build": "cd .. && npm exec --prefix ui tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.4.0",

@@ -18,10 +18,7 @@ use crate::startup::TauriStartupOptions;
 use nest_error::codes::NEST_TAURI_START_FAILED;
 
 #[cfg(feature = "runtime")]
-use crate::commands::{nest_app_metadata, nest_theme_css};
-
-#[cfg(all(feature = "runtime", feature = "images"))]
-use crate::commands::{nest_image_fetch, nest_image_invalidate_tag};
+use crate::commands::attach_invoke_handler;
 
 #[cfg(feature = "runtime")]
 use crate::state::NestHostState;
@@ -44,28 +41,16 @@ pub struct PreparedRuntime {
 
 /// Runs the full Tauri bootstrap pipeline including the webview event loop.
 #[cfg(feature = "runtime")]
-pub fn run_with_context<C: tauri::Runtime>(
+pub fn run_with_context(
     app: TauriApp,
     args: Vec<OsString>,
-    context: tauri::Context<C>,
+    context: tauri::Context<tauri::Wry>,
 ) -> NestResult<()> {
     let prepared = prepare_runtime(app, args)?;
     let runtime_config = prepared.runtime_config.clone();
     let host_state = NestHostState::new(prepared.nest_app, prepared.runtime_config);
 
-    let builder = tauri::Builder::default().manage(host_state);
-
-    #[cfg(feature = "images")]
-    let builder = builder.invoke_handler(tauri::generate_handler![
-        nest_app_metadata,
-        nest_theme_css,
-        nest_image_fetch,
-        nest_image_invalidate_tag,
-    ]);
-
-    #[cfg(not(feature = "images"))]
-    let builder =
-        builder.invoke_handler(tauri::generate_handler![nest_app_metadata, nest_theme_css]);
+    let builder = attach_invoke_handler(tauri::Builder::default().manage(host_state));
 
     let tauri_app = builder
         .setup(move |tauri_app| {

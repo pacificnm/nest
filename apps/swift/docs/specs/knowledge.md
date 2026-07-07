@@ -24,7 +24,7 @@ Markdown notes are the primary authoring surface in v1:
 | Field | Required |
 |-------|----------|
 | `title`, `body` | yes |
-| `project_id` | yes (default active project) |
+| `project_id` | yes (defaults to focus project; omit for workspace search) |
 | Folder organization | optional (v1.1) |
 
 On save, note content syncs to `knowledge_items` with `kind = note` and triggers embedding refresh.
@@ -39,7 +39,7 @@ On save, note content syncs to `knowledge_items` with `kind = note` and triggers
 ### Vector search (primary)
 
 - **pgvector** similarity on `knowledge_items.embedding`
-- Scoped to **active project** (or all projects when user selects workspace search)
+- Default: **focus project**; workspace-wide when user or agent omits `project_id`
 - Used by AI assistant and in-app “semantic search”
 
 ### Keyword search (secondary)
@@ -61,7 +61,18 @@ On save, note content syncs to `knowledge_items` with `kind = note` and triggers
 | Email | v1.1+ |
 | Slack | v1.1+ |
 
-Ingest pipeline: normalize → insert `knowledge_items` → generate embedding → update `indexed_at`.
+Ingest pipeline: normalize → insert `knowledge_items` → generate embedding (Ollama `/api/embed`) → update `indexed_at`.
+
+## Embeddings
+
+| Setting | Default |
+|---------|---------|
+| Provider | **Ollama** (same server as chat) |
+| Model | `nomic-embed-text` (`ollama pull` on server) |
+| Dimensions | **768** — must match `vector(N)` in PostgreSQL |
+| API | `POST {ollama.base_url}/api/embed` |
+
+Query-time search embeds the user question with the **same model** as indexing. Optional `provider = "openai"` in config for cloud embeddings (1536 dims; requires full re-index).
 
 ## Non-goals (v1)
 
