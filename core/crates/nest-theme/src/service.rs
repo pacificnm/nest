@@ -30,7 +30,8 @@ impl ThemeService {
     /// Registers the built-in Nest themes and sets `cbre-light` (the Nest
     /// default) active.
     ///
-    /// Registers `cbre-light` (default), `nest-light`, and `nest-dark`.
+    /// Registers `cbre-light` (default), `nest-light`, `nest-dark`, and
+    /// `cursor-dark`.
     pub fn with_default_themes(self) -> Self {
         self.register_theme(nest_design::themes::cbre_light())
             .expect("built-in cbre-light theme is valid");
@@ -38,6 +39,8 @@ impl ThemeService {
             .expect("built-in light theme is valid");
         self.register_theme(nest_design::themes::dark())
             .expect("built-in dark theme is valid");
+        self.register_theme(nest_design::themes::cursor_dark())
+            .expect("built-in cursor-dark theme is valid");
         *self.active.write().expect("theme lock") = Some(ThemeId::from("cbre-light"));
         self
     }
@@ -118,14 +121,14 @@ mod tests {
     #[test]
     fn default_themes_and_active_round_trip() {
         let service = ThemeService::new().with_default_themes();
-        assert_eq!(service.list_themes().len(), 3);
+        assert_eq!(service.list_themes().len(), 4);
         assert_eq!(service.active_id().unwrap().as_str(), "cbre-light");
 
         service
-            .set_active_theme(&ThemeId::from("nest-dark"))
+            .set_active_theme(&ThemeId::from("cursor-dark"))
             .unwrap();
         let active = service.active_theme().unwrap();
-        assert_eq!(active.id.as_str(), "nest-dark");
+        assert_eq!(active.id.as_str(), "cursor-dark");
         assert_eq!(active.mode, nest_design::ThemeMode::Dark);
     }
 

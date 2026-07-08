@@ -74,6 +74,13 @@ impl PostgresConnection {
         &self.inner.pool
     }
 
+    /// Async health probe (`SELECT 1`). Prefer this over [`DataConnection::health_check`]
+    /// when already on a Tokio runtime (the sync health check uses `block_on`).
+    pub async fn ping(&self) -> DataResult<()> {
+        sqlx_result(sqlx::query("SELECT 1").execute(self.pool()).await)?;
+        Ok(())
+    }
+
     /// Returns a clone as [`Arc<dyn DataConnection>`].
     pub fn as_data_connection(self) -> Arc<dyn DataConnection> {
         Arc::new(self)

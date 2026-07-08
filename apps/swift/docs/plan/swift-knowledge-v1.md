@@ -50,8 +50,8 @@ Phase **3** of [swift-v1](./swift-v1.md). Knowledge UI, vector search, note auth
 |------|-------------|
 | 3a | Knowledge list + note editor |
 | 3b | Embedding on save + vector search API |
-| 3c | In-app semantic search UI |
-| 3d | Doc import + task linking |
+| 3c | In-app semantic search UI ✓ (Hybrid / Semantic / Keyword + live IPC) |
+| 3d | Doc import + task linking — see [swift-collector-agent-v1](./swift-collector-agent-v1.md) for full AnythingLLM-style collector |
 | 3e | Email/Slack ingest stubs (schema ready; importers v1.1) |
 
 ## Done when

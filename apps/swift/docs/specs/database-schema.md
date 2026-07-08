@@ -232,6 +232,8 @@ Configurable lists (`priorities`, `constraintTypes`, `taskTypes`) live in
 | `004_tasks.sql` | `tasks`, `task_links` |
 | `005_knowledge.sql` | categories, articles, revisions, task_knowledge_links |
 | `006_app_settings.sql` | `app_settings` + default rows |
+| `007_project_files.sql` | project file attachments metadata |
+| `008_knowledge_chunks.sql` | chunk rows + embeddings for collector ingest |
 
 ## Vector dimensions
 

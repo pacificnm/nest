@@ -84,6 +84,7 @@ flowchart TB
 | **1** | [swift-data-v1](./swift-data-v1.md) | PostgreSQL schema, pgvector, repositories via `nest-data-postgres` |
 | **2** | [swift-pm-v1](./swift-pm-v1.md) | Projects, tasks, kanban/list UI |
 | **3** | [swift-knowledge-v1](./swift-knowledge-v1.md) | Knowledge ingest, embeddings, vector search UI |
+| **3–4** | [swift-collector-agent-v1](./swift-collector-agent-v1.md) | AnythingLLM-style collector + RAG Q&A + doc templates |
 | **4** | [swift-agent-v1](./swift-agent-v1.md) | Ollama agent + MCP + Swift vector search tools |
 | **5** | [swift-template-feedback-v1](./swift-template-feedback-v1.md) | Promote shared UI to desktop template |
 | **6** | (this doc) | Tracking views, settings, export polish |

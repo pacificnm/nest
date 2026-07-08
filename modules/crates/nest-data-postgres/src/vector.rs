@@ -64,7 +64,7 @@ impl VectorSearch {
                 format!(
                     "SELECT {id}::text AS id, {emb} <=> $1 AS distance
                      FROM {table}
-                     WHERE {project_col} = $2 AND {emb} IS NOT NULL
+                     WHERE {project_col}::text = $2 AND {emb} IS NOT NULL
                      ORDER BY {emb} <=> $1
                      LIMIT $3",
                     id = self.id_column,

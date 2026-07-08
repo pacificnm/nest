@@ -1,6 +1,7 @@
 //! Optional Nest module that registers [`crate::ThemeService`].
 
 use nest_core::{AppBuilder, Module, ModuleId, NestResult};
+use nest_design::ThemeId;
 
 use crate::service::ThemeService;
 
@@ -10,6 +11,7 @@ pub const THEME_MODULE_ID: ModuleId = ModuleId("nest-theme");
 /// Registers [`ThemeService`] with optional built-in light/dark themes.
 pub struct ThemeModule {
     include_defaults: bool,
+    active: Option<ThemeId>,
 }
 
 impl ThemeModule {
@@ -17,6 +19,7 @@ impl ThemeModule {
     pub fn new() -> Self {
         Self {
             include_defaults: true,
+            active: None,
         }
     }
 
@@ -24,12 +27,22 @@ impl ThemeModule {
     pub fn without_defaults() -> Self {
         Self {
             include_defaults: false,
+            active: None,
         }
     }
 
     /// Sets whether built-in Nest light/dark themes are registered.
     pub fn with_defaults(mut self, include_defaults: bool) -> Self {
         self.include_defaults = include_defaults;
+        self
+    }
+
+    /// Overrides the initially active theme (must be a registered id).
+    ///
+    /// Defaults to `cbre-light` when built-in themes are included. Apps that
+    /// prefer a different baseline (e.g. Kiwi's `cursor-dark`) set it here.
+    pub fn with_active(mut self, id: impl Into<ThemeId>) -> Self {
+        self.active = Some(id.into());
         self
     }
 }
@@ -51,6 +64,9 @@ impl Module for ThemeModule {
         } else {
             ThemeService::new()
         };
+        if let Some(id) = &self.active {
+            service.set_active_theme(id)?;
+        }
         app.register_service(service)
     }
 }
@@ -69,8 +85,18 @@ mod tests {
             .build()
             .unwrap();
         let themes = built.context.service::<ThemeService>().unwrap();
-        assert_eq!(themes.list_themes().len(), 3);
+        assert_eq!(themes.list_themes().len(), 4);
         assert_eq!(themes.active_id().unwrap().as_str(), "cbre-light");
+    }
+
+    #[test]
+    fn with_active_overrides_default() {
+        let built = AppBuilder::new()
+            .module(ThemeModule::default().with_active("cursor-dark"))
+            .build()
+            .unwrap();
+        let themes = built.context.service::<ThemeService>().unwrap();
+        assert_eq!(themes.active_id().unwrap().as_str(), "cursor-dark");
     }
 
     #[test]

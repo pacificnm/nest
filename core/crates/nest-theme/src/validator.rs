@@ -97,12 +97,14 @@ fn validate_typography(style: &nest_design::TypographyStyle, field: &str) -> The
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nest_design::themes::{dark, light};
+    use nest_design::themes::{cbre_light, cursor_dark, dark, light};
 
     #[test]
     fn builtin_themes_validate() {
         ThemeValidator::validate(&light()).unwrap();
         ThemeValidator::validate(&dark()).unwrap();
+        ThemeValidator::validate(&cbre_light()).unwrap();
+        ThemeValidator::validate(&cursor_dark()).unwrap();
     }
 
     #[test]

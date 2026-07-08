@@ -1,0 +1,40 @@
+{
+  "$schema": "https://opencode.ai/schema.json",
+  "skills": [
+    ".opencode/skills/nest-crates.md",
+    ".opencode/skills/nest-app-development.md",
+    ".opencode/skills/nest-mcp-workflow.md"
+  ],
+  "tools": [
+    ".opencode/tools/find-nest-crate.md",
+    ".opencode/tools/check-nest-dependencies.md",
+    ".opencode/tools/add-nest-dependency.md"
+  ],
+  "instructions": {
+    "nest-framework": "When working with Nest framework code, always prefer using existing crates from core/crates/ and modules/crates/. Before introducing a new dependency or implementing common functionality, check whether a Nest crate already provides the capability.",
+    "dependency-rules": "Respect layer boundaries: core must not depend on modules or apps. Modules should not depend on apps. Apps may depend on any core or module crate.",
+    "error-handling": "Use NestError and NestResult from nest-error for all error handling in Nest applications.",
+    "logging": "Use nest-logging for logging setup with tracing.",
+    "tauri-apps": "For desktop apps, use nest-tauri host with React + TypeScript + Tailwind in ui/ folder.",
+    "memory-workflow": "ALWAYS start by searching project documentation and prior context before implementation. Read order: 1) docs/architecture.md, 2) docs/plan/, 3) project memory (nest-memory MCP), 4) knowledge base (nest-knowledge MCP for Rust/Tauri/React/Tailwind APIs), 5) context memory (nest-context-memory MCP), 6) source code under core/crates/ and modules/crates/.",
+    "desktop-ui": "When building desktop UI (ui/, Tauri): search knowledge collections 'tauri', 'react', 'tailwind' via nest-knowledge MCP server.",
+    "post-response": "After every response, save context memory via nest-context-memory MCP server with: what you did, files changed, decisions, blockers, and verification commands/results."
+  },
+  "mcpServers": {
+    "nest-memory": {
+      "command": "/data/projects/nest/.venv/bin/python",
+      "args": ["/data/projects/nest/tools/mcp_memory_server.py"],
+      "cwd": "/data/projects/nest"
+    },
+    "nest-context-memory": {
+      "command": "/data/projects/nest/.venv/bin/python",
+      "args": ["/data/projects/nest/tools/mcp_context_memory_server.py"],
+      "cwd": "/data/projects/nest"
+    },
+    "nest-knowledge": {
+      "command": "/data/projects/nest/.venv/bin/python",
+      "args": ["/data/projects/nest/tools/mcp_knowledge_server.py"],
+      "cwd": "/data/projects/nest"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Swift agent v1
 
-## Status: Planned
+## Status: In progress (4a–4e + write tools shipped; MCP hub deferred)
 
 Phase **4** of [swift-v1](./swift-v1.md). Ollama AI assistant with MCP and Swift-native tools. Primary project context comes from **vector search** over `knowledge_items`.
 
@@ -77,11 +77,11 @@ Wire into agent rail from [ui-platform](../specs/ui-platform.md).
 
 | Step | Deliverable |
 |------|-------------|
-| 4a | Ollama chat without tools (smoke) |
-| 4b | MCP hub + memory search tools |
-| 4c | Swift read tools (`swift_search_knowledge`, search/get tasks) |
-| 4d | Write tools behind `allow_writes` |
-| 4e | Streaming text + tool UI polish |
+| 4a | Ollama chat without tools (smoke) — **done** |
+| 4b | MCP hub + memory search tools — deferred |
+| 4c | Swift read tools (`swift_search_knowledge`, search/get tasks) — **done** (knowledge search; task search via UI) |
+| 4d | Write tools behind `allow_writes` — **done** (intent NL → create/update task + gated template create) |
+| 4e | Streaming text + tool UI polish — **done** |
 
 ## Tests
 
@@ -97,5 +97,6 @@ Wire into agent rail from [ui-platform](../specs/ui-platform.md).
 
 ## Related
 
+- [swift-collector-agent-v1](./swift-collector-agent-v1.md) — ingest / RAG / templates aligned with AnythingLLM collector
 - [nest-agent docs](../../../docs/nest-agent/README.md)
 - [swift-v1](./swift-v1.md) phase 6 — activity logging for agent queries

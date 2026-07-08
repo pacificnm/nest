@@ -28,8 +28,10 @@ Colors use hex strings: `#RRGGBB` or `#RRGGBBAA`.
 
 ## Built-in themes
 
+- `nest_design::themes::cbre_light()` — id `cbre-light` (framework default)
 - `nest_design::themes::light()` — id `nest-light`
 - `nest_design::themes::dark()` — id `nest-dark`
+- `nest_design::themes::cursor_dark()` — id `cursor-dark` (Cursor-style IDE dark; Kiwi default)
 
 Companion TOML files live in [`themes/`](../../themes/).
 

@@ -51,21 +51,27 @@ Already provided when using `nest-tauri` with `runtime` (+ `images` optional):
 | `swift_get_knowledge_item` | `{ id: string }` | `KnowledgeItem` |
 | `swift_create_note` | `CreateNoteRequest` | `KnowledgeItem` (`kind=note`) |
 | `swift_update_note` | `UpdateNoteRequest` | `KnowledgeItem` |
-| `swift_import_doc` | `{ project_id, path, title? }` | `KnowledgeItem` (`kind=doc`) |
-| `swift_search_knowledge` | `{ query, project_id?, kind?, mode?: vector\|keyword\|hybrid }` | `{ hits: SearchHit[] }` |
+| `swift_import_doc` | `{ project_id, path, title?, category_id? }` | `ImportResult` (`source_type=doc`) |
+| `swift_pick_import_doc` | — | `PickedFile \| null` (filtered dialog for collector formats) |
+| `swift_import_raw_text` | `{ project_id, title, body, category_id? }` | `ImportResult` |
+| `swift_list_templates` | — | `DocTemplate[]` (`id`, `title`, `description`) |
+| `swift_render_template` | `{ template_id, vars?, project_id?, category_id?, persist? }` | `ImportResult` (persist) or `RenderedTemplate` |
+| `swift_collector_accepts` | — | `AcceptsEntry[]` (`extension`, `mime`, `label`) |
+| `swift_search_knowledge` | `{ query, project_id?, limit?, mode?: vector\|keyword\|hybrid }` | `KnowledgeArticle[]` (hybrid default; merges chunk vectors) |
 | `swift_delete_knowledge_item` | `{ id: string }` | `{ ok: true }` |
 
 ### Database
 
 | Command | Request | Response |
 |---------|---------|----------|
-| `swift_db_health` | — | `{ ok: boolean, database: string }` |
+| `swift_db_health` | — | `{ ok: boolean, database: string, error?: string }` |
+| `swift_reindex_knowledge` | `{ project_id?, limit? }` | `{ indexed: number, failed: number, messages: string[] }` |
 
 ### Agent
 
 | Command | Request | Response |
 |---------|---------|----------|
-| `swift_agent_start` | `{ message, model?, context? }` | `{ run_id: string }` |
+| `swift_agent_start` | `{ message, model?, project_id?, project_name? }` | `{ runId: string }` |
 | `swift_agent_cancel` | `{ run_id: string }` | `{ ok: true }` |
 
 ### Settings
@@ -83,8 +89,9 @@ Already provided when using `nest-tauri` with `runtime` (+ `images` optional):
 | `swift://agent/text-delta` | `{ run_id, delta }` |
 | `swift://agent/tool-started` | `{ run_id, tool, args_preview }` |
 | `swift://agent/tool-finished` | `{ run_id, tool, result_preview, duration_ms }` |
-| `swift://agent/finished` | `{ run_id, content }` |
+| `swift://agent/finished` | `{ run_id, content, citations }` |
 | `swift://agent/failed` | `{ run_id, error }` |
+| `swift://agent/citations` | `{ run_id, citations: [{ articleId, title, sourceType, snippet }] }` |
 
 UI subscribes via `@tauri-apps/api/event` for the active `run_id`.
 

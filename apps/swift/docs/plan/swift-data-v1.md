@@ -1,8 +1,10 @@
 # Swift data v1
 
-## Status: Planned
+## Status: Implemented
 
 Phase **1** of [swift-v1](./swift-v1.md). PostgreSQL persistence, pgvector knowledge index, and Rust repositories via **`nest-data-postgres`**.
+
+Shipped: migrations `001`–`007`, PM + knowledge repos, `OllamaEmbeddingClient` (`nomic-embed-text` / 768-d), hybrid vector+keyword search, `swift_db_health`, auto-index on knowledge create/update, `swift_reindex_knowledge`.
 
 ## Context
 
@@ -24,7 +26,7 @@ Implement [data-model spec](../specs/data-model.md) using:
 | `SwiftDataModule`, Postgres migrations | Email/Slack ingest (v1.1) |
 | PM tables + `knowledge_items` + pgvector | Full IPC CRUD (phase 2–3) |
 | `KnowledgeRepository::similarity_search` | Agent tools (phase 4) |
-| Embedding enqueue on note save (stub OK) | Activity/timer (phase 6) |
+| Embedding on note save + reindex IPC | Activity/timer (phase 6) |
 
 ## Crate: `swift-data`
 
@@ -52,27 +54,28 @@ Designed to match UI mocks — see [database-schema](../specs/database-schema.md
 | `004_tasks.sql` | `tasks`, `task_links` |
 | `005_knowledge.sql` | categories, articles, revisions, task_knowledge_links |
 | `006_app_settings.sql` | `app_settings` + default rows from `settingsDemo.ts` |
+| `007_project_files.sql` | Project file metadata |
 
 ## Phases
 
-### Phase 1a — Postgres module wiring
+### Phase 1a — Postgres module wiring ✓
 
-- `PostgresDataModule` in `main.rs` from `[database].url`
-- `swift_db_health` command
+- Lazy `PostgresConnection` from `[database].url` (Tauri `SwiftData`)
+- `swift_db_health` command (redacted URL)
 
-### Phase 1b — PM repositories
+### Phase 1b — PM repositories ✓
 
-- `ProjectRepository`, `TaskRepository` + tests (testcontainers or `DATABASE_URL`)
+- `ProjectRepository`, `TaskRepository` + live `DATABASE_URL` tests
 
-### Phase 1c — Knowledge + vectors
+### Phase 1c — Knowledge + vectors ✓
 
-- `KnowledgeRepository`: insert, update, `similarity_search(project_id, embedding, limit, kind?)`
-- Keyword search via `search_text`
+- `KnowledgeArticleRepository`: CRUD, `search_similar`, keyword `search_text`
+- Hybrid merge in `swift_search_knowledge`
 
-### Phase 1d — Embedding pipeline
+### Phase 1d — Embedding pipeline ✓
 
-- On note/doc save: compute embedding, upsert vector
-- Config `[embeddings]` model + API key
+- `OllamaEmbeddingClient` on create/update; `swift_reindex_knowledge`
+- Config `[embeddings]` + `[ollama].base_url`
 
 ## Config
 

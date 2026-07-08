@@ -26,9 +26,15 @@ pub fn run_eframe(
     let vsync = runtime.vsync;
 
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_title(title)
-            .with_inner_size([width as f32, height as f32]),
+        viewport: {
+            let mut viewport = egui::ViewportBuilder::default()
+                .with_title(title)
+                .with_inner_size([width as f32, height as f32]);
+            if !runtime.decorations {
+                viewport = viewport.with_decorations(false);
+            }
+            viewport
+        },
         vsync,
         ..Default::default()
     };

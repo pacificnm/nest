@@ -58,9 +58,10 @@ Phased rollout — *how and when* to build.
 |------|-------|
 | [swift-v1](plan/swift-v1.md) | **Master** — phases 0–6, dependencies |
 | [swift-scaffold-v1](plan/swift-scaffold-v1.md) | 0 — scaffold from desktop template |
-| [swift-data-v1](plan/swift-data-v1.md) | 1 — PostgreSQL data layer via `nest-data-postgres` |
+| [swift-data-v1](plan/swift-data-v1.md) | 1 — PostgreSQL data layer via `nest-data-postgres` (**done**) |
 | [swift-pm-v1](plan/swift-pm-v1.md) | 2 — projects + tasks UI |
 | [swift-knowledge-v1](plan/swift-knowledge-v1.md) | 3 — knowledge ingest, embeddings, search |
+| [swift-collector-agent-v1](plan/swift-collector-agent-v1.md) | 3–4 — AnythingLLM-style collector + RAG + templates |
 | [swift-agent-v1](plan/swift-agent-v1.md) | 4 — AI assistant |
 | [swift-template-feedback-v1](plan/swift-template-feedback-v1.md) | 5 — feed shared UI back to template |
 

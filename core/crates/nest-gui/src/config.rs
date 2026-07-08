@@ -17,6 +17,8 @@ pub struct GuiRuntimeConfig {
     pub height: u32,
     /// Enable vsync when supported.
     pub vsync: bool,
+    /// Native window decorations (title bar). When false, the app draws its own chrome.
+    pub decorations: bool,
     /// Disable ANSI color in host error output.
     pub no_color: bool,
 }
@@ -29,6 +31,7 @@ impl GuiRuntimeConfig {
             width: 1280,
             height: 800,
             vsync: true,
+            decorations: true,
             no_color: false,
         }
     }
@@ -40,6 +43,7 @@ struct GuiSection {
     width: Option<u32>,
     height: Option<u32>,
     vsync: Option<bool>,
+    decorations: Option<bool>,
 }
 
 /// Merges GUI runtime settings: defaults < config file < CLI flags.
@@ -63,6 +67,9 @@ pub fn merge_runtime_config(
         }
         if let Some(vsync) = section.vsync {
             config.vsync = vsync;
+        }
+        if let Some(decorations) = section.decorations {
+            config.decorations = decorations;
         }
     }
 

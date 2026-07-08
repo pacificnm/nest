@@ -35,6 +35,23 @@ Use a stable `session_key` (git branch name or `branch:conversation`).
 Call **`save_context_memory`** with a full checkpoint. **preCompact** also saves an
 automatic transcript snapshot, but you must still save an explicit summary.
 
+## Nest Framework Usage
+
+When implementing features inside `/apps`, always prefer using existing crates from `/core/crates`.
+
+Before introducing a new dependency or implementing common functionality, check whether a Nest crate already provides the capability.
+
+Examples:
+
+- Data access → `nest-data`
+- Validation → `nest-validate`
+- Errors → `nest-error`
+- Configuration → `nest-config`
+- Logging → `nest-logging`
+- HTTP APIs → `nest-http-serve`
+
+If no suitable Nest crate exists, explain why before introducing a new dependency.
+
 ## During work
 
 - Prefer existing Nest conventions in `core/crates/nest-*`, `modules/crates/nest-*`, and `docs/nest-*`.
