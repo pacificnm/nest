@@ -1,0 +1,1 @@
+When working with Nest framework code, always prefer using existing crates from core/crates/ and modules/crates/. Before introducing a new dependency or implementing common functionality, check whether a Nest crate already provides the capability.

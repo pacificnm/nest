@@ -1,0 +1,1 @@
+ALWAYS start by searching project documentation and prior context before implementation. Read order: 1) docs/architecture.md, 2) docs/plan/, 3) project memory (nest-memory MCP), 4) knowledge base (nest-knowledge MCP for Rust/Tauri/React/Tailwind APIs), 5) context memory (nest-context-memory MCP), 6) source code under core/crates/ and modules/crates/.
