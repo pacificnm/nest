@@ -1,4 +1,11 @@
 /target/
+# Nest Desktop demo (ui/)
+ui/dist/
+ui/src-tauri/target/
+ui/src-tauri/gen/
+ui/logs/
+ui/tsconfig.tsbuildinfo
+node_modules/
 core/crates/*/logs/
 # Scratch / build caches (node compile cache, tauri temp)
 .tmp/

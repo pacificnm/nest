@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-apps-list"
+description = "Enables the apps_list command."
+commands.allow = ["apps_list"]

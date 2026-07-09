@@ -23,22 +23,31 @@
   "mcp": {
     "nest-memory": {
       "type": "local",
-      "command": [".venv/bin/python", "tools/mcp_memory_server.py"],
-      "cwd": ".",
+      "command": [
+        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
+        "{env:NEST_PROJECT_ROOT}/tools/mcp_memory_server.py"
+      ],
+      "cwd": "{env:NEST_PROJECT_ROOT}",
       "enabled": true,
       "timeout": 30000
     },
     "nest-context-memory": {
       "type": "local",
-      "command": [".venv/bin/python", "tools/mcp_context_memory_server.py"],
-      "cwd": ".",
+      "command": [
+        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
+        "{env:NEST_PROJECT_ROOT}/tools/mcp_context_memory_server.py"
+      ],
+      "cwd": "{env:NEST_PROJECT_ROOT}",
       "enabled": true,
       "timeout": 30000
     },
     "nest-knowledge": {
       "type": "local",
-      "command": [".venv/bin/python", "tools/mcp_knowledge_server.py"],
-      "cwd": ".",
+      "command": [
+        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
+        "{env:NEST_PROJECT_ROOT}/tools/mcp_knowledge_server.py"
+      ],
+      "cwd": "{env:NEST_PROJECT_ROOT}",
       "enabled": true,
       "timeout": 30000
     }

@@ -1,0 +1,13 @@
+{
+  "identifier": "default",
+  "description": "Default capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "allow-exit-app",
+    "allow-docs-list",
+    "allow-docs-read",
+    "allow-apps-list"
+  ]
+}

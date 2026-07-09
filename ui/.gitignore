@@ -1,0 +1,12 @@
+# Frontend
+node_modules/
+dist/
+tsconfig.tsbuildinfo
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+src-tauri/Cargo.lock
+
+# Runtime logs
+logs/

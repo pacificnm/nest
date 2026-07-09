@@ -1,0 +1,9 @@
+# Nest Shell manifest — copy into your product repo root.
+# Nest Shell scans `apps/<name>/nest-app.toml` and shows registered apps on the desktop.
+
+[shell]
+name = "My App"
+category = "Development"
+icon = "fa-solid fa-cube"
+description = "Short description shown when the app opens in Nest Shell."
+# visible = true

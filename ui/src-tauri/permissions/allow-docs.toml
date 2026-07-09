@@ -1,0 +1,9 @@
+[[permission]]
+identifier = "allow-docs-list"
+description = "Enables the docs_list command."
+commands.allow = ["docs_list"]
+
+[[permission]]
+identifier = "allow-docs-read"
+description = "Enables the docs_read command."
+commands.allow = ["docs_read"]

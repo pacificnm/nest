@@ -4,7 +4,9 @@
 
 ## MCP Servers Available
 
-Three MCP servers are configured in `.cursor/mcp.json` and `opencode.json` (project root, mirrored in `.opencode/opencode.json`):
+Three MCP servers are configured in `.cursor/mcp.json` and `opencode.json` (project root, mirrored in `.opencode/opencode.json`).
+
+**Important:** Nest MCP servers expose **tools** only (e.g. `search_project_memory`), not MCP **resources**. Do not use `list_mcp_resources` to verify connectivity — use the Nest tool names directly or run `/mcp list` in OpenCode.
 
 | Server | Tools | Purpose |
 |--------|-------|---------|

@@ -1,0 +1,314 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nest-color-background: #1b1f23;
+  --nest-color-foreground: #cccccc;
+  --nest-color-primary: #4f8ef7;
+  --nest-color-secondary: #9da5b4;
+  --nest-color-border: #313842;
+  --nest-color-surface: #252b32;
+  --nest-color-accent: #4f8ef7;
+  --nest-color-muted: #6e7681;
+  --nest-color-success: #3fb950;
+  --nest-color-warning: #d29922;
+  --nest-color-error: #f85149;
+  --nest-color-info: #58a6ff;
+}
+
+html,
+body {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  min-height: 100vh;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--nest-color-background);
+  color: var(--nest-color-foreground);
+}
+
+::selection {
+  background: rgba(79, 142, 247, 0.35);
+  color: var(--nest-color-foreground);
+}
+
+body.shell-dragging,
+body.shell-resizing {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing;
+}
+
+body.shell-resizing {
+  cursor: nwse-resize;
+}
+
+body.shell-dragging .nest-desktop,
+body.shell-resizing .nest-desktop {
+  pointer-events: none;
+}
+
+.nest-desktop {
+  @apply absolute inset-0 bottom-12 p-4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.desktop-icon {
+  @apply flex flex-col select-none items-center justify-center p-2 rounded-nest-md cursor-pointer transition-colors;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.desktop-icon:active {
+  background-color: rgba(79, 142, 247, 0.28);
+}
+
+.desktop-icon:hover {
+  background-color: rgba(79, 142, 247, 0.2);
+}
+
+.desktop-icon-label {
+  @apply mt-1 text-xs text-center text-nest-foreground;
+}
+
+
+
+.taskbar {
+  @apply fixed bottom-0 left-0 right-0 h-12 bg-nest-surface border-t border-nest-border flex items-center px-2 z-50;
+}
+
+.taskbar-item {
+  @apply flex items-center justify-center w-10 h-10 rounded-nest-md cursor-pointer transition-colors;
+}
+
+.taskbar-item:hover {
+  background-color: rgba(79, 142, 247, 0.2);
+}
+
+.start-button {
+  @apply flex items-center gap-2 px-4 py-2 bg-nest-primary text-white rounded-nest-md transition-colors;
+}
+
+.start-button:hover {
+  background-color: var(--nest-color-secondary);
+}
+
+.shell-window {
+  @apply absolute flex select-none flex-col overflow-hidden rounded-nest-lg border border-nest-border bg-nest-surface shadow-2xl;
+  min-width: 420px;
+  min-height: 280px;
+  touch-action: none;
+}
+
+.shell-window-focused {
+  border-color: color-mix(in srgb, var(--nest-color-primary) 60%, transparent);
+}
+
+.shell-window-unfocused {
+  border-color: var(--nest-color-border);
+}
+
+.shell-window-interacting {
+  transition: none;
+  will-change: left, top, width, height;
+}
+
+.shell-window-titlebar {
+  @apply flex h-9 cursor-grab items-center justify-between border-b border-nest-border px-3 active:cursor-grabbing;
+  background-color: color-mix(in srgb, var(--nest-color-background) 80%, transparent);
+}
+
+.shell-window-title {
+  @apply truncate text-sm font-medium text-nest-foreground;
+}
+
+.shell-window-controls {
+  @apply flex items-center gap-1;
+}
+
+.shell-window-control {
+  @apply flex h-6 w-6 items-center justify-center rounded text-xs text-nest-muted transition-colors;
+}
+
+.shell-window-control:hover {
+  background-color: rgba(79, 142, 247, 0.2);
+  @apply text-nest-foreground;
+}
+
+.shell-window-control-close:hover {
+  background-color: rgba(248, 81, 73, 0.2);
+  @apply text-nest-error;
+}
+
+.shell-window-content {
+  @apply min-h-0 flex-1 overflow-hidden bg-nest-background;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+body.shell-dragging .shell-window-content,
+body.shell-resizing .shell-window-content {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.shell-window-resize {
+  @apply absolute z-10 touch-none;
+}
+
+.shell-window-resize-east {
+  top: 2.25rem;
+  right: 0;
+  bottom: 0.75rem;
+  width: 0.375rem;
+  cursor: ew-resize;
+}
+
+.shell-window-resize-south {
+  left: 0;
+  right: 0.75rem;
+  bottom: 0;
+  height: 0.375rem;
+  cursor: ns-resize;
+}
+
+.shell-window-resize-south-east {
+  right: 0;
+  bottom: 0;
+  width: 1rem;
+  height: 1rem;
+  cursor: nwse-resize;
+}
+
+.shell-window-resize-south-east::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--nest-color-muted);
+  border-bottom: 2px solid var(--nest-color-muted);
+  opacity: 0.8;
+}
+
+.shell-window-focused .shell-window-resize-south-east::after {
+  border-color: var(--nest-color-primary);
+  opacity: 1;
+}
+
+.help-app {
+  @apply flex h-full min-h-0;
+}
+
+.help-app-sidebar {
+  @apply flex w-64 min-w-64 flex-col border-r border-nest-border;
+  background-color: color-mix(in srgb, var(--nest-color-surface) 60%, transparent);
+}
+
+.help-app-sidebar-header {
+  @apply border-b border-nest-border px-4 py-3;
+}
+
+.help-app-toc {
+  @apply flex-1 overflow-y-auto py-2;
+}
+
+.help-app-toc-item {
+  @apply block w-full truncate py-1.5 pr-3 text-left text-sm text-nest-muted transition-colors;
+}
+
+.help-app-toc-item:hover {
+  background-color: rgba(79, 142, 247, 0.1);
+  @apply text-nest-foreground;
+}
+
+.help-app-toc-item-active {
+  @apply border-r-2 border-nest-primary text-nest-foreground;
+  background-color: rgba(79, 142, 247, 0.15);
+}
+
+.help-app-content {
+  @apply flex-1 overflow-y-auto px-6 py-5;
+}
+
+.help-app-loading,
+.help-app-error {
+  @apply text-sm text-nest-muted;
+}
+
+.help-app-error {
+  @apply text-nest-error;
+}
+
+.nest-markdown-viewer {
+  @apply text-sm leading-relaxed text-nest-foreground;
+}
+
+.nest-markdown-viewer h1 {
+  @apply mb-4 mt-0 text-2xl font-semibold;
+}
+
+.nest-markdown-viewer h2 {
+  @apply mb-3 mt-6 text-xl font-semibold;
+}
+
+.nest-markdown-viewer h3 {
+  @apply mb-2 mt-5 text-lg font-semibold;
+}
+
+.nest-markdown-viewer p,
+.nest-markdown-viewer ul,
+.nest-markdown-viewer ol {
+  @apply my-3;
+}
+
+.nest-markdown-viewer ul,
+.nest-markdown-viewer ol {
+  @apply pl-6;
+}
+
+.nest-markdown-viewer li {
+  @apply my-1;
+}
+
+.nest-markdown-viewer a {
+  color: var(--nest-color-primary);
+}
+
+.nest-markdown-viewer pre {
+  @apply overflow-x-auto rounded-nest-md border border-nest-border bg-nest-surface px-4 py-3;
+}
+
+.nest-markdown-viewer code {
+  @apply text-[0.9em];
+}
+
+.nest-markdown-viewer :not(pre) > code {
+  @apply rounded bg-nest-surface px-1 py-0.5;
+}
+
+.nest-markdown-viewer table {
+  @apply my-4 w-full border-collapse;
+}
+
+.nest-markdown-viewer th,
+.nest-markdown-viewer td {
+  @apply border border-nest-border px-3 py-2 text-left;
+}
+
+.nest-markdown-viewer th {
+  @apply bg-nest-surface;
+}
+
+.nest-markdown-viewer blockquote {
+  @apply my-4 pl-4 text-nest-muted;
+  border-left: 4px solid color-mix(in srgb, var(--nest-color-primary) 40%, transparent);
+}

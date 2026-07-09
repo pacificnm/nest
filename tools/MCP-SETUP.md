@@ -368,8 +368,13 @@ When Kiwi launches **OpenCode** via `ollama launch opencode`, MCP is configured 
 from the Tools sidebar probe. OpenCode reads the `mcp` block in the workspace
 [`opencode.json`](../opencode.json) (mirrored in [`.opencode/opencode.json`](../.opencode/opencode.json)).
 
-Kiwi sets `OPENCODE_CONFIG` to that file when the Agent panel starts OpenCode in the
-workspace root.
+Kiwi sets `OPENCODE_CONFIG` and `NEST_PROJECT_ROOT` when the Agent panel starts OpenCode.
+The MCP `command` paths in `opencode.json` use `{env:NEST_PROJECT_ROOT}` so servers work even
+when the Kiwi workspace is a nested folder (e.g. `apps/kiwi`).
+
+**Nest MCP provides tools, not resources.** OpenCode may call `list_mcp_resources` and get an
+empty list even when servers are connected. Use `search_project_memory`, `search_knowledge_base`,
+or `/mcp list` instead.
 
 Verify from a terminal in the repo root:
 
