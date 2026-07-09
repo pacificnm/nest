@@ -193,7 +193,7 @@ fn execute_file_tool(
 ) -> NestResult<String> {
     match tool {
         "read_file" => {
-            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let path = normalize_workspace_path(required_str(arguments, "path")?)?;
             let content = files.read_text(&path)?;
             session
                 .lock()
@@ -203,7 +203,7 @@ fn execute_file_tool(
             Ok(content)
         }
         "write_file" => {
-            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let path = normalize_workspace_path(required_str(arguments, "path")?)?;
             let content = optional_str(arguments, "content");
             if files.exists(&path)? {
                 let read = session
@@ -220,7 +220,7 @@ fn execute_file_tool(
             write_with_backup(files, &path, content)
         }
         "update_file" => {
-            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let path = normalize_workspace_path(required_str(arguments, "path")?)?;
             let old = optional_str(arguments, "old_string");
             let new = optional_str(arguments, "new_string");
             let replace_all = arguments
@@ -257,7 +257,7 @@ fn execute_file_tool(
             Ok(format!("Updated {count} occurrence(s) in {path}."))
         }
         "delete_path" => {
-            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let path = normalize_workspace_path(required_str(arguments, "path")?)?;
             let recursive = arguments
                 .get("recursive")
                 .and_then(Value::as_bool)
@@ -281,7 +281,7 @@ fn execute_file_tool(
             }
         }
         "create_directory" => {
-            let path = normalize_workspace_path(&required_str(arguments, "path")?)?;
+            let path = normalize_workspace_path(required_str(arguments, "path")?)?;
             crate::file_ops::ensure_directory(files, &path)
         }
         "list_directory" => {

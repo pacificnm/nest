@@ -95,36 +95,37 @@ pub fn grep_files(files: &FileService, options: &GrepOptions) -> NestResult<Vec<
     };
 
     let mut results = Vec::new();
-    walk_dir(
+    let mut ctx = GrepContext {
         files,
-        &options.path,
-        &tokens,
-        &options.ignore_dirs,
-        &extensions,
-        options.max_file_bytes,
-        &mut results,
+        tokens: &tokens,
+        ignored: &options.ignore_dirs,
+        extensions: &extensions,
+        max_file_bytes: options.max_file_bytes,
+        results: &mut results,
         max_results,
-    )?;
+    };
+    walk_dir(&mut ctx, &options.path)?;
     Ok(results)
 }
 
-fn walk_dir(
-    files: &FileService,
-    dir_rel: &str,
-    tokens: &[String],
-    ignored: &[String],
-    extensions: &[String],
+struct GrepContext<'a> {
+    files: &'a FileService,
+    tokens: &'a [String],
+    ignored: &'a [String],
+    extensions: &'a [String],
     max_file_bytes: u64,
-    results: &mut Vec<GrepMatch>,
+    results: &'a mut Vec<GrepMatch>,
     max_results: usize,
-) -> NestResult<()> {
-    if results.len() >= max_results {
+}
+
+fn walk_dir(ctx: &mut GrepContext<'_>, dir_rel: &str) -> NestResult<()> {
+    if ctx.results.len() >= ctx.max_results {
         return Ok(());
     }
 
-    let entries = files.list_dir(dir_rel)?;
+    let entries = ctx.files.list_dir(dir_rel)?;
     for entry in entries {
-        if results.len() >= max_results {
+        if ctx.results.len() >= ctx.max_results {
             break;
         }
 
@@ -135,31 +136,22 @@ fn walk_dir(
         };
 
         if entry.metadata.is_dir {
-            if !ignored.iter().any(|name| name == &entry.name) {
-                walk_dir(
-                    files,
-                    &rel_path,
-                    tokens,
-                    ignored,
-                    extensions,
-                    max_file_bytes,
-                    results,
-                    max_results,
-                )?;
+            if !ctx.ignored.iter().any(|name| name == &entry.name) {
+                walk_dir(ctx, &rel_path)?;
             }
             continue;
         }
 
-        if !has_allowed_extension(&rel_path, extensions) {
+        if !has_allowed_extension(&rel_path, ctx.extensions) {
             continue;
         }
 
-        if entry.metadata.len > max_file_bytes {
+        if entry.metadata.len > ctx.max_file_bytes {
             continue;
         }
 
-        if let Ok(content) = files.read_text(&rel_path) {
-            search_lines(&rel_path, &content, tokens, results, max_results);
+        if let Ok(content) = ctx.files.read_text(&rel_path) {
+            search_lines(&rel_path, &content, ctx.tokens, ctx.results, ctx.max_results);
         }
     }
 

@@ -1,5 +1,7 @@
 //! Resolve API-relative image paths against a server base URL.
 
+#![allow(clippy::result_large_err)]
+
 use nest_error::{NestError, NestResult};
 
 /// Joins `server_url` and a relative or absolute image path.

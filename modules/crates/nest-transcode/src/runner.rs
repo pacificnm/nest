@@ -103,10 +103,8 @@ impl FfprobeRunner {
 
 fn map_spawn_error(error: io::Error) -> TranscodeError {
     if error.kind() == io::ErrorKind::NotFound {
-        TranscodeError::binary_not_found(format!(
-            "ffprobe binary not found: ensure ffmpeg is installed"
-        ))
-        .with_source(error)
+        TranscodeError::binary_not_found("ffprobe binary not found: ensure ffmpeg is installed".to_string())
+            .with_source(error)
     } else {
         TranscodeError::probe(format!("failed to spawn ffprobe: {error}")).with_source(error)
     }

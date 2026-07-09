@@ -1,5 +1,7 @@
 //! Ollama client configuration.
 
+#![allow(clippy::result_large_err)]
+
 use nest_config::ConfigService;
 use nest_error::NestResult;
 use serde::Deserialize;

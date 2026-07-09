@@ -1,5 +1,7 @@
 //! Low-level Ollama HTTP client.
 
+#![allow(clippy::result_large_err)]
+
 use nest_ai::{CompletionRequest, ResponseFormat};
 use nest_error::NestResult;
 use nest_http_client::HttpClientService;

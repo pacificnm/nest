@@ -1,5 +1,7 @@
 //! HTTP fetch with disk cache backing.
 
+#![allow(clippy::result_large_err)]
+
 use std::time::Duration;
 
 use nest_cache::{Cache, CacheKey};

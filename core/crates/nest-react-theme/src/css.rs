@@ -1,5 +1,7 @@
 //! CSS custom property output for webview theming.
 
+#![allow(clippy::result_large_err)]
+
 use std::collections::BTreeMap;
 
 use nest_design::{ThemeDefinition, ThemeMode};

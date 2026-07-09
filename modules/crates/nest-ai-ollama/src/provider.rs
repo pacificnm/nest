@@ -1,5 +1,7 @@
 //! Ollama [`nest_ai::AiProvider`] implementation.
 
+#![allow(clippy::result_large_err)]
+
 use async_trait::async_trait;
 use futures_util::future::ready;
 use futures_util::StreamExt;
@@ -78,7 +80,7 @@ impl AiProvider for OllamaProvider {
                 .chat_stream(&request)
                 .await
                 .map_err(ollama_to_ai_error)?;
-            return Ok(collect_stream_response(&model, &mut stream).await?);
+            return collect_stream_response(&model, &mut stream).await;
         }
 
         let response = self
