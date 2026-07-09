@@ -362,6 +362,32 @@ max_steps = 10
 
 See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 
+## 8. Using MCP from OpenCode (Kiwi Agent panel)
+
+When Kiwi launches **OpenCode** via `ollama launch opencode`, MCP is configured separately
+from the Tools sidebar probe. OpenCode reads the `mcp` block in the workspace
+[`opencode.json`](../opencode.json) (mirrored in [`.opencode/opencode.json`](../.opencode/opencode.json)).
+
+Kiwi sets `OPENCODE_CONFIG` to that file when the Agent panel starts OpenCode in the
+workspace root.
+
+Verify from a terminal in the repo root:
+
+```bash
+ollama launch opencode --model qwen3.5:397b-cloud
+# inside OpenCode:
+/mcp list
+```
+
+Requirements (same as Cursor):
+
+- `.venv/bin/python` with `tools/requirements.txt` installed
+- Repo `.env` with `DATABASE_URL` and `OPENAI_API_KEY` (for embeddings)
+- Indexed project memory (`./scripts/index-memory.sh`)
+
+The [Ollama tool-calling docs](https://docs.ollama.com/capabilities/tool-calling) describe
+the inference API; OpenCode handles the tool loop and MCP stdio servers itself.
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |

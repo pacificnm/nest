@@ -4,7 +4,7 @@
 
 ## MCP Servers Available
 
-Three MCP servers are configured in `.cursor/mcp.json` and `opencode.json`:
+Three MCP servers are configured in `.cursor/mcp.json` and `opencode.json` (project root, mirrored in `.opencode/opencode.json`):
 
 | Server | Tools | Purpose |
 |--------|-------|---------|
