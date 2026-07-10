@@ -410,4 +410,39 @@ mod tests {
 
         server.shutdown().await;
     }
+
+    #[tokio::test]
+    async fn cors_preflight_allows_put() {
+        let server = HttpServer::builder()
+            .routes(RouteGroup::new("/api").get("/health", health))
+            .spawn()
+            .await
+            .unwrap();
+
+        let client = reqwest::Client::new();
+        let response = client
+            .request(
+                reqwest::Method::OPTIONS,
+                format!("{}/api/health", server.base_url()),
+            )
+            .header("Origin", "tauri://localhost")
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "content-type")
+            .send()
+            .await
+            .unwrap();
+
+        assert!(response.status().is_success());
+        let methods = response
+            .headers()
+            .get("access-control-allow-methods")
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or_default();
+        assert!(
+            methods.contains("PUT"),
+            "expected PUT in access-control-allow-methods, got {methods:?}"
+        );
+
+        server.shutdown().await;
+    }
 }
