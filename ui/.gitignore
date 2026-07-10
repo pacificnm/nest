@@ -10,3 +10,4 @@ src-tauri/Cargo.lock
 
 # Runtime logs
 logs/
+.embed-dev-ports.json

@@ -13,8 +13,10 @@ export function PlaceholderApp({ title, description, path }: PlaceholderAppProps
         <p className="font-mono text-xs text-nest-muted">{path}</p>
       ) : null}
       <p className="max-w-md text-xs text-nest-muted">
-        Shell embedding for registered apps is coming next — this window proves dynamic app
-        discovery from <code className="text-nest-foreground">nest-app.toml</code>.
+        Add <code className="text-nest-foreground">mode = &quot;embed&quot;</code> under{" "}
+        <code className="text-nest-foreground">[shell.launch]</code> in{" "}
+        <code className="text-nest-foreground">nest-app.toml</code> to load this app&apos;s Vite
+        dev server inside the shell.
       </p>
     </div>
   );

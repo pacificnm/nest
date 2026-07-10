@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run dev:all",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src 'self' http://localhost:* ws://localhost:*; img-src 'self' data: blob: http://localhost:*; style-src 'self' 'unsafe-inline'; frame-src 'self' http://localhost:* asset: https://asset.localhost"
     }
   },
   "bundle": {

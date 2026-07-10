@@ -339,12 +339,25 @@ stay grouped across compaction.
 ## 7. Using MCP from Kiwi
 
 Kiwi Agent mode (chat panel **Agent** checkbox) runs the same MCP servers as Cursor
-via `[agent]` in `apps/kiwi/desktop/config.toml`:
+via `[agent]` in Kiwi `config.toml`.
+
+**Installed binary** (`kiwi-desktop`): config lives at `~/.config/kiwi/config.toml`.
+Copy the examples and edit absolute paths for your machine:
+
+```bash
+mkdir -p ~/.config/kiwi
+cp apps/kiwi/desktop/config.example.toml ~/.config/kiwi/config.toml
+cp apps/kiwi/desktop/mcp.json.example ~/.config/kiwi/mcp.json
+# Edit [project].root and Python paths in mcp.json
+```
+
+**Dev** (`tauri dev`): Kiwi still prefers `apps/kiwi/desktop/config.toml` when run from
+`src-tauri/` with `tauri.conf.json` present.
 
 ```toml
 [agent]
 model = "qwen2.5:7b"
-mcp_config = "../../../.cursor/mcp.json"
+mcp_config = "mcp.json"   # beside config.toml (~/.config/kiwi/mcp.json when installed)
 mcp_servers = ["nest-memory", "nest-knowledge", "nest-context-memory"]
 disabled_mcp_servers = []          # toggle off in Agent sidebar
 allow_save_context = false         # opt-in for save_context_memory
@@ -352,6 +365,8 @@ allow_file_writes = false          # opt-in for write/update/delete/mkdir file t
 agent_mode = true
 max_steps = 10
 ```
+
+Override the config file with `KIWI_CONFIG=/path/to/config.toml`.
 
 - **Agent sidebar** — enable/disable individual MCP servers; optional
   `save_context_memory` auto-run.
@@ -362,7 +377,33 @@ max_steps = 10
 
 See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 
-## 8. Using MCP from OpenCode (Kiwi Agent panel)
+## 8. Using MCP from Claude Code (Kiwi Agent panel)
+
+When Kiwi launches **Claude Code** (`runtime = "claude"` in the Agent panel — direct account
+or `ollama launch claude`), MCP is configured via the repo [`.mcp.json`](../.mcp.json) at the
+Nest project root.
+
+Kiwi sets `NEST_PROJECT_ROOT` to the monorepo root (where `.venv` and `tools/mcp_*.py` live).
+Server commands in `.mcp.json` use `${NEST_PROJECT_ROOT}` so paths work when the workspace is
+`apps/kiwi` or the repo root.
+
+[`.claude/settings.json`](../.claude/settings.json) enables `enableAllProjectMcpServers` so
+Nest servers auto-approve in trusted workspaces.
+
+Inside Claude after launch:
+
+```text
+/mcp list
+```
+
+You should see `nest-memory`, `nest-context-memory`, and `nest-knowledge`. Restart the agent
+session in Kiwi after changing `.mcp.json`.
+
+**Note:** The Tool Activity sidebar probes MCP via Kiwi's Rust client and `mcp_config`
+(default `mcp.json` beside `config.toml`). Claude uses `.mcp.json` at the Nest project
+root separately — both point at the same Python servers.
+
+## 9. Using MCP from OpenCode (Kiwi Agent panel)
 
 When Kiwi launches **OpenCode** via `ollama launch opencode`, MCP is configured separately
 from the Tools sidebar probe. OpenCode reads the `mcp` block in the workspace

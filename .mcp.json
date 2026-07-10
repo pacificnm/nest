@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "nest-memory": {
+      "type": "stdio",
+      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
+      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_memory_server.py"],
+      "cwd": "${NEST_PROJECT_ROOT}"
+    },
+    "nest-context-memory": {
+      "type": "stdio",
+      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
+      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_context_memory_server.py"],
+      "cwd": "${NEST_PROJECT_ROOT}"
+    },
+    "nest-knowledge": {
+      "type": "stdio",
+      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
+      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_knowledge_server.py"],
+      "cwd": "${NEST_PROJECT_ROOT}"
+    }
+  }
+}

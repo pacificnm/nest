@@ -21,6 +21,8 @@ export type ShellWindow = {
   height: number;
   minimized: boolean;
   zIndex: number;
+  embedUrl?: string;
+  launchMessage?: string;
 };
 
 export const HELP_APP: ShellApp = {

@@ -1,4 +1,5 @@
 import { HelpApp } from "../apps/HelpApp";
+import { EmbeddedApp } from "../apps/EmbeddedApp";
 import { PlaceholderApp } from "../apps/PlaceholderApp";
 import { getShellApp, type ShellApp, type ShellWindow } from "../../shell/types";
 import { WindowFrame } from "./WindowFrame";
@@ -21,6 +22,16 @@ function renderWindowContent(window: ShellWindow, app: ShellApp | undefined) {
 
   if (app.id === "help") {
     return <HelpApp />;
+  }
+
+  if (window.embedUrl || window.launchMessage) {
+    return (
+      <EmbeddedApp
+        title={app.name}
+        url={window.embedUrl}
+        message={window.launchMessage}
+      />
+    );
   }
 
   return (

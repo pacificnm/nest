@@ -5,6 +5,7 @@ import { Desktop } from "./components/Desktop";
 import { StartMenu } from "./components/StartMenu";
 import { Taskbar } from "./components/Taskbar";
 import { WindowManager } from "./components/shell/WindowManager";
+import { appsResolveLaunch } from "./lib/apps";
 import { useShellApps } from "./shell/useShellApps";
 import { useWindowManager } from "./shell/useWindowManager";
 
@@ -31,18 +32,34 @@ export function App() {
     setStartMenuOpen(false);
   };
 
-  const launchApp = (appId: string) => {
-    openApp(appId);
+  const launchApp = async (appId: string) => {
+    if (appId === "help") {
+      openApp(appId);
+      closeStartMenu();
+      return;
+    }
+
+    try {
+      const launch = await appsResolveLaunch(appId);
+      if (launch.mode === "embed") {
+        openApp(appId, launch);
+      } else {
+        openApp(appId);
+      }
+    } catch (launchError) {
+      console.error(launchError);
+      openApp(appId);
+    }
     closeStartMenu();
   };
 
-  const handleTaskbarApp = (appId: string) => {
+  const handleTaskbarApp = async (appId: string) => {
     const existing = windows.find((window) => window.appId === appId);
     if (existing) {
       focusWindow(existing.id);
       return;
     }
-    openApp(appId);
+    await launchApp(appId);
   };
 
   const handleExit = async () => {

@@ -7,3 +7,16 @@ category = "Development"
 icon = "fa-solid fa-cube"
 description = "Short description shown when the app opens in Nest Shell."
 # visible = true
+
+# Launch mode: embed (shell child webview), spawn (external binary), module (built-in placeholder)
+[shell.launch]
+mode = "embed"
+# program = "my-app-desktop"   # for spawn mode
+
+# Dev server port when embedded in Nest Shell (orchestrator assigns if omitted)
+[shell.dev]
+# port = 5174
+
+# Built UI entry for production embed launches
+[shell.build]
+entry = "ui/dist/index.html"

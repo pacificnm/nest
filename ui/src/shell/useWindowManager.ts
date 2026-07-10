@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { clampWindowPosition, clampWindowSize } from "./windowBounds";
+import type { LaunchTarget } from "../lib/apps";
 import type { ShellApp, ShellWindow } from "./types";
 
 const DEFAULT_SIZE = { width: 960, height: 640 };
@@ -8,7 +9,7 @@ const DEFAULT_SIZE = { width: 960, height: 640 };
 let nextWindowId = 1;
 let nextZIndex = 10;
 
-function createWindow(app: ShellApp): ShellWindow {
+function createWindow(app: ShellApp, launch?: LaunchTarget): ShellWindow {
   const offset = (nextWindowId - 1) * 28;
   return {
     id: `win-${nextWindowId++}`,
@@ -20,6 +21,8 @@ function createWindow(app: ShellApp): ShellWindow {
     height: DEFAULT_SIZE.height,
     minimized: false,
     zIndex: nextZIndex++,
+    embedUrl: launch?.mode === "embed" ? launch.url : undefined,
+    launchMessage: launch?.message,
   };
 }
 
@@ -40,7 +43,7 @@ export function useWindowManager(apps: ShellApp[]) {
   }, []);
 
   const openApp = useCallback(
-    (appId: string) => {
+    (appId: string, launch?: LaunchTarget) => {
       const app = appById.get(appId);
       if (!app) {
         return;
@@ -52,12 +55,19 @@ export function useWindowManager(apps: ShellApp[]) {
           setFocusedWindowId(existing.id);
           return current.map((window) =>
             window.id === existing.id
-              ? { ...window, zIndex: nextZIndex++, minimized: false }
+              ? {
+                  ...window,
+                  zIndex: nextZIndex++,
+                  minimized: false,
+                  embedUrl:
+                    launch?.mode === "embed" ? launch.url ?? window.embedUrl : window.embedUrl,
+                  launchMessage: launch?.message ?? window.launchMessage,
+                }
               : window,
           );
         }
 
-        const created = createWindow(app);
+        const created = createWindow(app, launch);
         setFocusedWindowId(created.id);
         return [...current, created];
       });

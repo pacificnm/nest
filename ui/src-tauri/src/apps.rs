@@ -58,6 +58,10 @@ fn default_visible() -> bool {
 #[tauri::command]
 pub fn apps_list() -> Result<Vec<RegisteredApp>, String> {
     let root = resolve_nest_root()?;
+    discover_registered_apps(&root)
+}
+
+pub fn discover_registered_apps(root: &Path) -> Result<Vec<RegisteredApp>, String> {
     let apps_dir = root.join("apps");
     if !apps_dir.is_dir() {
         return Ok(Vec::new());
@@ -85,7 +89,7 @@ pub fn apps_list() -> Result<Vec<RegisteredApp>, String> {
             continue;
         }
 
-        if let Some(app) = load_manifest(&root, id, &manifest_path)? {
+        if let Some(app) = load_manifest(root, id, &manifest_path)? {
             apps.push(app);
         }
     }

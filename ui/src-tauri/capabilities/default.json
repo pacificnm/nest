@@ -8,6 +8,7 @@
     "allow-exit-app",
     "allow-docs-list",
     "allow-docs-read",
-    "allow-apps-list"
+    "allow-apps-list",
+    "allow-apps-launch"
   ]
 }

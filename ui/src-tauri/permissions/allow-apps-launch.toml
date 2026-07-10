@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-apps-launch"
+description = "Enables app launch resolution and spawn commands."
+commands.allow = ["apps_resolve_launch", "apps_spawn"]
