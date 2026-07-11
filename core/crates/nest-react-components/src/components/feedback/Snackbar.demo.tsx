@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Snackbar } from './Snackbar';
 import { Button } from '../inputs/Button';
 

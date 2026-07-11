@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField } from './TextField';
-import { Search, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Search, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 /**
  * TextField Component Demos

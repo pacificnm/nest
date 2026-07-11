@@ -24,6 +24,3 @@ export * from './hooks';
 
 // Utilities
 export { cn } from './lib/cn';
-
-// Component viewer app (for Nest Shell)
-export { ComponentsApp } from './components/ComponentsApp';
