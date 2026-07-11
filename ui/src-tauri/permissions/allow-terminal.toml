@@ -1,0 +1,10 @@
+[[permission]]
+identifier = "allow-terminal"
+description = "Enables PTY-backed terminal session commands."
+commands.allow = [
+    "terminal_open",
+    "terminal_input",
+    "terminal_resize",
+    "terminal_close",
+    "terminal_list",
+]

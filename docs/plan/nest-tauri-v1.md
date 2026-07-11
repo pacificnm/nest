@@ -4,6 +4,8 @@
 
 Bootstrap, config merge, and built-in IPC commands are implemented. See [nest-tauri docs](../nest-tauri/README.md).
 
+Canonical product layout and host rules: [app standard](../app-standard.md).
+
 ## Desktop frontend platform
 
 Nest desktop apps use a fixed **frontend platform**:

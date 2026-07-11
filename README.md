@@ -33,7 +33,7 @@ nest/
 
 **Rule:** `core/` holds the framework contract. `modules/` holds optional adapters. **`apps/` is for local product checkouts only** — ignored by nest git, never committed.
 
-See [docs/architecture.md](docs/architecture.md) for layering and dependency rules.
+See [docs/architecture.md](docs/architecture.md) for layering and dependency rules. Product repos follow [docs/app-standard.md](docs/app-standard.md).
 
 ## Layering
 
@@ -62,6 +62,10 @@ nest-cli / nest-tui / nest-tauri   presentation hosts
 Modules (`nest-airtable`, `nest-data-sqlite`, …) plug into the container; apps compose hosts + modules.
 
 Hosts own CLI parsing, event loops, logging initialization, and config file loading.
+
+**Build commands:** every app uses `./build` with the same verbs (`build`, `run`, `dev`, `test`, `check`, `clean`). See [docs/build.md](docs/build.md) and [docs/app-standard.md](docs/app-standard.md).
+
+**Nest Shell:** from the repo root, run `./start` to launch the desktop shell demo ([`ui/`](ui/)) in development mode (Tauri + Vite + embed app dev servers).
 
 ## Desktop frontend platform
 
@@ -151,6 +155,7 @@ Rust business logic stays in Nest modules; React is the presentation tier. See [
 | Crate | Summary | Docs |
 |-------|---------|------|
 | **nest-airtable** | Airtable REST client: offset pagination, batch updates, Bearer auth, rate-limit retry. | [docs](docs/nest-airtable/README.md) |
+| **nest-claude** | Claude (Anthropic) Messages API client: streaming, tool use, extended thinking, prompt caching. | [docs](docs/nest-claude/README.md) |
 | **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
 | **nest-media-library** | Media library scanning and indexing via `FileService` and injected providers. | [docs](docs/nest-media-library/README.md) |
 | **nest-tmdb** | TMDB metadata provider implementing `nest-media::MetadataProvider`. | [docs](docs/nest-tmdb/README.md) |

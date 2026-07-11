@@ -3,8 +3,8 @@
 use std::fs;
 use std::path::Path;
 
-use serde::Serialize;
 use serde::Deserialize;
+use serde::Serialize;
 
 use crate::nest_root::resolve_nest_root;
 

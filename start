@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Launch Nest Shell (ui/) in development mode — Tauri + Vite + embed app dev servers.
+set -euo pipefail
+
+NEST_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SHELL_ROOT="$NEST_ROOT/ui"
+BUILD_LIB="$NEST_ROOT/scripts/nest-build/lib.sh"
+
+if [[ ! -f "$SHELL_ROOT/package.json" ]]; then
+  echo "error: Nest Shell not found at $SHELL_ROOT" >&2
+  exit 1
+fi
+
+if [[ ! -f "$BUILD_LIB" ]]; then
+  echo "error: missing $BUILD_LIB" >&2
+  exit 1
+fi
+
+# shellcheck source=scripts/nest-build/lib.sh
+source "$BUILD_LIB"
+
+export APP_ROOT="$SHELL_ROOT"
+export NEST_BUILD_PROFILE=tauri
+export NEST_UI_DIR=.
+export NEST_CARGO_MANIFEST=src-tauri/Cargo.toml
+export NEST_RUST_PACKAGE=nest-desktop
+export NEST_RUST_BIN=nest-desktop
+export NEST_TAURI_MODE=binary
+export CARGO_TARGET_DIR="$SHELL_ROOT/target"
+
+nest_build_main dev "$@"

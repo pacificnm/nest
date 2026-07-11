@@ -1,0 +1,29 @@
+[package]
+name = "nest-claude"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Claude (Anthropic) Messages API client for the Nest framework"
+
+[dependencies]
+nest-config = { workspace = true, optional = true }
+nest-core = { workspace = true }
+nest-error = { workspace = true }
+nest-http = { workspace = true }
+nest-http-client = { workspace = true }
+bytes = "1"
+futures-util = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+
+[features]
+default = ["config"]
+config = ["dep:nest-config"]
+
+[dev-dependencies]
+nest-core = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wiremock = "0.6"

@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 
 import { appsList, registeredToShellApp } from "../lib/apps";
-import { HELP_APP, type ShellApp } from "./types";
+import {
+  AGENT_APP,
+  CLAUDE_CONFIG_APP,
+  COMPONENTS_APP,
+  FILES_APP,
+  HELP_APP,
+  SETTINGS_APP,
+  TERMINAL_APP,
+  THEME_APP,
+  type ShellApp,
+} from "./types";
 
 export function useShellApps() {
-  const [apps, setApps] = useState<ShellApp[]>([HELP_APP]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registeredApps, setRegisteredApps] = useState<ShellApp[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -17,12 +27,11 @@ export function useShellApps() {
         if (cancelled) {
           return;
         }
-        setApps([HELP_APP, ...registered.map(registeredToShellApp)]);
+        setRegisteredApps(registered.map(registeredToShellApp));
         setError(null);
       } catch (loadError) {
         if (!cancelled) {
           setError(loadError instanceof Error ? loadError.message : String(loadError));
-          setApps([HELP_APP]);
         }
       } finally {
         if (!cancelled) {
@@ -36,6 +45,18 @@ export function useShellApps() {
       cancelled = true;
     };
   }, []);
+
+  const apps: ShellApp[] = [
+    HELP_APP,
+    COMPONENTS_APP,
+    TERMINAL_APP,
+    AGENT_APP,
+    FILES_APP,
+    SETTINGS_APP,
+    THEME_APP,
+    CLAUDE_CONFIG_APP,
+    ...registeredApps,
+  ];
 
   return { apps, loading, error };
 }

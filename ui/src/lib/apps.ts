@@ -31,8 +31,16 @@ export async function appsResolveLaunch(appId: string): Promise<LaunchTarget> {
   return invoke<LaunchTarget>("apps_resolve_launch", { appId });
 }
 
-export async function appsSpawn(program: string, args: string[] = []): Promise<number> {
-  return invoke<number>("apps_spawn", { program, args });
+export async function appsSpawn(
+  program: string,
+  args: string[] = [],
+  cwd?: string,
+): Promise<number> {
+  return invoke<number>("apps_spawn", { program, args, cwd: cwd ?? null });
+}
+
+export async function appsLaunchKiwi(): Promise<number> {
+  return invoke<number>("apps_launch_kiwi");
 }
 
 export function registeredToShellApp(app: RegisteredApp): ShellApp {

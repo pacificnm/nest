@@ -66,7 +66,10 @@ export function StartMenu({ apps, isOpen, onClose, onLaunchApp, onExit }: StartM
           </nav>
 
           <div className="border-t border-nest-border p-2">
-            <button className="flex w-full items-center gap-3 rounded-nest-md px-3 py-2.5 text-left text-sm text-nest-foreground hover:bg-nest-primary/20">
+            <button
+              onClick={() => onLaunchApp("settings")}
+              className="flex w-full items-center gap-3 rounded-nest-md px-3 py-2.5 text-left text-sm text-nest-foreground hover:bg-nest-primary/20"
+            >
               <FontAwesomeIcon icon={faGear} className="text-nest-muted" />
               System Settings
             </button>

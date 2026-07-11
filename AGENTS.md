@@ -61,7 +61,8 @@ If no suitable Nest crate exists, explain why before introducing a new dependenc
 ## Read order
 
 1. [docs/architecture.md](docs/architecture.md) — layering and dependency rules
-2. `docs/plan/` — implementation plans
+2. [docs/app-standard.md](docs/app-standard.md) — product layout, hosts, IPC, command surface
+3. `docs/plan/` — implementation plans
 3. MCP project memory
 4. MCP knowledge base (Rust, Tauri, React, Tailwind APIs)
 5. MCP context memory (resume prior work)

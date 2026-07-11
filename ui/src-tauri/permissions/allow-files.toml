@@ -1,0 +1,15 @@
+[[permission]]
+identifier = "allow-files"
+description = "Enables the Nest Files app's scoped file browser commands."
+commands.allow = [
+    "files_info",
+    "files_list",
+    "files_read_text",
+    "files_write_text",
+    "files_create_file",
+    "files_create_dir",
+    "files_rename",
+    "files_delete",
+    "files_copy",
+    "files_reveal",
+]

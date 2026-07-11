@@ -1,0 +1,9 @@
+[[permission]]
+identifier = "allow-claude"
+description = "Enables the Claude Config app (API key settings, Skills/Agents viewer)."
+commands.allow = [
+    "claude_settings_get",
+    "claude_settings_save",
+    "claude_list_skills",
+    "claude_list_agents",
+]

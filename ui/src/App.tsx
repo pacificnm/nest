@@ -2,10 +2,11 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 import { Desktop } from "./components/Desktop";
+import { DesktopWallpaper } from "./components/DesktopWallpaper";
 import { StartMenu } from "./components/StartMenu";
 import { Taskbar } from "./components/Taskbar";
 import { WindowManager } from "./components/shell/WindowManager";
-import { appsResolveLaunch } from "./lib/apps";
+import { appsLaunchKiwi } from "./lib/apps";
 import { useShellApps } from "./shell/useShellApps";
 import { useWindowManager } from "./shell/useWindowManager";
 
@@ -33,22 +34,27 @@ export function App() {
   };
 
   const launchApp = async (appId: string) => {
-    if (appId === "help") {
+    // Built-in apps that open directly in Nest Desktop
+    if (
+      appId === "help" ||
+      appId === "components" ||
+      appId === "terminal" ||
+      appId === "agent" ||
+      appId === "files" ||
+      appId === "settings" ||
+      appId === "theme" ||
+      appId === "claude-config"
+    ) {
       openApp(appId);
       closeStartMenu();
       return;
     }
 
+    // All other apps launch Kiwi (legacy behavior)
     try {
-      const launch = await appsResolveLaunch(appId);
-      if (launch.mode === "embed") {
-        openApp(appId, launch);
-      } else {
-        openApp(appId);
-      }
+      await appsLaunchKiwi();
     } catch (launchError) {
       console.error(launchError);
-      openApp(appId);
     }
     closeStartMenu();
   };
@@ -71,7 +77,8 @@ export function App() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-nest-background">
+    <div className="relative h-screen w-screen overflow-hidden">
+      <DesktopWallpaper />
       {error ? (
         <div className="absolute right-4 top-4 z-[60] rounded-nest-md border border-nest-error bg-nest-surface px-3 py-2 text-xs text-nest-error">
           App registry: {error}

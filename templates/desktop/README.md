@@ -46,26 +46,23 @@ Wrap the app in `ToastProvider` + `StatusBarProvider` (and `ErrorBoundary`) at t
 From this directory (inside the Nest monorepo):
 
 ```bash
-# Front end
-cd ui
-npm install
-npm run dev
-
-# Shell (separate terminal — requires Tauri system deps on Linux)
-cd ../src-tauri
-cargo run
+./build dev      # Tauri + Vite hot reload
+./build run      # production build + launch
+./build build    # production artifacts only
 ```
 
-Or use the Tauri CLI from `ui/` after `npm install`:
+See [Nest build standard](../../docs/build.md) for the full command list (`test`, `check`, `clean`). Runtime layout: [app standard](../../docs/app-standard.md).
+
+Legacy manual flow (optional):
 
 ```bash
-cd ui
-npm run tauri dev
+cd ui && npm install && npm run dev
+cd ../src-tauri && cargo run
 ```
 
 ## Copying to a product repo
 
-1. Copy `ui/` and `src-tauri/` into your app root.
+1. Copy `ui/`, `src-tauri/`, and `build` into your app root.
 2. Point `src-tauri/Cargo.toml` Nest dependencies at the monorepo via `.cargo/config.toml` path patches (see [apps/README.md](../../apps/README.md)), or use git dependencies on [pacificnm/nest](https://github.com/pacificnm/nest).
 3. Rename the app id in `src-tauri/tauri.conf.json` and `TauriApp::new("…")` in `main.rs`.
 4. Enable `nest-tauri` features: `runtime` + `images` when using `RemoteImage`.

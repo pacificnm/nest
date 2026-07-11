@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Nest Rust server / CLI — standard ./build interface.
+set -euo pipefail
+
+APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+NEST_ROOT="$(cd "$APP_ROOT/../../.." 2>/dev/null && pwd || true)"
+if [[ -z "$NEST_ROOT" || ! -f "$NEST_ROOT/scripts/nest-build/lib.sh" ]]; then
+  NEST_ROOT="$(cd "$APP_ROOT/../../nest" 2>/dev/null && pwd || true)"
+fi
+if [[ -z "$NEST_ROOT" || ! -f "$NEST_ROOT/scripts/nest-build/lib.sh" ]]; then
+  echo "error: cannot find scripts/nest-build/lib.sh (clone nest beside this app)" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$NEST_ROOT/scripts/nest-build/lib.sh"
+
+export NEST_BUILD_PROFILE=rust
+export NEST_RUST_PACKAGE="${NEST_RUST_PACKAGE:-$(basename "$APP_ROOT")-server}"
+export NEST_RUST_BIN="${NEST_RUST_BIN:-$NEST_RUST_PACKAGE}"
+
+nest_build_main "$@"

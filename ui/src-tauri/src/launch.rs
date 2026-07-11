@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -59,9 +59,48 @@ pub fn apps_resolve_launch(app_id: String) -> Result<LaunchTarget, String> {
 
 /// Spawns an external program for `spawn` launch mode.
 #[tauri::command]
-pub fn apps_spawn(program: String, args: Vec<String>) -> Result<u32, String> {
-    let child = std::process::Command::new(&program)
-        .args(&args)
+pub fn apps_spawn(program: String, args: Vec<String>, cwd: Option<String>) -> Result<u32, String> {
+    spawn_program(&program, &args, cwd.as_deref())
+}
+
+/// Launches the system `kiwi-desktop` binary from the local Kiwi project folder.
+#[tauri::command]
+pub fn apps_launch_kiwi() -> Result<u32, String> {
+    let root = resolve_nest_root()?;
+    let workdir = kiwi_project_workdir(&root);
+    if !workdir.is_dir() {
+        return Err(format!(
+            "kiwi project folder not found at {}",
+            workdir.display()
+        ));
+    }
+
+    let config = workdir.join("config.toml");
+    let mut command = std::process::Command::new("kiwi-desktop");
+    command.current_dir(&workdir);
+    if config.is_file() {
+        command.env("KIWI_CONFIG", &config);
+    }
+
+    let child = command
+        .spawn()
+        .map_err(|error| format!("failed to spawn kiwi-desktop: {error}"))?;
+
+    Ok(child.id())
+}
+
+pub fn kiwi_project_workdir(root: &Path) -> PathBuf {
+    root.join("apps/kiwi/desktop")
+}
+
+fn spawn_program(program: &str, args: &[String], cwd: Option<&str>) -> Result<u32, String> {
+    let mut command = std::process::Command::new(program);
+    command.args(args);
+    if let Some(cwd) = cwd {
+        command.current_dir(cwd);
+    }
+
+    let child = command
         .spawn()
         .map_err(|error| format!("failed to spawn {program}: {error}"))?;
 
@@ -123,12 +162,7 @@ fn resolve_embed_target(
 
     let embed_ports = embed_dev_ports(root);
     let embed_ids = embed_app_ids(root)?;
-    let port = resolve_embed_port(
-        &app.id,
-        manifest.dev_port,
-        &embed_ports,
-        &embed_ids,
-    );
+    let port = resolve_embed_port(&app.id, manifest.dev_port, &embed_ports, &embed_ids);
 
     if cfg!(debug_assertions) {
         return Ok(LaunchTarget {
@@ -368,6 +402,13 @@ program = "kiwi-desktop"
         let manifest = load_launch_manifest(&app.join("nest-app.toml")).unwrap();
         assert_eq!(manifest.mode, LaunchMode::Spawn);
         assert_eq!(manifest.program, "kiwi-desktop");
+    }
+
+    #[test]
+    fn kiwi_project_workdir_is_under_apps() {
+        let dir = tempdir().unwrap();
+        let workdir = kiwi_project_workdir(dir.path());
+        assert_eq!(workdir, dir.path().join("apps/kiwi/desktop"));
     }
 
     #[test]

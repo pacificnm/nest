@@ -2,7 +2,9 @@
 
 **Nest Shell** is a desktop **demo** for the [Nest framework](../README.md). It is a Tauri + React app that shows a KDE-inspired environment inside one native window: wallpaper, icons, start menu, taskbar, window manager, and built-in shell apps.
 
-In **development**, apps under `apps/` with `mode = "embed"` in `nest-app.toml` load their Vite dev server inside shell windows (UI only — no product Rust IPC). Product binaries (Kiwi, Swift standalone) remain separate.
+In **development**, desktop icons (except **Help**) launch the system **`kiwi-desktop`** binary from `apps/kiwi/desktop/` with that folder's `config.toml` via `KIWI_CONFIG`.
+
+Previously, apps with `mode = "embed"` in `nest-app.toml` loaded their Vite dev server inside shell windows. Embed mode remains available for future apps; the shell currently routes all registered icons to Kiwi.
 
 ## What it is
 
@@ -14,11 +16,9 @@ In **development**, apps under `apps/` with `mode = "embed"` in `nest-app.toml` 
 | **Other registry entries** | Placeholder windows |
 
 ```text
-npm run tauri:dev
+./start  (or npm run tauri:dev)
   ├─ shell Vite     :5173
-  ├─ swift Vite     :5174   (if mode = embed)
-  ├─ kiwi Vite      :5175   (if mode = embed)
-  └─ open in shell window → http://localhost:<port>
+  └─ desktop icons (except Help) → kiwi-desktop (cwd: apps/kiwi/desktop)
 ```
 
 ## Built-in shell apps
@@ -65,6 +65,7 @@ Template: [`templates/desktop/nest-app.toml`](../templates/desktop/nest-app.toml
 | Area | Status |
 |------|--------|
 | Desktop + icons | Done |
+| Desktop wallpaper | Done (vector SVG in `DesktopWallpaper.tsx`) |
 | Start menu + taskbar | Done |
 | Window manager | Done |
 | Help app | Done |
@@ -72,6 +73,14 @@ Template: [`templates/desktop/nest-app.toml`](../templates/desktop/nest-app.toml
 | App registry | Done |
 
 ## Quick start
+
+From the **nest repo root**:
+
+```bash
+./start
+```
+
+Or from this directory:
 
 ```bash
 cd ui

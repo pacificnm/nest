@@ -9,6 +9,12 @@
     "allow-docs-list",
     "allow-docs-read",
     "allow-apps-list",
-    "allow-apps-launch"
+    "allow-apps-launch",
+    "allow-terminal",
+    "allow-agent",
+    "allow-files",
+    "allow-settings",
+    "allow-themes",
+    "allow-claude"
   ]
 }

@@ -31,7 +31,7 @@ Framework consumers who do not need Pacific NM products can skip this entirely �
 
 Planned: `kiwi`, `finch`, …
 
-**Desktop apps** (e.g. Kiwi) use **Tauri + React + Tailwind**: product repo layout is `ui/` + `src-tauri/` with Nest modules in Rust. See [nest-tauri v1 plan](../docs/plan/nest-tauri-v1.md).
+All products follow the [Nest app standard](../docs/app-standard.md): one Rust core, host adapters for CLI / TUI / desktop, and Tauri IPC only at the React webview boundary. **Desktop apps** use `ui/` + `src-tauri/` (Tauri + React + Tailwind). See also [nest-tauri v1 plan](../docs/plan/nest-tauri-v1.md).
 
 ### Loon
 
@@ -49,6 +49,8 @@ See [apps/swift/docs/README.md](swift/docs/README.md) and [swift-v1 plan](swift/
 
 ## Build (example)
 
+Every product uses the same **`./build`** commands. See [docs/build.md](../docs/build.md).
+
 ```bash
 cd apps/airtable-sync
 cp config.example.toml config.toml
@@ -57,6 +59,14 @@ export AIRTABLE_TOKEN="pat..."
 ./build run -- tables
 ```
 
+| Command | Use when |
+|---------|----------|
+| `./build dev` | Daily development (Tauri/Vite or cargo run) |
+| `./build run` | Launch the app |
+| `./build build` | Production artifacts (default) |
+| `./build test` | Run tests |
+| `./build clean` | Remove build output |
+
 The product repo's `.cargo/config.toml` path-patches Nest crates from this layout (`../../core/…`, `../../modules/…`).
 
-**Dependency rule:** products depend on Nest core and modules only. See [docs/architecture.md](../docs/architecture.md).
+**Dependency rule:** products depend on Nest core and modules only. See [docs/architecture.md](../docs/architecture.md) and [docs/app-standard.md](../docs/app-standard.md).

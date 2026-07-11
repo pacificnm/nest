@@ -24,6 +24,8 @@ Hosts own presentation (CLI parsing, event loops, logging init). **Desktop apps*
 
 Modules register services into the Nest container. Apps wire hosts, modules, and product-specific code together — in their **own repos**, not here.
 
+**Product apps** must follow the [app standard](app-standard.md): one Rust core, host adapters (`nest-cli` / `nest-tui` / `nest-tauri`), and Tauri IPC only between `ui/` and `src-tauri/`.
+
 ## Desktop frontend platform
 
 All Nest **desktop** applications share one frontend stack:
@@ -98,6 +100,8 @@ The root workspace `members` list includes **only** `core/crates/*` and `modules
 
 ## Related docs
 
+- [app-standard.md](app-standard.md) — **canonical** product layout, hosts, IPC, command surface
+- [build.md](build.md) — `./build` commands and profiles
 - [README](../README.md) — crate catalog
 - [apps/README.md](../apps/README.md) — external product repositories
 - [nest-tauri plan](plan/nest-tauri-v1.md) — desktop host shift (Tauri + React + Tailwind)

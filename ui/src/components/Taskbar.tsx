@@ -1,6 +1,6 @@
 import type { ShellApp } from "../shell/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faRobot } from "@fortawesome/free-solid-svg-icons";
 
 type TaskbarProps = {
   apps: ShellApp[];
@@ -45,6 +45,17 @@ export function Taskbar({
       </div>
 
       <div className="ml-auto flex items-center gap-3 pr-3 text-xs text-nest-muted">
+        <button
+          type="button"
+          onClick={() => onLaunchApp("agent")}
+          title="Nest Agent"
+          aria-label="Nest Agent"
+          className={`flex size-6 items-center justify-center rounded-nest-sm hover:bg-nest-muted/10 hover:text-nest-foreground ${
+            focusedApp === "agent" ? "text-nest-primary" : "text-nest-muted"
+          }`}
+        >
+          <FontAwesomeIcon icon={faRobot} className="text-base" />
+        </button>
         <span className="font-medium">
           {new Date().toLocaleDateString([], {
             weekday: "short",

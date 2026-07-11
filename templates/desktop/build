@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Nest Tauri desktop app — standard ./build interface.
+set -euo pipefail
+
+APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+# Monorepo: nest repo root is three levels up from apps/<product>/.
+NEST_ROOT="$(cd "$APP_ROOT/../../.." 2>/dev/null && pwd || true)"
+if [[ -z "$NEST_ROOT" || ! -f "$NEST_ROOT/scripts/nest-build/lib.sh" ]]; then
+  NEST_ROOT="$(cd "$APP_ROOT/../../nest" 2>/dev/null && pwd || true)"
+fi
+if [[ -z "$NEST_ROOT" || ! -f "$NEST_ROOT/scripts/nest-build/lib.sh" ]]; then
+  echo "error: cannot find scripts/nest-build/lib.sh (clone nest beside this app)" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$NEST_ROOT/scripts/nest-build/lib.sh"
+
+export NEST_BUILD_PROFILE=tauri
+export NEST_UI_DIR=ui
+export NEST_CARGO_MANIFEST=src-tauri/Cargo.toml
+export NEST_RUST_PACKAGE="${NEST_RUST_PACKAGE:-$(basename "$APP_ROOT")}"
+export NEST_RUST_BIN="${NEST_RUST_BIN:-$NEST_RUST_PACKAGE}"
+export NEST_TAURI_MODE="${NEST_TAURI_MODE:-bundle}"
+
+nest_build_main "$@"

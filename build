@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Nest framework workspace — standard ./build interface.
+set -euo pipefail
+
+APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
+NEST_BUILD_LIB="$APP_ROOT/scripts/nest-build/lib.sh"
+
+if [[ ! -f "$NEST_BUILD_LIB" ]]; then
+  echo "error: missing $NEST_BUILD_LIB" >&2
+  exit 1
+fi
+
+# shellcheck source=scripts/nest-build/lib.sh
+source "$NEST_BUILD_LIB"
+
+export NEST_BUILD_PROFILE=workspace
+
+nest_build_main "$@"

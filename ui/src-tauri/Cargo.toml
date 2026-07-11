@@ -13,9 +13,17 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
+nest-design = { path = "../../core/crates/nest-design" }
+nest-file = { path = "../../core/crates/nest-file" }
+nest-claude = { path = "../../modules/crates/nest-claude", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.8"
+base64 = "0.22"
+dirs = "6.0.0"
+portable-pty = "0.9"
+tracing = "0.1"
+ureq = { version = "2", features = ["json"] }
 
 [dev-dependencies]
 tempfile = "3"

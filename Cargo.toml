@@ -37,6 +37,7 @@ members = [
     "modules/crates/nest-ai-ollama",
     "modules/crates/nest-transcode",
     "modules/crates/nest-cache-file",
+    "modules/crates/nest-claude",
 ]
 
 [workspace.package]
@@ -79,3 +80,4 @@ nest-tmdb = { path = "modules/crates/nest-tmdb" }
 nest-ai-ollama = { path = "modules/crates/nest-ai-ollama" }
 nest-transcode = { path = "modules/crates/nest-transcode" }
 nest-cache-file = { path = "modules/crates/nest-cache-file" }
+nest-claude = { path = "modules/crates/nest-claude" }

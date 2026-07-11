@@ -1,0 +1,14 @@
+[[permission]]
+identifier = "allow-settings"
+description = "Enables the Settings app's Agent category (settings persistence, Ollama, Codex account)."
+commands.allow = [
+    "agent_settings_get",
+    "agent_settings_save",
+    "ollama_list_models",
+    "ollama_auth_status",
+    "ollama_signin",
+    "ollama_signout",
+    "codex_account_status",
+    "codex_login",
+    "codex_logout",
+]

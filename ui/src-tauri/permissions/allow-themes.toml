@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-themes"
+description = "Enables the Nest Theme app's built-in theme catalog command."
+commands.allow = ["themes_list"]

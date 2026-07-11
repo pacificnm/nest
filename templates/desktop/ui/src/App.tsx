@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RemoteImage } from "./components/RemoteImage";
+import { ComponentsApp } from "./components/ComponentsApp";
 import {
   AppShell,
   ConfirmDialog,
@@ -30,6 +31,7 @@ const DEMO_IMAGE =
 
 const TABS: RibbonTabDef[] = [
   { id: "home", label: "Home" },
+  { id: "components", label: "Components" },
   { id: "view", label: "View" },
   { id: "help", label: "Help" },
 ];
@@ -41,6 +43,11 @@ export function App() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const toast = useToast();
   const { setStatus } = useStatusBar();
+
+  // Show Components app when Components tab is active
+  if (activeTab === "components") {
+    return <ComponentsApp />;
+  }
 
   useEffect(() => {
     void (async () => {

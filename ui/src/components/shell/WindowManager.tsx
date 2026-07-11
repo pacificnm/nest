@@ -1,8 +1,17 @@
 import { HelpApp } from "../apps/HelpApp";
+import { ComponentsApp } from "../apps/ComponentsApp";
+import { NestTerminal } from "../apps/NestTerminal";
+import { NestAgent } from "../apps/NestAgent";
+import { NestFiles } from "../apps/NestFiles";
+import { SettingsApp } from "../apps/SettingsApp";
+import { NestTheme } from "../apps/NestTheme";
+import { ClaudeConfigApp } from "../apps/ClaudeConfigApp";
 import { EmbeddedApp } from "../apps/EmbeddedApp";
 import { PlaceholderApp } from "../apps/PlaceholderApp";
 import { getShellApp, type ShellApp, type ShellWindow } from "../../shell/types";
 import { WindowFrame } from "./WindowFrame";
+
+// ComponentsApp now exports NestUIBrowser - the component viewer for Nest UI Components
 
 type WindowManagerProps = {
   apps: ShellApp[];
@@ -22,6 +31,34 @@ function renderWindowContent(window: ShellWindow, app: ShellApp | undefined) {
 
   if (app.id === "help") {
     return <HelpApp />;
+  }
+
+  if (app.id === "components") {
+    return <ComponentsApp />;
+  }
+
+  if (app.id === "terminal") {
+    return <NestTerminal />;
+  }
+
+  if (app.id === "agent") {
+    return <NestAgent />;
+  }
+
+  if (app.id === "files") {
+    return <NestFiles />;
+  }
+
+  if (app.id === "settings") {
+    return <SettingsApp />;
+  }
+
+  if (app.id === "theme") {
+    return <NestTheme />;
+  }
+
+  if (app.id === "claude-config") {
+    return <ClaudeConfigApp />;
   }
 
   if (window.embedUrl || window.launchMessage) {

@@ -1,0 +1,81 @@
+:root {
+  /* These CSS custom properties are populated by nest-react-theme at runtime.
+     Default fallbacks are provided for development without a Tauri host. */
+
+  /* Colors */
+  --nest-color-background: #ffffff;
+  --nest-color-foreground: #1a1a1a;
+  --nest-color-primary: #2563eb;
+  --nest-color-secondary: #64748b;
+  --nest-color-border: #e2e8f0;
+  --nest-color-surface: #f8fafc;
+  --nest-color-accent: #7c3aed;
+  --nest-color-muted: #94a3b8;
+  --nest-color-success: #16a34a;
+  --nest-color-warning: #d97706;
+  --nest-color-error: #dc2626;
+  --nest-color-info: #2563eb;
+
+  /* Spacing */
+  --nest-spacing-xs: 4px;
+  --nest-spacing-sm: 8px;
+  --nest-spacing-md: 16px;
+  --nest-spacing-lg: 24px;
+  --nest-spacing-xl: 32px;
+  --nest-spacing-xxl: 48px;
+
+  /* Radius */
+  --nest-radius-sm: 4px;
+  --nest-radius-md: 8px;
+  --nest-radius-lg: 12px;
+  --nest-radius-full: 9999px;
+}
+
+[data-theme='dark'] {
+  --nest-color-background: #0f0f0f;
+  --nest-color-foreground: #f5f5f5;
+  --nest-color-primary: #3b82f6;
+  --nest-color-secondary: #94a3b8;
+  --nest-color-border: #27272a;
+  --nest-color-surface: #18181b;
+  --nest-color-accent: #8b5cf6;
+  --nest-color-muted: #71717a;
+  --nest-color-success: #22c55e;
+  --nest-color-warning: #f59e0b;
+  --nest-color-error: #ef4444;
+  --nest-color-info: #3b82f6;
+}
+
+/* Base typography */
+body {
+  font-family: var(--nest-font-body, 'Inter', system-ui, sans-serif);
+  font-size: var(--nest-font-size-body, 14px);
+  line-height: var(--nest-line-height-body, 1.5);
+  color: var(--nest-color-foreground);
+  background-color: var(--nest-color-background);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--nest-color-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--nest-color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--nest-color-muted);
+  border-radius: var(--nest-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nest-color-secondary);
+}

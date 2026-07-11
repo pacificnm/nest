@@ -1,0 +1,10 @@
+[[permission]]
+identifier = "allow-agent"
+description = "Enables PTY-backed AI agent launch/control commands."
+commands.allow = [
+    "agent_launch",
+    "agent_input",
+    "agent_resize",
+    "agent_stop",
+    "agent_status",
+]
