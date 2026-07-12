@@ -5,7 +5,6 @@ members = [
     "core/crates/nest-app",
     "core/crates/nest-cli",
     "core/crates/nest-tui",
-    "core/crates/nest-gui",
     "core/crates/nest-tauri",
     "core/crates/nest-react-theme",
     "core/crates/nest-config",
@@ -27,7 +26,6 @@ members = [
     "core/crates/nest-validation",
     "core/crates/nest-design",
     "core/crates/nest-theme",
-    "core/crates/nest-icon",
     "core/crates/nest-image",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
@@ -69,7 +67,6 @@ nest-task-runtime = { path = "core/crates/nest-task-runtime" }
 nest-theme = { path = "core/crates/nest-theme" }
 nest-tauri = { path = "core/crates/nest-tauri" }
 nest-react-theme = { path = "core/crates/nest-react-theme" }
-nest-icon = { path = "core/crates/nest-icon" }
 nest-image = { path = "core/crates/nest-image" }
 nest-validation = { path = "core/crates/nest-validation" }
 nest-airtable = { path = "modules/crates/nest-airtable" }

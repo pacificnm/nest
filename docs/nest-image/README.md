@@ -9,7 +9,6 @@ Remote image **fetch and disk cache** for Nest applications.
 | Layer | Status |
 |-------|--------|
 | `ImageService`, `ImageModule`, cache keys | **Keep** — register in `src-tauri/` |
-| egui `RemoteImage` widget (`egui` feature) | **Legacy** — do not use in new apps |
 | React display | **Planned** — `<RemoteImage>` in `ui/` via Tauri IPC |
 
 See [nest-react-ui v1 plan](../plan/nest-react-ui-v1.md).
@@ -33,16 +32,11 @@ let bytes = images.fetch_bytes(
 )?;
 ```
 
-## Features
-
-| Feature | Default | Description |
-|---------|---------|-------------|
-| *(none)* | yes | `ImageService`, module, cache helpers only |
-| `egui` | no | Legacy egui texture widget — deprecated |
+The crate is now render-agnostic: it fetches and caches bytes only. Desktop apps
+display cached bytes in the React webview via Tauri IPC.
 
 ```toml
-nest-image = { workspace = true }                          # desktop / headless
-nest-image = { workspace = true, features = ["egui"] }   # legacy Kiwi only
+nest-image = { workspace = true }   # desktop / headless
 ```
 
 ## Related

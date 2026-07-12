@@ -136,5 +136,3 @@ Register a Tauri asset protocol handler (`nest-image://{cache_key}`) so React us
 - [Desktop frontend platform](../architecture.md#desktop-frontend-platform)
 - [nest-tauri v1](./nest-tauri-v1.md)
 - [nest-react-theme](../nest-react-theme/README.md)
-- [nest-icon (legacy)](../nest-icon/README.md)
-- [nest-image (legacy widget)](../nest-image/README.md)

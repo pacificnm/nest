@@ -35,8 +35,7 @@
 | `nest-media` | Media processing | Image/video handling |
 | `nest-image` | Image service | Remote images, caching |
 | `nest-design` / `nest-theme` / `nest-react-theme` | Design tokens, theming | UI consistency across apps |
-| `nest-gui` | GUI abstractions | Cross-platform UI |
-| `nest-icon` | Icon service | Application icons |
+| `nest-tauri` | Desktop host (Tauri + React `ui/`) | Desktop apps, UI, icons |
 | `nest-ai` | AI integrations | LLM calls, AI features |
 | `nest-agent` | Agent system | Autonomous agents |
 | `nest-mcp` | MCP (Model Context Protocol) | AI context management |

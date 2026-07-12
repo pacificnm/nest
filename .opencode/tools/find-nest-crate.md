@@ -39,8 +39,7 @@ When the user describes a need, search the crate catalog and recommend the appro
 | Agent system | `nest-agent` |
 | MCP (Model Context Protocol) | `nest-mcp` |
 | Streaming data | `nest-stream` |
-| Icons | `nest-icon` |
-| GUI abstractions | `nest-gui` |
+| Desktop UI, icons | `nest-tauri` + React `ui/` |
 | App framework, modules | `nest-core`, `nest-app` |
 
 ## Search Strategy

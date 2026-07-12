@@ -1,6 +1,7 @@
 /target/
 # Nest Desktop demo (ui/)
 ui/dist/
+ui/target/
 ui/src-tauri/target/
 ui/src-tauri/gen/
 ui/logs/
