@@ -39,10 +39,10 @@ impl AgentLoop {
     ) -> NestResult<()> {
         let agent_tools = tools.list_tools().await?;
         let attached_files = has_attached_files(&messages);
-        let search_with_attachments = attached_files
-            && latest_user_message_requests_external_search(&messages);
-        let edit_with_attachments = attached_files
-            && latest_user_message_requests_file_edit(&messages);
+        let search_with_attachments =
+            attached_files && latest_user_message_requests_external_search(&messages);
+        let edit_with_attachments =
+            attached_files && latest_user_message_requests_file_edit(&messages);
         let persist_requested = latest_user_message_requests_file_persist(&messages);
         let exposed_tools: Vec<_> = agent_tools
             .into_iter()
@@ -84,17 +84,10 @@ impl AgentLoop {
                 tools: registry.definitions(),
             };
 
-            let (content, tool_calls, metrics) = self
-                .complete_step(&request, &tx, &cancel)
-                .await?;
+            let (content, tool_calls, metrics) = self.complete_step(&request, &tx, &cancel).await?;
 
             if tool_calls.is_empty() {
-                let _ = tx
-                    .send(AgentEvent::Finished {
-                        metrics,
-                        content,
-                    })
-                    .await;
+                let _ = tx.send(AgentEvent::Finished { metrics, content }).await;
                 return Ok(());
             }
 
@@ -133,8 +126,9 @@ impl AgentLoop {
         // Ollama tool calling is more reliable with a single non-stream response.
         if !request.tools.is_empty() {
             if cancel.is_cancelled() {
-                return Err(nest_error::NestError::network("agent run cancelled")
-                    .with_module("nest-agent"));
+                return Err(
+                    nest_error::NestError::network("agent run cancelled").with_module("nest-agent")
+                );
             }
 
             let response = self
@@ -173,9 +167,7 @@ impl AgentLoop {
                     Ok(chunk) => {
                         if !chunk.content_delta.is_empty() {
                             content.push_str(&chunk.content_delta);
-                            let _ = tx
-                                .send(AgentEvent::TextDelta(chunk.content_delta))
-                                .await;
+                            let _ = tx.send(AgentEvent::TextDelta(chunk.content_delta)).await;
                         }
                         if !chunk.tool_calls.is_empty() {
                             merge_tool_calls(&mut tool_calls, &chunk.tool_calls);
@@ -354,9 +346,7 @@ impl AgentLoop {
                         error: message.clone(),
                     })
                     .await;
-                return Err(
-                    nest_error::NestError::network(message).with_module("nest-agent"),
-                );
+                return Err(nest_error::NestError::network(message).with_module("nest-agent"));
             }
         };
 
@@ -557,10 +547,14 @@ fn ensure_system_prompt(
     }
 
     let tool_count = tools.len();
-    let has_file_tools = tools.iter().any(|tool| is_file_tool(&tool.server, &tool.name));
-    let has_file_write_tools = tools
+    let has_file_tools = tools
         .iter()
-        .any(|tool| is_file_tool(&tool.server, &tool.name) && tool.name != "read_file" && tool.name != "list_directory");
+        .any(|tool| is_file_tool(&tool.server, &tool.name));
+    let has_file_write_tools = tools.iter().any(|tool| {
+        is_file_tool(&tool.server, &tool.name)
+            && tool.name != "read_file"
+            && tool.name != "list_directory"
+    });
 
     let workspace = workspace_context(config.workspace_root.as_deref());
     let file_guidance = if has_file_write_tools {
@@ -689,9 +683,9 @@ fn truncate_preview(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tool::{AgentTool, ToolOrigin};
     use async_trait::async_trait;
     use nest_ai::{AiProvider, AiResult, CompletionResponse};
-    use crate::tool::{AgentTool, ToolOrigin};
     use serde_json::json;
     use std::sync::{Arc, Mutex};
 
@@ -814,10 +808,7 @@ mod tests {
         }
 
         assert!(saw_tool);
-        assert_eq!(
-            finished.as_deref(),
-            Some("nest-core is the module system")
-        );
+        assert_eq!(finished.as_deref(), Some("nest-core is the module system"));
         assert_eq!(tools.calls.len(), 1);
     }
 
@@ -1021,16 +1012,11 @@ mod tests {
             tools: vec![search_tool(), write_tool()],
             calls: vec![],
         };
-        let message = ChatMessage::user(
-            "Edit this file\n<file path=\"foo.rs\">\nold\n</file>",
-        );
-        AgentLoop::new(
-            ai,
-            AgentConfig::default().with_allow_file_writes(true),
-        )
-        .run(&mut tools, vec![message], None, tx, CancelToken::new())
-        .await
-        .unwrap();
+        let message = ChatMessage::user("Edit this file\n<file path=\"foo.rs\">\nold\n</file>");
+        AgentLoop::new(ai, AgentConfig::default().with_allow_file_writes(true))
+            .run(&mut tools, vec![message], None, tx, CancelToken::new())
+            .await
+            .unwrap();
 
         let mut finished = None;
         while let Ok(event) = rx.try_recv() {

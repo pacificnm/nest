@@ -224,7 +224,10 @@ mod tests {
         let config = LoggingConfig::for_tauri("swift");
         assert!(!config.has_console());
         assert!(config.has_file());
-        assert_eq!(config.directory.as_deref(), Some(std::path::Path::new("../logs")));
+        assert_eq!(
+            config.directory.as_deref(),
+            Some(std::path::Path::new("../logs"))
+        );
     }
 
     #[test]

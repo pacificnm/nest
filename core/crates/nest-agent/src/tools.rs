@@ -72,11 +72,7 @@ impl SharedMcpHub {
             .map(|tools| tools.into_iter().map(AgentTool::from_mcp).collect())
     }
 
-    async fn call_tool_locked(
-        &self,
-        qualified_name: &str,
-        arguments: Value,
-    ) -> NestResult<String> {
+    async fn call_tool_locked(&self, qualified_name: &str, arguments: Value) -> NestResult<String> {
         self.0
             .lock()
             .await

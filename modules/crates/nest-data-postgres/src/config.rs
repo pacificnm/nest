@@ -43,9 +43,8 @@ impl PostgresConfig {
 
     /// Reads a URL from an environment variable.
     pub fn from_env(var: &str) -> DataResult<Self> {
-        let url = env::var(var).map_err(|_| {
-            DataError::config(format!("environment variable `{var}` is not set"))
-        })?;
+        let url = env::var(var)
+            .map_err(|_| DataError::config(format!("environment variable `{var}` is not set")))?;
         Ok(Self::new(url))
     }
 

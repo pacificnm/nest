@@ -61,12 +61,14 @@ impl McpSession {
             ))
         })?;
 
-        let stdin = child.stdin.take().ok_or_else(|| {
-            mcp_to_nest(format!("MCP server {server_name} stdin unavailable"))
-        })?;
-        let stdout = child.stdout.take().ok_or_else(|| {
-            mcp_to_nest(format!("MCP server {server_name} stdout unavailable"))
-        })?;
+        let stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| mcp_to_nest(format!("MCP server {server_name} stdin unavailable")))?;
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| mcp_to_nest(format!("MCP server {server_name} stdout unavailable")))?;
 
         let mut session = Self {
             server_name,
@@ -125,9 +127,8 @@ impl McpSession {
 
     async fn notify(&mut self, method: &'static str) -> NestResult<()> {
         let notification = JsonRpcNotification::new(method);
-        let line = serde_json::to_string(&notification).map_err(|error| {
-            mcp_to_nest(format!("failed to encode MCP notification: {error}"))
-        })?;
+        let line = serde_json::to_string(&notification)
+            .map_err(|error| mcp_to_nest(format!("failed to encode MCP notification: {error}")))?;
         self.stdin
             .write_all(line.as_bytes())
             .await
@@ -147,9 +148,8 @@ impl McpSession {
         let id = self.next_id;
         self.next_id += 1;
         let request = JsonRpcRequest::new(id, method, params);
-        let line = serde_json::to_string(&request).map_err(|error| {
-            mcp_to_nest(format!("failed to encode MCP request: {error}"))
-        })?;
+        let line = serde_json::to_string(&request)
+            .map_err(|error| mcp_to_nest(format!("failed to encode MCP request: {error}")))?;
         self.stdin
             .write_all(line.as_bytes())
             .await
@@ -209,14 +209,12 @@ impl McpSession {
             }
         };
 
-        timeout(timeout_duration, read_loop)
-            .await
-            .map_err(|_| {
-                mcp_to_nest(format!(
-                    "MCP server {server} timed out after {}s",
-                    timeout_duration.as_secs()
-                ))
-            })?
+        timeout(timeout_duration, read_loop).await.map_err(|_| {
+            mcp_to_nest(format!(
+                "MCP server {server} timed out after {}s",
+                timeout_duration.as_secs()
+            ))
+        })?
     }
 }
 

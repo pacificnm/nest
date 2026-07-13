@@ -19,10 +19,7 @@ pub struct NestHostState {
 }
 
 impl NestHostState {
-    pub(crate) fn new(
-        nest_app: NestApp,
-        runtime_config: TauriRuntimeConfig,
-    ) -> Self {
+    pub(crate) fn new(nest_app: NestApp, runtime_config: TauriRuntimeConfig) -> Self {
         let app_name = nest_app.metadata().name.clone();
         let context = nest_app.context_arc();
         Self {

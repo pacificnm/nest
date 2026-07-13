@@ -5,14 +5,8 @@ use serde::Serialize;
 use crate::{FileService, NestResult};
 
 /// Default directory names skipped during recursive search.
-pub const DEFAULT_SEARCH_IGNORE: &[&str] = &[
-    ".git",
-    "target",
-    "node_modules",
-    ".venv",
-    "dist",
-    "build",
-];
+pub const DEFAULT_SEARCH_IGNORE: &[&str] =
+    &[".git", "target", "node_modules", ".venv", "dist", "build"];
 
 /// Options for [`search_files`].
 #[derive(Debug, Clone)]
@@ -68,7 +62,10 @@ pub struct FileSearchMatch {
 }
 
 /// Finds files and directories whose relative path contains every query token.
-pub fn search_files(files: &FileService, options: &FileSearchOptions) -> NestResult<Vec<FileSearchMatch>> {
+pub fn search_files(
+    files: &FileService,
+    options: &FileSearchOptions,
+) -> NestResult<Vec<FileSearchMatch>> {
     let tokens = query_tokens(&options.query);
     if tokens.is_empty() {
         return Ok(Vec::new());
@@ -145,12 +142,13 @@ fn should_ignore_dir(name: &str, ignored: &[String]) -> bool {
 }
 
 fn sort_matches(results: &mut [FileSearchMatch]) {
-    results.sort_by(|left, right| {
-        match (left.is_dir, right.is_dir) {
-            (true, false) => std::cmp::Ordering::Greater,
-            (false, true) => std::cmp::Ordering::Less,
-            _ => left.path.to_ascii_lowercase().cmp(&right.path.to_ascii_lowercase()),
-        }
+    results.sort_by(|left, right| match (left.is_dir, right.is_dir) {
+        (true, false) => std::cmp::Ordering::Greater,
+        (false, true) => std::cmp::Ordering::Less,
+        _ => left
+            .path
+            .to_ascii_lowercase()
+            .cmp(&right.path.to_ascii_lowercase()),
     });
 }
 

@@ -42,7 +42,9 @@ impl OllamaConfig {
     pub fn base_url_from_host(host: &str, port: u16) -> String {
         format!(
             "http://{}:{}",
-            host.trim().trim_start_matches("http://").trim_start_matches("https://"),
+            host.trim()
+                .trim_start_matches("http://")
+                .trim_start_matches("https://"),
             port
         )
     }

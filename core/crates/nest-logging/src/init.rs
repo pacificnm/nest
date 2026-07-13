@@ -208,7 +208,12 @@ fn init_console_only(registry: FilteredRegistry, format: LogFormat, config: &Log
     }
 }
 
-fn init_file_only(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
+fn init_file_only(
+    registry: FilteredRegistry,
+    writer: NonBlocking,
+    format: LogFormat,
+    config: &LoggingConfig,
+) {
     match format {
         LogFormat::Pretty => finish_init(
             registry.with(fmt::layer().pretty().with_writer(writer).with_ansi(false)),
@@ -232,7 +237,12 @@ fn init_json_file_only(registry: FilteredRegistry, writer: NonBlocking, config: 
     );
 }
 
-fn init_console_and_file(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
+fn init_console_and_file(
+    registry: FilteredRegistry,
+    writer: NonBlocking,
+    format: LogFormat,
+    config: &LoggingConfig,
+) {
     match format {
         LogFormat::Pretty => finish_init(
             registry
@@ -265,7 +275,12 @@ fn init_console_and_file(registry: FilteredRegistry, writer: NonBlocking, format
     }
 }
 
-fn init_console_and_json(registry: FilteredRegistry, writer: NonBlocking, format: LogFormat, config: &LoggingConfig) {
+fn init_console_and_json(
+    registry: FilteredRegistry,
+    writer: NonBlocking,
+    format: LogFormat,
+    config: &LoggingConfig,
+) {
     match format {
         LogFormat::Pretty => finish_init(
             registry
@@ -298,7 +313,12 @@ fn init_console_and_json(registry: FilteredRegistry, writer: NonBlocking, format
     }
 }
 
-fn init_text_and_json(registry: FilteredRegistry, text: NonBlocking, json: NonBlocking, config: &LoggingConfig) {
+fn init_text_and_json(
+    registry: FilteredRegistry,
+    text: NonBlocking,
+    json: NonBlocking,
+    config: &LoggingConfig,
+) {
     finish_init(
         registry
             .with(fmt::layer().pretty().with_writer(text).with_ansi(false))

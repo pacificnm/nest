@@ -209,6 +209,9 @@ mod tests {
         let chunk = parse_line(line).unwrap();
         assert_eq!(chunk.tool_calls.len(), 1);
         assert_eq!(chunk.tool_calls[0].name, "search_project_memory");
-        assert_eq!(chunk.tool_calls[0].arguments, json!({"query": "nest-core", "limit": 3}));
+        assert_eq!(
+            chunk.tool_calls[0].arguments,
+            json!({"query": "nest-core", "limit": 3})
+        );
     }
 }

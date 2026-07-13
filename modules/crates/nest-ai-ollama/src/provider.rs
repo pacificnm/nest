@@ -6,8 +6,8 @@ use async_trait::async_trait;
 use futures_util::future::ready;
 use futures_util::StreamExt;
 use nest_ai::{
-    merge_tool_calls, AiProvider, AiResult, CompletionChunk, CompletionRequest,
-    CompletionResponse, CompletionStream,
+    merge_tool_calls, AiProvider, AiResult, CompletionChunk, CompletionRequest, CompletionResponse,
+    CompletionStream,
 };
 use nest_error::NestResult;
 use nest_http_client::{HttpClientConfig, HttpClientService};
@@ -105,10 +105,7 @@ impl AiProvider for OllamaProvider {
         })
     }
 
-    async fn stream_complete(
-        &self,
-        request: CompletionRequest,
-    ) -> AiResult<CompletionStream> {
+    async fn stream_complete(&self, request: CompletionRequest) -> AiResult<CompletionStream> {
         if request.messages.is_empty() {
             return Err(nest_ai::AiError::invalid_input(
                 "completion request requires at least one message",
@@ -253,13 +250,11 @@ mod tests {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/api/chat"))
-            .respond_with(ResponseTemplate::new(200).set_body_string(
-                concat!(
-                    "{\"message\":{\"content\":\"Hel\"},\"done\":false}\n",
-                    "{\"message\":{\"content\":\"lo\"},\"done\":false}\n",
-                    "{\"message\":{\"content\":\"\"},\"done\":true}\n",
-                ),
-            ))
+            .respond_with(ResponseTemplate::new(200).set_body_string(concat!(
+                "{\"message\":{\"content\":\"Hel\"},\"done\":false}\n",
+                "{\"message\":{\"content\":\"lo\"},\"done\":false}\n",
+                "{\"message\":{\"content\":\"\"},\"done\":true}\n",
+            )))
             .mount(&server)
             .await;
 

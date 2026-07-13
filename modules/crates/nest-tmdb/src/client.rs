@@ -10,10 +10,10 @@ use tracing::{debug, instrument};
 
 use crate::config::{TmdbConfig, DEFAULT_IMAGE_BASE_URL};
 use crate::dto::configuration::ConfigurationResponse;
-use crate::dto::person::PersonDetailsResponse;
 use crate::dto::credits::MovieCreditsResponse;
 use crate::dto::external_ids::MovieExternalIdsResponse;
 use crate::dto::movie::MovieDetailsResponse;
+use crate::dto::person::PersonDetailsResponse;
 use crate::dto::search::MovieSearchResponse;
 use crate::error::{TmdbError, TmdbResult};
 
@@ -98,10 +98,7 @@ impl TmdbClient {
     }
 
     /// Fetches person details via `GET /person/{id}`.
-    pub(crate) async fn person_details(
-        &self,
-        person_id: u32,
-    ) -> TmdbResult<PersonDetailsResponse> {
+    pub(crate) async fn person_details(&self, person_id: u32) -> TmdbResult<PersonDetailsResponse> {
         let url = format!(
             "{}/person/{person_id}?{}",
             self.config.base_url,

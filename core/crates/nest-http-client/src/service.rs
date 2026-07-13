@@ -113,17 +113,10 @@ impl HttpClientService {
         self.post_stream_request(request, url).await
     }
 
-    async fn post_stream_request(
-        &self,
-        request: HttpRequest,
-        url: &str,
-    ) -> NestResult<ByteStream> {
-        let builder = build_reqwest_request(
-            &self.stream_client,
-            request,
-            &self.config.default_headers,
-        )
-        .map_err(|error| http_error_to_nest_error(error.with_url(url)))?;
+    async fn post_stream_request(&self, request: HttpRequest, url: &str) -> NestResult<ByteStream> {
+        let builder =
+            build_reqwest_request(&self.stream_client, request, &self.config.default_headers)
+                .map_err(|error| http_error_to_nest_error(error.with_url(url)))?;
 
         let response = builder
             .timeout(Duration::from_secs(3600))

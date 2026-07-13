@@ -7,9 +7,7 @@ pub fn detect_mime(bytes: &[u8]) -> &'static str {
     if bytes.len() >= 3 && bytes[0..3] == [0xFF, 0xD8, 0xFF] {
         return "image/jpeg";
     }
-    if bytes.len() >= 8
-        && bytes[0..8] == [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
-    {
+    if bytes.len() >= 8 && bytes[0..8] == [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
         return "image/png";
     }
     if bytes.len() >= 6 && (bytes[0..6] == *b"GIF87a" || bytes[0..6] == *b"GIF89a") {

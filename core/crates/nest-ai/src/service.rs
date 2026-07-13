@@ -30,10 +30,7 @@ impl AiService {
     }
 
     /// Streams a completion when the provider supports it.
-    pub async fn stream_complete(
-        &self,
-        request: CompletionRequest,
-    ) -> AiResult<CompletionStream> {
+    pub async fn stream_complete(&self, request: CompletionRequest) -> AiResult<CompletionStream> {
         self.inner.stream_complete(request).await
     }
 }

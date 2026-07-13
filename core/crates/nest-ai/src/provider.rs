@@ -16,10 +16,7 @@ pub trait AiProvider: Send + Sync {
     async fn complete(&self, request: CompletionRequest) -> AiResult<CompletionResponse>;
 
     /// Streams incremental completion chunks when supported by the provider.
-    async fn stream_complete(
-        &self,
-        _request: CompletionRequest,
-    ) -> AiResult<CompletionStream> {
+    async fn stream_complete(&self, _request: CompletionRequest) -> AiResult<CompletionStream> {
         Err(AiError::invalid_input(
             "streaming is not supported by this provider",
         ))

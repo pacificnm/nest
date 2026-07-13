@@ -4,15 +4,17 @@ use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use nest_file::{grep_files, search_files, FileSearchOptions, GrepOptions, FileService, WriteOptions};
+use nest_file::{
+    grep_files, search_files, FileSearchOptions, FileService, GrepOptions, WriteOptions,
+};
 use nest_mcp::split_qualified_tool_name;
 use serde_json::{json, Value};
 use tokio::task;
 
-use crate::tool::AgentTool;
-use crate::{NestError, NestResult};
 use crate::file_ops::normalize_workspace_path;
+use crate::tool::AgentTool;
 use crate::tools::ToolSource;
+use crate::{NestError, NestResult};
 
 /// Virtual server id for in-process file tools.
 pub const FILE_SERVER: &str = "nest-file";
@@ -371,8 +373,9 @@ fn execute_file_tool(
                 .filter(|value| !value.is_empty());
             crate::workspace_ops::cargo_check(root.as_path(), package)
         }
-        other => Err(NestError::network(format!("unknown file tool: {other}"))
-            .with_module("nest-agent")),
+        other => {
+            Err(NestError::network(format!("unknown file tool: {other}")).with_module("nest-agent"))
+        }
     }
 }
 
@@ -434,10 +437,7 @@ fn search_query(arguments: &Value) -> NestResult<String> {
 }
 
 fn optional_str<'a>(arguments: &'a Value, field: &str) -> &'a str {
-    arguments
-        .get(field)
-        .and_then(Value::as_str)
-        .unwrap_or("")
+    arguments.get(field).and_then(Value::as_str).unwrap_or("")
 }
 
 fn prepend_text(content: String, new: &str) -> String {
@@ -500,8 +500,8 @@ fn not_found_error(path: &str) -> NestError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nest_file::FileModule;
     use nest_core::AppBuilder;
+    use nest_file::FileModule;
     use tempfile::tempdir;
 
     fn scoped_files(root: &std::path::Path) -> FileService {
@@ -547,7 +547,10 @@ mod tests {
             .unwrap();
 
         let content = source
-            .call_tool("nest-file/read_file", json!({"path": "docs/agent/agent.md"}))
+            .call_tool(
+                "nest-file/read_file",
+                json!({"path": "docs/agent/agent.md"}),
+            )
             .await
             .unwrap();
         assert_eq!(content, "# Docs\n");
@@ -608,9 +611,7 @@ mod tests {
 
     #[test]
     fn search_query_requires_terms_when_query_missing() {
-        let error = search_query(&json!({"path": ""}))
-            .unwrap_err()
-            .to_string();
+        let error = search_query(&json!({"path": ""})).unwrap_err().to_string();
         assert!(error.contains("requires a non-empty `query`"));
     }
 
@@ -628,10 +629,7 @@ mod tests {
         let mut source = FileToolSource::new(scoped_files(dir.path()));
 
         let content = source
-            .call_tool(
-                "nest-file/read_file",
-                json!({"path": "src/../src/foo.txt"}),
-            )
+            .call_tool("nest-file/read_file", json!({"path": "src/../src/foo.txt"}))
             .await
             .unwrap();
         assert_eq!(content, "ok");

@@ -93,14 +93,8 @@ mod tests {
 
     #[test]
     fn from_timing_matches_ollama_sample() {
-        let metrics = CompletionMetrics::from_timing(
-            37,
-            98,
-            0,
-            643_843_000,
-            4_538_229_000,
-            8_908_920_680,
-        );
+        let metrics =
+            CompletionMetrics::from_timing(37, 98, 0, 643_843_000, 4_538_229_000, 8_908_920_680);
 
         assert_eq!(metrics.prompt_tokens, 37);
         assert_eq!(metrics.completion_tokens, 98);

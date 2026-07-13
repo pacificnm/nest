@@ -154,11 +154,7 @@ impl TauriApp {
 
     /// Runs the application with explicit arguments (useful for tests).
     #[cfg(feature = "runtime")]
-    pub fn try_run_with<I, S>(
-        self,
-        context: tauri::Context<tauri::Wry>,
-        args: I,
-    ) -> NestResult<()>
+    pub fn try_run_with<I, S>(self, context: tauri::Context<tauri::Wry>, args: I) -> NestResult<()>
     where
         I: IntoIterator<Item = S>,
         S: Into<OsString>,

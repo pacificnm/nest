@@ -99,7 +99,10 @@ mod tests {
             description: "Search docs".into(),
             input_schema: json!({"type": "object"}),
         }]);
-        assert_eq!(registry.definitions()[0].name, "nest_memory__search_project_memory");
+        assert_eq!(
+            registry.definitions()[0].name,
+            "nest_memory__search_project_memory"
+        );
         assert_eq!(
             registry.qualified_name("nest_memory__search_project_memory"),
             Some("nest-memory/search_project_memory")
