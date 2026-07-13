@@ -178,10 +178,13 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "requires DATABASE_URL, PostgreSQL, and pgvector"]
     async fn similarity_search_orders_by_distance() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-        let conn = PostgresConnection::connect(&PostgresConfig::new(url))
+        let db = crate::test_support::start_postgres_with_pgvector().await;
+        let conn = PostgresConnection::connect(&PostgresConfig::new(db.url))
+            .await
+            .unwrap();
+        sqlx::query("CREATE EXTENSION IF NOT EXISTS vector")
+            .execute(conn.pool())
             .await
             .unwrap();
         let migrations: Vec<Box<dyn Migration>> = vec![
