@@ -13,6 +13,8 @@ pub mod migration;
 pub mod module;
 pub mod notes;
 mod runtime;
+#[cfg(test)]
+mod test_support;
 pub mod vector;
 
 pub use config::PostgresConfig;

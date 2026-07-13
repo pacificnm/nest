@@ -19,4 +19,5 @@ tracing = "0.1"
 
 [dev-dependencies]
 nest-data = { workspace = true, features = ["async"] }
+testcontainers-modules = { version = "=0.11.6", features = ["postgres", "blocking"] }
 uuid = { version = "1", features = ["v4"] }
