@@ -39,12 +39,29 @@ impl PostgresConnection {
         config: &PostgresConfig,
     ) -> DataResult<Self> {
         let connection_id = id.into();
-        let pool = sqlx_result(
-            PgPoolOptions::new()
+        let mut attempt: u32 = 0;
+        let mut backoff_ms = config.connect_backoff_ms;
+        let pool = loop {
+            attempt += 1;
+            match PgPoolOptions::new()
                 .max_connections(config.max_connections)
                 .connect(&config.url)
-                .await,
-        )?;
+                .await
+            {
+                Ok(pool) => break pool,
+                Err(err) if attempt < config.connect_retries => {
+                    tracing::warn!(
+                        attempt,
+                        max_attempts = config.connect_retries,
+                        error = %err,
+                        "postgres connection attempt failed, retrying"
+                    );
+                    tokio::time::sleep(std::time::Duration::from_millis(backoff_ms)).await;
+                    backoff_ms = (backoff_ms * 2).min(config.connect_backoff_max_ms);
+                }
+                Err(err) => return Err(crate::error::map_sqlx_error(err)),
+            }
+        };
         let connection_config = ConnectionConfig::new(
             connection_id.clone(),
             ProviderKind::Postgres,
@@ -145,5 +162,18 @@ mod tests {
             .unwrap();
         let health = conn.health_check().unwrap();
         assert!(health.ok);
+    }
+
+    #[tokio::test]
+    async fn connect_retries_before_failing() {
+        // Port 1 is a reserved/unlikely-to-be-open port; connection should fail fast each attempt.
+        let config = PostgresConfig::new("postgresql://user:pass@127.0.0.1:1/db")
+            .with_connect_retries(3)
+            .with_connect_backoff(10, 50);
+        let start = std::time::Instant::now();
+        let result = PostgresConnection::connect(&config).await;
+        assert!(result.is_err());
+        // 3 attempts with backoff 10ms then 20ms between them = at least 30ms elapsed.
+        assert!(start.elapsed() >= std::time::Duration::from_millis(30));
     }
 }
