@@ -131,11 +131,10 @@ mod tests {
     use super::*;
     use nest_data::SqlMigration;
 
-    #[tokio::test]
-    #[ignore = "requires DATABASE_URL and PostgreSQL"]
+    #[tokio::test(flavor = "multi_thread")]
     async fn apply_and_rollback_migration() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-        let conn = PostgresConnection::connect(&crate::config::PostgresConfig::new(url))
+        let db = crate::test_support::start_postgres().await;
+        let conn = PostgresConnection::connect(&crate::config::PostgresConfig::new(db.url))
             .await
             .unwrap();
         let migrations: Vec<Box<dyn Migration>> = vec![Box::new(SqlMigration::new(
