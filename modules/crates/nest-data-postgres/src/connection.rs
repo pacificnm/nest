@@ -153,11 +153,14 @@ impl AsyncTransactional for PostgresConnection {
 mod tests {
     use super::*;
 
-    #[tokio::test]
-    #[ignore = "requires DATABASE_URL and PostgreSQL"]
+    // health_check() calls the sync `block_on` helper, which uses
+    // `block_in_place` when already on a runtime - that requires the
+    // multi-threaded flavor (the default #[tokio::test] runtime is
+    // current-thread and panics here otherwise).
+    #[tokio::test(flavor = "multi_thread")]
     async fn health_check_live() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-        let conn = PostgresConnection::connect(&PostgresConfig::new(url))
+        let db = crate::test_support::start_postgres().await;
+        let conn = PostgresConnection::connect(&PostgresConfig::new(db.url))
             .await
             .unwrap();
         let health = conn.health_check().unwrap();
