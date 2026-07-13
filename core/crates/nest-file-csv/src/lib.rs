@@ -196,6 +196,7 @@ mod tests {
         struct CountRow {
             #[allow(dead_code)]
             customer_id: String,
+            #[allow(dead_code)]
             count: u32,
         }
 

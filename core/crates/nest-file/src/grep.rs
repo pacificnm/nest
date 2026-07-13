@@ -151,7 +151,13 @@ fn walk_dir(ctx: &mut GrepContext<'_>, dir_rel: &str) -> NestResult<()> {
         }
 
         if let Ok(content) = ctx.files.read_text(&rel_path) {
-            search_lines(&rel_path, &content, ctx.tokens, ctx.results, ctx.max_results);
+            search_lines(
+                &rel_path,
+                &content,
+                ctx.tokens,
+                ctx.results,
+                ctx.max_results,
+            );
         }
     }
 
@@ -162,7 +168,9 @@ fn has_allowed_extension(path: &str, extensions: &[String]) -> bool {
     let Some(ext) = path.rsplit('.').next() else {
         return false;
     };
-    extensions.iter().any(|allowed| allowed.eq_ignore_ascii_case(ext))
+    extensions
+        .iter()
+        .any(|allowed| allowed.eq_ignore_ascii_case(ext))
 }
 
 fn search_lines(

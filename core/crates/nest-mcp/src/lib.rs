@@ -38,7 +38,9 @@ pub fn split_qualified_tool_name(qualified: &str) -> NestResult<(&str, &str)> {
         .split_once('/')
         .ok_or_else(|| mcp_to_nest(format!("invalid qualified tool name: {qualified}")))?;
     if server.is_empty() || tool.is_empty() {
-        return Err(mcp_to_nest(format!("invalid qualified tool name: {qualified}")));
+        return Err(mcp_to_nest(format!(
+            "invalid qualified tool name: {qualified}"
+        )));
     }
     Ok((server, tool))
 }

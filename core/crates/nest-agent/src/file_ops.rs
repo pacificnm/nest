@@ -15,7 +15,9 @@ pub fn write_file(files: &FileService, path: &str, content: &str) -> NestResult<
 pub fn create_file(files: &FileService, path: &str) -> NestResult<String> {
     let path = normalize_workspace_path(path)?;
     if files.exists(&path)? {
-        return Err(NestError::validation(format!("file already exists: {path}")));
+        return Err(NestError::validation(format!(
+            "file already exists: {path}"
+        )));
     }
     write_file(files, &path, "")
 }

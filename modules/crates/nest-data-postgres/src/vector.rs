@@ -188,9 +188,7 @@ mod tests {
             Box::new(enable_vector_migration()),
             Box::new(vector_samples_migration()),
         ];
-        apply_migrations(conn.pool(), &migrations)
-            .await
-            .unwrap();
+        apply_migrations(conn.pool(), &migrations).await.unwrap();
 
         let project_id = "proj-test";
         let near_id = Uuid::new_v4();

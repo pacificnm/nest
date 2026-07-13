@@ -16,11 +16,7 @@ pub struct ToolDefinition {
 
 impl ToolDefinition {
     /// Creates a tool definition.
-    pub fn new(
-        name: impl Into<String>,
-        description: impl Into<String>,
-        parameters: Value,
-    ) -> Self {
+    pub fn new(name: impl Into<String>, description: impl Into<String>, parameters: Value) -> Self {
         Self {
             name: name.into(),
             description: description.into(),
@@ -94,10 +90,7 @@ mod tests {
     #[test]
     fn merge_tool_calls_combines_arguments() {
         let mut calls = vec![ToolCall::new("search", json!({"query": "nest"}))];
-        merge_tool_calls(
-            &mut calls,
-            &[ToolCall::new("search", json!({"limit": 3}))],
-        );
+        merge_tool_calls(&mut calls, &[ToolCall::new("search", json!({"limit": 3}))]);
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].arguments, json!({"query": "nest", "limit": 3}));
     }

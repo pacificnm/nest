@@ -75,10 +75,7 @@ impl LogBuffer {
 
     /// Number of lines currently held in the buffer.
     pub fn len(&self) -> usize {
-        self.lines
-            .lock()
-            .expect("log buffer mutex poisoned")
-            .len()
+        self.lines.lock().expect("log buffer mutex poisoned").len()
     }
 
     /// Returns true when the buffer contains no lines.

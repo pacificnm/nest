@@ -12,8 +12,7 @@ const CREATE_MIGRATIONS_TABLE: &str = "CREATE TABLE IF NOT EXISTS _nest_migratio
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )";
 
-const SELECT_APPLIED_MIGRATIONS: &str =
-    "SELECT id FROM _nest_migrations ORDER BY applied_at ASC";
+const SELECT_APPLIED_MIGRATIONS: &str = "SELECT id FROM _nest_migrations ORDER BY applied_at ASC";
 
 const INSERT_MIGRATION: &str = "INSERT INTO _nest_migrations (id) VALUES ($1)";
 
@@ -26,11 +25,7 @@ async fn ensure_table(pool: &PgPool) -> DataResult<()> {
 
 async fn applied_ids(pool: &PgPool) -> DataResult<Vec<String>> {
     ensure_table(pool).await?;
-    let rows = sqlx_result(
-        sqlx::query(SELECT_APPLIED_MIGRATIONS)
-            .fetch_all(pool)
-            .await,
-    )?;
+    let rows = sqlx_result(sqlx::query(SELECT_APPLIED_MIGRATIONS).fetch_all(pool).await)?;
     Ok(rows.into_iter().map(|row| row.get("id")).collect())
 }
 
@@ -51,12 +46,7 @@ pub async fn apply_migrations(pool: &PgPool, migrations: &[Box<dyn Migration>]) 
             continue;
         }
         let up_sql = migration.up_sql().to_string();
-        sqlx_result(
-            sqlx::raw_sql(AssertSqlSafe(up_sql))
-                .execute(pool)
-                .await,
-        )
-        .map_err(|error| {
+        sqlx_result(sqlx::raw_sql(AssertSqlSafe(up_sql)).execute(pool).await).map_err(|error| {
             DataError::migration(format!(
                 "failed to apply migration `{}`: {error}",
                 migration.id()
@@ -94,11 +84,7 @@ pub async fn rollback_last_migration(
         .ok_or_else(|| DataError::migration(format!("migration `{last_id}` is not registered")))?;
 
     let down_sql = migration.down_sql().to_string();
-    sqlx_result(
-        sqlx::raw_sql(AssertSqlSafe(down_sql))
-            .execute(pool)
-            .await,
-    )?;
+    sqlx_result(sqlx::raw_sql(AssertSqlSafe(down_sql)).execute(pool).await)?;
     sqlx_result(
         sqlx::query(DELETE_MIGRATION)
             .bind(migration.id())
@@ -136,10 +122,7 @@ impl MigrationRunner for PostgresMigrationRunner {
     }
 
     fn rollback_last(&self) -> DataResult<()> {
-        crate::runtime::block_on(rollback_last_migration(
-            self.conn.pool(),
-            &self.migrations,
-        ))
+        crate::runtime::block_on(rollback_last_migration(self.conn.pool(), &self.migrations))
     }
 }
 

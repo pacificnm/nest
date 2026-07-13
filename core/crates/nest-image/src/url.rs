@@ -40,7 +40,10 @@ mod tests {
             "/api/artwork/alien-1979/poster",
         )
         .unwrap();
-        assert_eq!(url, "http://192.168.88.205:3000/api/artwork/alien-1979/poster");
+        assert_eq!(
+            url,
+            "http://192.168.88.205:3000/api/artwork/alien-1979/poster"
+        );
     }
 
     #[test]

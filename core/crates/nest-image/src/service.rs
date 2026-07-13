@@ -29,12 +29,7 @@ impl ImageService {
     }
 
     /// Returns cached bytes or fetches from `url`, stores, and returns.
-    pub fn fetch_bytes(
-        &self,
-        url: &str,
-        key: &CacheKey,
-        tags: &[&str],
-    ) -> NestResult<Vec<u8>> {
+    pub fn fetch_bytes(&self, url: &str, key: &CacheKey, tags: &[&str]) -> NestResult<Vec<u8>> {
         if let Some(bytes) = self.cache.get_bytes(key)? {
             tracing::debug!(url, "image cache hit");
             return Ok(bytes);
@@ -52,24 +47,25 @@ impl ImageService {
             )));
         }
 
-        let bytes = response.bytes().map_err(|error| {
-            NestError::network(format!("image read failed for {url}: {error}"))
-        })?;
+        let bytes = response
+            .bytes()
+            .map_err(|error| NestError::network(format!("image read failed for {url}: {error}")))?;
 
         if bytes.is_empty() {
-            return Err(NestError::validation(format!("empty image response: {url}")));
+            return Err(NestError::validation(format!(
+                "empty image response: {url}"
+            )));
         }
 
         let bytes = bytes.to_vec();
-        self.cache.set_bytes(key.clone(), bytes.clone(), tags, None)?;
+        self.cache
+            .set_bytes(key.clone(), bytes.clone(), tags, None)?;
         Ok(bytes)
     }
 
     /// Removes all disk/memory cache entries with the given tag.
     pub fn invalidate_tag(&self, tag: &str) -> NestResult<u64> {
-        self.cache
-            .invalidate_tag(tag)
-            .map_err(NestError::from)
+        self.cache.invalidate_tag(tag).map_err(NestError::from)
     }
 
     /// Clears cached poster, backdrop, and cast images for a movie slug.
@@ -110,18 +106,17 @@ mod tests {
             )
             .unwrap();
         cache
-            .set_bytes(
-                CacheKey::new("other"),
-                b"keep".to_vec(),
-                &["artwork"],
-                None,
-            )
+            .set_bytes(CacheKey::new("other"), b"keep".to_vec(), &["artwork"], None)
             .unwrap();
 
         let service = ImageService::new(cache).unwrap();
         assert_eq!(service.invalidate_movie("alien").unwrap(), 1);
         assert!(service
-            .fetch_bytes("http://127.0.0.1:1/new", &CacheKey::new("poster"), &["movie:alien"])
+            .fetch_bytes(
+                "http://127.0.0.1:1/new",
+                &CacheKey::new("poster"),
+                &["movie:alien"]
+            )
             .is_err());
     }
 }

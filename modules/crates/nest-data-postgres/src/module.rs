@@ -25,7 +25,10 @@ impl PostgresDataModule {
     }
 
     /// Registers a named PostgreSQL connection.
-    pub fn named(connection_id: impl Into<nest_data::ConnectionId>, config: PostgresConfig) -> Self {
+    pub fn named(
+        connection_id: impl Into<nest_data::ConnectionId>,
+        config: PostgresConfig,
+    ) -> Self {
         Self {
             connection_id: connection_id.into(),
             config,
@@ -87,8 +90,8 @@ impl Module for PostgresDataModule {
 mod tests {
     use super::*;
     use crate::notes::{notes_migration, Note, NoteId, NotesRepository};
-    use nest_data::{DataModule, ListQuery};
     use nest_data::AsyncRepository;
+    use nest_data::{DataModule, ListQuery};
 
     struct NotesModule;
 
@@ -155,7 +158,8 @@ mod tests {
 
     #[test]
     fn missing_data_module_dependency_fails() {
-        let url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "postgresql://localhost/test".into());
+        let url =
+            std::env::var("DATABASE_URL").unwrap_or_else(|_| "postgresql://localhost/test".into());
         let result = nest_core::AppBuilder::new()
             .module(PostgresDataModule::new(PostgresConfig::new(url)))
             .build();

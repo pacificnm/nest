@@ -71,9 +71,11 @@ impl AsyncRepository<Note, NoteId> for NotesRepository {
                     .fetch_all(self.db.pool())
                     .await,
             )?,
-            (None, None) => {
-                sqlx_result(sqlx::query("SELECT id, title, body FROM notes").fetch_all(self.db.pool()).await)?
-            }
+            (None, None) => sqlx_result(
+                sqlx::query("SELECT id, title, body FROM notes")
+                    .fetch_all(self.db.pool())
+                    .await,
+            )?,
         };
         Ok(rows
             .into_iter()

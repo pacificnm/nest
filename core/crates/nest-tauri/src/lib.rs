@@ -22,9 +22,9 @@ mod startup;
 #[cfg(feature = "runtime")]
 mod state;
 
-pub use app::TauriApp;
 #[cfg(feature = "runtime")]
 pub use app::BuilderExtensionFn;
+pub use app::TauriApp;
 pub use bootstrap::PreparedRuntime;
 pub use config::TauriRuntimeConfig;
 pub use module::{TauriModule, TAURI_MODULE_ID};
@@ -68,8 +68,8 @@ mod tests {
     #[test]
     fn startup_options_parse_window_flags() {
         let options = TauriStartupOptions::from_args_iter([
-            "my-app", "--config", "app.toml", "--title", "My App", "--width", "1024",
-            "--height", "768", "--debug",
+            "my-app", "--config", "app.toml", "--title", "My App", "--width", "1024", "--height",
+            "768", "--debug",
         ])
         .unwrap();
         assert_eq!(options.title.as_deref(), Some("My App"));

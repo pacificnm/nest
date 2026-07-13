@@ -35,7 +35,9 @@ pub use registry::ToolRegistry;
 pub use runner::AgentLoop;
 pub use tool::{AgentTool, ToolOrigin};
 pub use tools::{McpToolSource, SharedMcpHub, ToolSource};
-pub use validation::{looks_like_schema_arguments, parse_tool_calls_from_content, validate_tool_arguments};
+pub use validation::{
+    looks_like_schema_arguments, parse_tool_calls_from_content, validate_tool_arguments,
+};
 
 pub use nest_error::{NestError, NestResult};
 

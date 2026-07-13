@@ -57,7 +57,10 @@ impl McpHub {
         let mut servers = config.servers(base_dir, only)?;
         for server in &mut servers {
             for (key, value) in &extra_env {
-                server.env.entry(key.clone()).or_insert_with(|| value.clone());
+                server
+                    .env
+                    .entry(key.clone())
+                    .or_insert_with(|| value.clone());
             }
         }
         Self::connect_all(servers).await
@@ -106,8 +109,15 @@ impl McpHub {
     }
 
     /// Calls a qualified tool (`server/tool`), reconnecting once on transport failure.
-    pub async fn call_tool(&mut self, qualified_name: &str, arguments: Value) -> NestResult<String> {
-        match self.call_tool_inner(qualified_name, arguments.clone()).await {
+    pub async fn call_tool(
+        &mut self,
+        qualified_name: &str,
+        arguments: Value,
+    ) -> NestResult<String> {
+        match self
+            .call_tool_inner(qualified_name, arguments.clone())
+            .await
+        {
             Ok(result) => Ok(result),
             Err(error) if is_reconnect_error(&error) => {
                 let (server, tool) = split_qualified_tool_name(qualified_name)?;
@@ -134,9 +144,10 @@ impl McpHub {
         arguments: Value,
     ) -> NestResult<String> {
         let (server, tool) = split_qualified_tool_name(qualified_name)?;
-        let session = self.sessions.get_mut(server).ok_or_else(|| {
-            crate::mcp_to_nest(format!("MCP server not connected: {server}"))
-        })?;
+        let session = self
+            .sessions
+            .get_mut(server)
+            .ok_or_else(|| crate::mcp_to_nest(format!("MCP server not connected: {server}")))?;
         debug!(server, tool, "calling MCP tool");
         session.call_tool(tool, arguments).await
     }

@@ -23,8 +23,8 @@ pub async fn probe_tools(
         .cloned()
         .collect();
 
-    let hub = SharedMcpHub::from_config_file_with_env(mcp_config, Some(&mcp_servers), extra_env)
-        .await?;
+    let hub =
+        SharedMcpHub::from_config_file_with_env(mcp_config, Some(&mcp_servers), extra_env).await?;
 
     let mut source = CompositeToolSource::new(hub);
     if let Some(root) = project_root {

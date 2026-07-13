@@ -47,7 +47,11 @@ pub struct McpServerConfig {
 
 impl McpConfigFile {
     /// Returns server configs, optionally filtered by name.
-    pub fn servers(&self, base_dir: &Path, only: Option<&[String]>) -> NestResult<Vec<McpServerConfig>> {
+    pub fn servers(
+        &self,
+        base_dir: &Path,
+        only: Option<&[String]>,
+    ) -> NestResult<Vec<McpServerConfig>> {
         let mut configs = Vec::new();
         for (name, entry) in &self.mcp_servers {
             if let Some(filter) = only {
@@ -68,10 +72,7 @@ impl McpServerEntry {
             name: name.to_string(),
             command: resolve_path(base_dir, &self.command),
             args: self.args.clone(),
-            cwd: self
-                .cwd
-                .as_ref()
-                .map(|path| resolve_path(base_dir, path)),
+            cwd: self.cwd.as_ref().map(|path| resolve_path(base_dir, path)),
             env: self.env.clone(),
         })
     }
@@ -81,10 +82,16 @@ impl McpServerEntry {
 pub fn load_mcp_config(path: impl AsRef<Path>) -> NestResult<McpConfigFile> {
     let path = path.as_ref();
     let raw = std::fs::read_to_string(path).map_err(|error| {
-        mcp_to_nest(format!("failed to read MCP config {}: {error}", path.display()))
+        mcp_to_nest(format!(
+            "failed to read MCP config {}: {error}",
+            path.display()
+        ))
     })?;
     let config: McpConfigFile = serde_json::from_str(&raw).map_err(|error| {
-        mcp_to_nest(format!("failed to parse MCP config {}: {error}", path.display()))
+        mcp_to_nest(format!(
+            "failed to parse MCP config {}: {error}",
+            path.display()
+        ))
     })?;
     Ok(config)
 }

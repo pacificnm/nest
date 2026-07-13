@@ -135,6 +135,10 @@ mod tests {
             .unwrap();
         let http = built.context.service::<HttpClientService>().unwrap();
 
+        // Shape only, to give `get_json` a concrete target type — the mock
+        // response is invalid JSON, so decoding always fails before this
+        // field would ever be read.
+        #[allow(dead_code)]
         #[derive(serde::Deserialize)]
         struct Payload {
             message: String,

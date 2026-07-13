@@ -196,10 +196,7 @@ fn parse_startup_options(args: &[OsString]) -> NestResult<TauriStartupOptions> {
 }
 
 #[cfg(feature = "runtime")]
-fn apply_window_settings(
-    app: &tauri::App,
-    runtime_config: &TauriRuntimeConfig,
-) -> NestResult<()> {
+fn apply_window_settings(app: &tauri::App, runtime_config: &TauriRuntimeConfig) -> NestResult<()> {
     if let Some(window) = app.get_webview_window("main") {
         window
             .set_title(&runtime_config.title)
