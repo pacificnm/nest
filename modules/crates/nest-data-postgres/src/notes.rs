@@ -139,7 +139,7 @@ pub fn notes_migration() -> nest_data::SqlMigration {
     nest_data::SqlMigration::new(
         "001_create_notes",
         "CREATE TABLE notes (
-            id SERIAL PRIMARY KEY,
+            id BIGSERIAL PRIMARY KEY,
             title TEXT NOT NULL,
             body TEXT NOT NULL
         );",

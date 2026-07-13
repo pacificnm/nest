@@ -110,14 +110,13 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    #[ignore = "requires DATABASE_URL and PostgreSQL"]
+    #[tokio::test(flavor = "multi_thread")]
     async fn module_registers_postgres_and_data_service() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
+        let db = crate::test_support::start_postgres().await;
         let built = nest_core::AppBuilder::new()
             .module(DataModule)
             .module(
-                PostgresDataModule::new(PostgresConfig::new(url))
+                PostgresDataModule::new(PostgresConfig::new(db.url))
                     .with_migration(Box::new(notes_migration())),
             )
             .build()
@@ -128,14 +127,13 @@ mod tests {
         assert!(built.context.has_service::<PostgresConnection>());
     }
 
-    #[tokio::test]
-    #[ignore = "requires DATABASE_URL and PostgreSQL"]
+    #[tokio::test(flavor = "multi_thread")]
     async fn notes_repository_via_modules() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
+        let db = crate::test_support::start_postgres().await;
         let built = nest_core::AppBuilder::new()
             .module(DataModule)
             .module(
-                PostgresDataModule::new(PostgresConfig::new(url))
+                PostgresDataModule::new(PostgresConfig::new(db.url))
                     .with_migration(Box::new(notes_migration())),
             )
             .module(NotesModule)
