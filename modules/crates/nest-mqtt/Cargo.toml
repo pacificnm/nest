@@ -9,4 +9,10 @@ description = "MQTT client module for the Nest framework"
 
 [dependencies]
 nest-error = { workspace = true }
+nest-config = { workspace = true, optional = true }
 rumqttc = "0.25"
+serde = { version = "1", features = ["derive"] }
+
+[features]
+default = ["config"]
+config = ["dep:nest-config"]
