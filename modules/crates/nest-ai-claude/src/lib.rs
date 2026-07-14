@@ -11,3 +11,8 @@ pub mod error;
 pub mod message;
 pub mod module;
 pub mod provider;
+
+pub use error::claude_to_ai_error;
+pub use message::{to_claude_messages, to_claude_tools};
+pub use module::{ClaudeAiModule, CLAUDE_AI_MODULE_ID};
+pub use provider::ClaudeAiProvider;
