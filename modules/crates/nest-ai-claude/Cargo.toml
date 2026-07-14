@@ -10,12 +10,18 @@ description = "Claude (Anthropic) AI provider adapter for the Nest framework"
 [dependencies]
 nest-ai = { workspace = true }
 nest-claude = { workspace = true }
+nest-config = { workspace = true, optional = true }
 nest-core = { workspace = true }
 nest-error = { workspace = true }
 async-trait = "0.1"
 futures-util = "0.3"
 serde_json = "1"
 
+[features]
+default = ["config"]
+config = ["dep:nest-config"]
+
 [dev-dependencies]
+nest-config = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 wiremock = "0.6"
