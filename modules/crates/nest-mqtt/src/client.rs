@@ -134,3 +134,51 @@ fn to_rumqttc_qos(qos: MqttQos) -> rumqttc::QoS {
         MqttQos::ExactlyOnce => rumqttc::QoS::ExactlyOnce,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn publish_and_subscribe_round_trip() {
+        let broker = crate::test_support::start_broker().await;
+
+        let subscriber_config = MqttConfig::new(&broker.host, broker.port, "test-subscriber");
+        let subscriber = MqttClient::connect(&subscriber_config).await.unwrap();
+        let messages = subscriber
+            .subscribe("nest/mqtt/test", MqttQos::AtLeastOnce)
+            .await
+            .unwrap();
+        // `impl Stream` return types aren't `Unpin` by default, and
+        // `StreamExt::next()` requires it - pin the stream on the stack
+        // rather than changing subscribe()'s public return type.
+        let mut messages = std::pin::pin!(messages);
+
+        // subscribe() only enqueues the SUBSCRIBE packet on the event loop's
+        // channel and returns - it doesn't wait for the broker's SUBACK - so
+        // give the event loop a moment to actually process it before
+        // publishing, or the message can be sent before the broker considers
+        // us subscribed.
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+
+        let publisher_config = MqttConfig::new(&broker.host, broker.port, "test-publisher");
+        let publisher = MqttClient::connect(&publisher_config).await.unwrap();
+        publisher
+            .publish(
+                "nest/mqtt/test",
+                b"hello".to_vec(),
+                MqttQos::AtLeastOnce,
+                false,
+            )
+            .await
+            .unwrap();
+
+        let received = tokio::time::timeout(std::time::Duration::from_secs(5), messages.next())
+            .await
+            .expect("timed out waiting for the published message")
+            .expect("message stream ended unexpectedly");
+
+        assert_eq!(received.topic, "nest/mqtt/test");
+        assert_eq!(received.payload, b"hello");
+    }
+}

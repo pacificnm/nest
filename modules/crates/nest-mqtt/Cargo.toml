@@ -21,3 +21,7 @@ tracing = "0.1"
 [features]
 default = ["config"]
 config = ["dep:nest-config"]
+
+[dev-dependencies]
+testcontainers = "=0.23.3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

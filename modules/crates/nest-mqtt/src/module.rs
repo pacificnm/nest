@@ -46,3 +46,23 @@ impl Lifecycle for MqttLifecycle {
         crate::runtime::block_on(self.client.disconnect())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn module_registers_mqtt_client_service() {
+        // MqttClient::connect() only sets up the client handle and spawns the
+        // event-loop-polling task - the actual TCP connect happens lazily
+        // inside that background task's first poll(), not here - so this
+        // doesn't need a reachable broker, matching HttpClientModule's own
+        // registration test (no live server needed there either).
+        let config = MqttConfig::new("127.0.0.1", 1883, "test-module-registration");
+        let built = AppBuilder::new()
+            .module(MqttModule::new(config))
+            .build()
+            .unwrap();
+        assert!(built.context.has_service::<MqttClientService>());
+    }
+}
