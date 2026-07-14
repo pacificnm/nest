@@ -36,6 +36,7 @@ members = [
     "modules/crates/nest-transcode",
     "modules/crates/nest-cache-file",
     "modules/crates/nest-claude",
+    "modules/crates/nest-mqtt",
 ]
 
 [workspace.package]
