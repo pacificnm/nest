@@ -8,10 +8,12 @@ pub mod codes;
 pub mod config;
 pub mod error;
 pub mod message;
+pub mod module;
 mod runtime;
 pub mod service;
 
 pub use client::MqttClient;
 pub use config::{LastWillConfig, MqttConfig, MqttQos};
 pub use message::{topic_matches_filter, MqttMessage};
+pub use module::{MqttModule, MQTT_MODULE_ID};
 pub use service::MqttClientService;

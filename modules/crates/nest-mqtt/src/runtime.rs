@@ -5,10 +5,6 @@ use nest_error::{NestError, NestResult};
 /// Runs an async future on the current Tokio runtime or a temporary one.
 ///
 /// Used during `Module::configure`, which is synchronous.
-///
-/// Not yet called anywhere - its consumer, `MqttModule::configure`, lands in
-/// a later issue.
-#[allow(dead_code)]
 pub fn block_on<F, T>(future: F) -> NestResult<T>
 where
     F: std::future::Future<Output = NestResult<T>>,
