@@ -1,10 +1,13 @@
 # Nest Memory Workflow (Mandatory)
 
-This rule enforces the same memory workflow as `.cursor/rules/nest-memory.mdc`.
+This rule follows the same memory workflow as `.cursor/rules/nest-memory.mdc`. Note: in Cursor this
+gate is mechanically enforced by `.cursor/hooks.json` (`tools/memory_hooks.py`); no equivalent hook
+exists for Claude Code, so here this is an honor-system instruction — follow it deliberately rather
+than relying on a hook to block you.
 
 ## Before Any Implementation Work
 
-**REQUIRED** — hooks enforce this gate. Do not edit files, run shell commands, or use non-memory tools until both searches complete:
+**REQUIRED.** Do not edit files, run shell commands, or use non-memory tools until both searches complete:
 
 1. **`search_project_memory`** (`nest-memory` MCP) — Search for plans, crate boundaries, architecture decisions, and prior work in the Nest project memory.
 
@@ -18,7 +21,7 @@ This rule enforces the same memory workflow as `.cursor/rules/nest-memory.mdc`.
 
 ## After Every Agent Response
 
-**REQUIRED** — Call **`save_context_memory`** before the turn ends. The stop hook will prompt again if you skip this.
+**REQUIRED** — Call **`save_context_memory`** before the turn ends. There is no stop hook in Claude Code to prompt you if you skip this, so treat it as mandatory self-discipline.
 
 Include in your save:
 - Summary of what changed this turn
@@ -30,7 +33,7 @@ Use a consistent `session_key` every time (git branch name or `branch:conversati
 
 ## Before Context Compaction
 
-**REQUIRED** — Call **`save_context_memory`** with a full checkpoint summary. The `preCompact` hook also auto-snapshots the transcript, but an explicit agent save is still required.
+**REQUIRED** — Call **`save_context_memory`** with a full checkpoint summary. Claude Code's auto-compaction has no `preCompact` hook wired up here (unlike Cursor), so this explicit save is the only checkpoint that will happen.
 
 ## Nest Framework Guidelines
 
