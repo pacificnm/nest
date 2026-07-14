@@ -7,6 +7,7 @@ pub mod client;
 pub mod codes;
 pub mod config;
 pub mod error;
+mod example;
 pub mod message;
 pub mod module;
 mod runtime;
@@ -16,6 +17,7 @@ mod test_support;
 
 pub use client::MqttClient;
 pub use config::{LastWillConfig, MqttConfig, MqttQos};
+pub use example::publish_and_receive;
 pub use message::{topic_matches_filter, MqttMessage};
 pub use module::{MqttModule, MQTT_MODULE_ID};
 pub use service::MqttClientService;
