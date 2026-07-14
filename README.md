@@ -158,6 +158,7 @@ Rust business logic stays in Nest modules; React is the presentation tier. See [
 | **nest-claude** | Claude (Anthropic) Messages API client: streaming, tool use, extended thinking, prompt caching. | [docs](docs/nest-claude/README.md) |
 | **nest-data-sqlite** | SQLite provider implementing `nest-data` via rusqlite. | [docs](docs/nest-data-sqlite/README.md) |
 | **nest-media-library** | Media library scanning and indexing via `FileService` and injected providers. | [docs](docs/nest-media-library/README.md) |
+| **nest-mqtt** | MQTT client: connect, publish, subscribe, Last-Will-and-Testament, via `rumqttc`. | [docs](docs/nest-mqtt/README.md) |
 | **nest-tmdb** | TMDB metadata provider implementing `nest-media::MetadataProvider`. | [docs](docs/nest-tmdb/README.md) |
 | **nest-transcode** | FFprobe media inspection implementing `nest-media::MediaInspector`. | [docs](docs/nest-transcode/README.md) |
 
