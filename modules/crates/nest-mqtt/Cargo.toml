@@ -12,6 +12,10 @@ nest-error = { workspace = true }
 nest-config = { workspace = true, optional = true }
 rumqttc = "0.25"
 serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+tracing = "0.1"
 
 [features]
 default = ["config"]
