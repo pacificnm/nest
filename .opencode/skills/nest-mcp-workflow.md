@@ -109,13 +109,13 @@ Tool: list_knowledge_collections
 
 ## Example Workflow
 
-**User**: "Add a new endpoint to the Swift app that fetches data from an external API"
+**User**: "Add a new endpoint to the Loon app that fetches data from an external API"
 
 **Agent workflow**:
 
 1. **Search project memory**:
    ```
-   search_project_memory({ query: "Swift app HTTP client external API", limit: 8 })
+   search_project_memory({ query: "Loon app HTTP client external API", limit: 8 })
    ```
 
 2. **Search context memory**:
@@ -133,10 +133,10 @@ Tool: list_knowledge_collections
 5. **Save context**:
    ```
    save_context_memory({
-     content: "Added GET endpoint to Swift app using nest-http-client. Files changed: apps/swift/src-tauri/src/api.rs. Verified with cargo check.",
-     title: "Add HTTP endpoint to Swift",
+     content: "Added GET endpoint to Loon using nest-http-client. Files changed: apps/loon/src/api.rs. Verified with cargo check.",
+     title: "Add HTTP endpoint to Loon",
      session_key: "main",
-     tags: ["swift", "http", "api"]
+     tags: ["loon", "http", "api"]
    })
    ```
 

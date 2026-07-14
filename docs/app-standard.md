@@ -156,8 +156,6 @@ my-app/
     └── core/             # shared product logic (recommended)
 ```
 
-Reference product: [Swift](../apps/swift/docs/README.md).
-
 ### CLI
 
 Template: [`templates/rust-server/build`](../templates/rust-server/build) (build wrapper; add crates as needed)

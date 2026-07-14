@@ -8,7 +8,7 @@
 **Goal:** Port the remaining Material UI (`mui-material/src`) component surface into
 `core/crates/nest-react-components` (`@nest/components`), keeping MUI-compatible prop
 names but restyling with Nest design tokens + Tailwind. This makes future app
-migration (Kiwi, Swift, airtable-sync) mechanical.
+migration (Kiwi, airtable-sync) mechanical.
 
 **Reference (MUI source):** https://github.com/mui/material-ui/tree/master/packages/mui-material/src
 Use MUI only for **prop names and behavior**, never for styling (MUI uses Emotion;

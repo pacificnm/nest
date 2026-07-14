@@ -14,7 +14,7 @@ A shared React component library for all Nest desktop applications, providing MU
 
 ## Context
 
-**Problem:** Every Nest desktop app (Kiwi, Swift, Loon, future apps) needs common UI components. Currently:
+**Problem:** Every Nest desktop app (Kiwi, Loon, future apps) needs common UI components. Currently:
 - Components are duplicated across apps (Kiwi has `AppShell`, `Ribbon`, `ConfirmDialog`, etc. in `apps/kiwi/ui/src/components/`)
 - The desktop template (`templates/desktop/`) has some shared components but no formal component library
 - No centralized documentation or demo app for components

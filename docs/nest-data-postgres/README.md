@@ -11,7 +11,6 @@ PostgreSQL provider for [`nest-data`](README.md) with **pgvector** support.
 - Async connection pool (sqlx 0.9 + Tokio)
 - Versioned SQL migrations via [`PostgresMigrationRunner`](../../modules/crates/nest-data-postgres/src/migration.rs)
 - pgvector similarity search via [`VectorSearch`](../../modules/crates/nest-data-postgres/src/vector.rs)
-- First consumer: [Swift](../../apps/swift/docs/README.md) `swift-data` crate
 
 ## Quick start
 
@@ -49,11 +48,11 @@ let hits = search
 
 ## Tests
 
-Unit tests run in CI. Integration tests require PostgreSQL + pgvector:
+All tests run automatically against disposable `testcontainers`-managed PostgreSQL
+(and pgvector, for the vector search test) — no manual database setup required:
 
 ```bash
-export DATABASE_URL="postgresql:///swift?host=/var/run/postgresql"
-cargo test -p nest-data-postgres -- --ignored
+cargo test -p nest-data-postgres
 ```
 
 ## Related

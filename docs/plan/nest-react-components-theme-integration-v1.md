@@ -116,7 +116,7 @@ ported components can't be imported without it.
 **C. Preset duplication (7 copies).**
 `nest_react_theme::tailwind_preset_json()` (source of truth) is hand-copied into 7
 `nest-tailwind-preset.json` files (`ui/`, `templates/desktop/ui/`, `core/crates/nest-react-components/`,
-and `apps/{finch,kiwi,swift,airtable-sync}/ui/`). Any preset change must touch all of
+and `apps/{finch,kiwi,airtable-sync}/ui/`). Any preset change must touch all of
 them. Consider generating the JSON from the Rust source in a build step. Out of scope
 here; noted so the keyframe/token work stays in sync if the preset is ever extended.
 

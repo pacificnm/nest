@@ -19,7 +19,7 @@ templates/desktop/
 
 ## Shared shell components
 
-Product-agnostic UI promoted from the Swift app. Import from the [`shell`](ui/src/shell/index.ts) barrel:
+Product-agnostic UI promoted from an app's desktop shell. Import from the [`shell`](ui/src/shell/index.ts) barrel:
 
 ```tsx
 import { AppShell, Ribbon, RibbonGroup, RibbonButton, ConfirmDialog, DatePicker, useToast, useStatusBar } from "./shell";

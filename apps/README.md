@@ -27,7 +27,6 @@ Framework consumers who do not need Pacific NM products can skip this entirely �
 |------------|------------|
 | `apps/airtable-sync/` | [github.com/pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) |
 | `apps/loon/` | [github.com/pacificnm/loon](https://github.com/pacificnm/loon) — [plan](loon/docs/v1.md) (clone into `apps/loon/`) |
-| `apps/swift/` | Local checkout — [docs](swift/docs/README.md) (PM + knowledge + AI; reference Tauri desktop app) |
 
 Planned: `kiwi`, `finch`, …
 
@@ -40,12 +39,6 @@ git clone https://github.com/pacificnm/loon.git apps/loon
 ```
 
 See [apps/loon/docs/implementation-v1.md](loon/docs/implementation-v1.md) for build order.
-
-### Swift
-
-Personal project management + knowledge + Ollama assistant. Specs and plans: [apps/swift/docs/](swift/docs/README.md). Scaffold from [templates/desktop/](../templates/desktop/) into `apps/swift/`.
-
-See [apps/swift/docs/README.md](swift/docs/README.md) and [swift-v1 plan](swift/docs/plan/swift-v1.md).
 
 ## Build (example)
 

@@ -2,15 +2,15 @@
 
 ## Status: Implemented
 
-First PostgreSQL provider for [`nest-data`](../nest-data/README.md). Required by [Swift](../apps/swift/docs/README.md) for project-scoped **vector search** over knowledge (notes, emails, Slack, documentation).
+First PostgreSQL provider for [`nest-data`](../nest-data/README.md). Enables project-scoped **vector search** over knowledge (notes, emails, Slack, documentation) for desktop and server-side apps.
 
 ## Context
 
-[`nest-data-sqlite`](../nest-data-sqlite/README.md) covers sync local SQLite. Swift and future server-side apps need:
+[`nest-data-sqlite`](../nest-data-sqlite/README.md) covers sync local SQLite. Server-side and desktop apps need:
 
 - **PostgreSQL** as the primary store
 - **pgvector** for embedding search (same pattern as Nest MCP `project_memory` / `knowledge_base`)
-- **Async I/O** via sqlx + Tokio (desktop Swift uses async through `nest-tauri` + Tokio)
+- **Async I/O** via sqlx + Tokio (desktop apps use async through `nest-tauri` + Tokio)
 
 ## Crate boundaries
 
@@ -18,7 +18,7 @@ First PostgreSQL provider for [`nest-data`](../nest-data/README.md). Required by
 |-------|------|
 | `nest-data` | Contracts (`AsyncRepository`, `Migration`, `DataService`) — enable `async` feature |
 | **`nest-data-postgres`** | sqlx/postgres driver, pool, migrations, pgvector helpers |
-| Apps (Swift) | `swift-data` repositories on top of `PostgresDataModule` |
+| Apps | product-specific repositories on top of `PostgresDataModule` |
 
 Location: `modules/crates/nest-data-postgres/`
 
@@ -58,7 +58,7 @@ Register module id: `ModuleId("nest-data-postgres")`.
 |---------|----------|
 | Storage | `vector(N)` column via pgvector; N matches embedding model (default **1536** for OpenAI `text-embedding-3-small`) |
 | Index | `ivfflat` or `hnsw` on `(project_id, embedding)` — start with sequential scan + limit for v1 dev |
-| Hybrid | Optional `tsvector` + vector rerank (Swift v1.1) |
+| Hybrid | Optional `tsvector` + vector rerank (future work) |
 
 Embedding generation stays **out of nest-data-postgres** — apps call `nest-ai` or a small `EmbeddingService`; postgres crate stores/query vectors only.
 
@@ -72,26 +72,22 @@ Embedding generation stays **out of nest-data-postgres** — apps call `nest-ai`
 | 1d | pgvector column type + `similarity_search` helper |
 | 1e | Docs, integration test (ignored without `DATABASE_URL`) |
 
-## Swift dependency
-
-Swift [swift-data-v1](../apps/swift/docs/plan/swift-data-v1.md) **blocks** on nest-data-postgres **1a–1d** (pool, migrations, vector helper).
-
 ## Setup (dev)
 
-PostgreSQL runs on the **server** (not on the Swift workstation). On the server:
+PostgreSQL runs on the **server** (not on the consuming app's workstation). On the server:
 
 ```bash
 sudo apt install postgresql postgresql-contrib postgresql-XX-pgvector
-sudo -u postgres createdb swift
-sudo -u postgres psql swift -c "CREATE EXTENSION vector;"
-# Create role + grants for the Swift app user
+sudo -u postgres createdb your_app
+sudo -u postgres psql your_app -c "CREATE EXTENSION vector;"
+# Create role + grants for the app user
 ```
 
-Config in Swift `config.toml`:
+Config in the app's `config.toml`:
 
 ```toml
 [database]
-url = "postgresql://swift:CHANGE_ME@server.lan:5432/swift"
+url = "postgresql://your_app:CHANGE_ME@server.lan:5432/your_app"
 ```
 
 Optional: `export DATABASE_URL=...` overrides the config URL when the app loads settings.
@@ -108,10 +104,9 @@ Optional: `export DATABASE_URL=...` overrides the config URL when the app loads 
 1. `PostgresDataModule` registers pool in `DataService`
 2. Migrations apply on empty DB with pgvector enabled
 3. Integration test inserts rows and runs vector similarity query
-4. [swift-data-v1](../apps/swift/docs/plan/swift-data-v1.md) can depend on the crate
+4. A consuming app can depend on the crate
 
 ## Related
 
 - [nest-data v1](./nest-data-v1.md)
-- [Swift data model](../apps/swift/docs/specs/data-model.md)
 - [MCP-SETUP pgvector](../../tools/MCP-SETUP.md)

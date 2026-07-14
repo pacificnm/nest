@@ -8,14 +8,14 @@
 
 These are the actual current contents relevant to this task, verified against
 the real repo. Do not "improve" anything not listed in the tasks below — this
-is a shared module another product (Swift) already depends on.
+is a shared module another product already depends on.
 
 - `src/config.rs` — `PostgresConfig { url: String, max_connections: u32 }`, `DEFAULT_MAX_CONNECTIONS: u32 = 5`, constructors `new()`, `from_env()`, `with_max_connections()`, `datasource()`.
 - `src/connection.rs` — `PostgresConnection::connect(config) -> DataResult<Self>` and `connect_named(id, config) -> DataResult<Self>`, both currently call `PgPoolOptions::new().max_connections(...).connect(&config.url).await` **once, with no retry**. Has one `#[ignore = "requires DATABASE_URL and PostgreSQL"]` test: `health_check_live`.
 - `src/module.rs` — `PostgresDataModule` registers the connection + runs migrations. Has two `#[ignore]` tests (around line 111 and 129).
 - `src/migration.rs` — `apply_migrations(pool, migrations)`. Has one `#[ignore]` test (~line 152).
 - `src/vector.rs` — `VectorSearch`, pgvector helpers. Has one `#[ignore]` test (~line 181) that additionally requires the `vector` Postgres extension.
-- `src/notes.rs` — Swift-specific (`Note`, `NoteId`, `NotesRepository`) but lives in this crate. Has one `#[ignore]` test (~line 169). **Do not change its logic** — retrofit its test wiring only.
+- `src/notes.rs` — consumer-specific (`Note`, `NoteId`, `NotesRepository`) but lives in this crate. Has one `#[ignore]` test (~line 169). **Do not change its logic** — retrofit its test wiring only.
 - `Cargo.toml` dev-dependencies currently: `nest-data = { workspace = true, features = ["async"] }`, `uuid = { version = "1", features = ["v4"] }`. No `testcontainers` yet.
 - Current test convention across all six ignored tests: `std::env::var("DATABASE_URL").expect("DATABASE_URL")`, no automatic setup.
 
@@ -274,8 +274,9 @@ Confirm the actual current test name and body in `vector.rs` before editing — 
 Same mechanical retrofit as Tasks 3–4 (plain `start_postgres()`, no
 pgvector needed here based on `Note`/`NotesRepository` not being
 vector-related). **Do not modify `Note`, `NoteId`, or `NotesRepository`
-themselves** — this file is Swift's domain code living in a shared crate;
-we're only touching how its test obtains a database connection.
+themselves** — this file is a downstream consumer's domain code living
+in a shared crate; we're only touching how its test obtains a database
+connection.
 
 **Acceptance:** test passes with Docker running.
 
@@ -284,7 +285,7 @@ we're only touching how its test obtains a database connection.
 ## Task 8 — Verify no regressions
 
 1. Run the full suite: `cargo test -p nest-data-postgres` (all tests, no `-- --ignored` needed anymore since nothing is `#[ignore]`d after Tasks 3–7).
-2. Run Swift's own test suite (`cd apps/swift && ./build test`, or the equivalent per Swift's own docs) to confirm this module's public API changes (there are none — only `PostgresConfig` gained new fields with defaults, which is additive and non-breaking) don't break its consumer. **This step requires Docker as well**, since Swift's own tests likely depend on this same crate.
+2. Run the downstream consumer's own test suite (`./build test`, or the equivalent per its own docs) to confirm this module's public API changes (there are none — only `PostgresConfig` gained new fields with defaults, which is additive and non-breaking) don't break it. **This step requires Docker as well**, since the consumer's tests likely depend on this same crate.
 3. Confirm `cargo doc -p nest-data-postgres` still builds cleanly (the crate has `#![deny(missing_docs)]` — every new public item in Task 1 needs a doc comment, or the build will fail outright, not just warn).
 
 **Acceptance for the whole Phase 1 spec:** all of the above pass, and
@@ -298,5 +299,5 @@ bodies — nothing else in the crate touched.
 
 - Do not touch `notes.rs`'s domain logic, `vector.rs`'s `VectorSearch` logic, or `migration.rs`'s `apply_migrations` logic — only test wiring and the two files in Task 1.
 - Do not remove or rename any existing public item — this is a shared module, additive changes only.
-- Do not skip Task 8's Swift regression check to save time — it's the actual point of doing the retrofit carefully instead of just deleting `#[ignore]` everywhere.
+- Do not skip Task 8's downstream regression check to save time — it's the actual point of doing the retrofit carefully instead of just deleting `#[ignore]` everywhere.
 - Do not invent a `testcontainers` version if `0.14` turns out to be stale by the time this runs — check crates.io for whatever is current, but pin an exact version in `Cargo.toml` rather than leaving it unpinned.

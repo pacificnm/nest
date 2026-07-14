@@ -74,7 +74,7 @@ Modules should depend on core crates via `{ workspace = true }` in `Cargo.toml`.
 
 End-user products in **separate repositories**. An app chooses a host (`nest-cli`, `nest-tauri`, `nest-tui`, …), enables modules, and adds commands, views, or domain logic.
 
-Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) — clone locally to `apps/airtable-sync/` (gitignored by nest). **Swift** ([apps/swift/docs/README.md](../apps/swift/docs/README.md)) is the reference Tauri + React desktop product; source at `apps/swift/` when checked out locally. Planned: `kiwi`, `finch`.
+Example: [pacificnm/airtable-sync](https://github.com/pacificnm/airtable-sync) — clone locally to `apps/airtable-sync/` (gitignored by nest). Planned: `kiwi`, `finch`.
 
 Typical **CLI** layout: `crates/core`, `crates/cli`. Typical **desktop** layout: `ui/` (React + Tailwind) + `src-tauri/` (`nest-tauri` + modules). Nest crates via `git` dependency on [pacificnm/nest](https://github.com/pacificnm/nest), or `path` patch in `.cargo/config.toml` when checked out under `apps/<product>/` (see [apps/README.md](../apps/README.md)).
 
@@ -108,4 +108,3 @@ The root workspace `members` list includes **only** `core/crates/*` and `modules
 - [nest-core](nest-core/README.md) — `AppBuilder`, modules, services
 - [nest-app](nest-app/README.md) — application container
 - [nest-tauri](nest-tauri/README.md) — desktop host (Tauri + React + Tailwind)
-- [Swift](../apps/swift/docs/README.md) — reference desktop product (PM + knowledge + AI)

@@ -338,7 +338,6 @@ cargo run
 
 ## Reference Apps
 
-- `apps/swift/` - Reference Tauri desktop app (PM + knowledge + AI)
 - `apps/kiwi/` - Planned app
 - `apps/loon/` - Planned app
 - `apps/airtable-sync/` - External repo (Airtable integration)
