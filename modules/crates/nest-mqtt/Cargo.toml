@@ -8,6 +8,7 @@ repository.workspace = true
 description = "MQTT client module for the Nest framework"
 
 [dependencies]
+nest-core = { workspace = true }
 nest-error = { workspace = true }
 nest-config = { workspace = true, optional = true }
 rumqttc = "0.25"
