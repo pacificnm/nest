@@ -181,4 +181,57 @@ mod tests {
         assert_eq!(received.topic, "nest/mqtt/test");
         assert_eq!(received.payload, b"hello");
     }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn last_will_delivered_on_unclean_disconnect() {
+        let broker = crate::test_support::start_broker().await;
+
+        let observer_config = MqttConfig::new(&broker.host, broker.port, "test-lwt-observer");
+        let observer = MqttClient::connect(&observer_config).await.unwrap();
+        let messages = observer
+            .subscribe("nest/mqtt/lwt", MqttQos::AtLeastOnce)
+            .await
+            .unwrap();
+        let mut messages = std::pin::pin!(messages);
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+
+        // MqttClient::connect() spawns the event-loop-polling task with
+        // `tokio::spawn` and discards the JoinHandle - the task's lifetime is
+        // NOT tied to the returned MqttClient, so simply dropping the client
+        // handle does not close the underlying connection. To simulate an
+        // unclean disconnect (no MQTT DISCONNECT packet, just the network
+        // connection dying) without adding a test-only backdoor to
+        // MqttClient's public API, connect the "victim" client on its own
+        // dedicated runtime, then kill that runtime outright - this aborts
+        // the background task (and the TCP socket it owns) mid-flight.
+        let victim_runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let victim_config = MqttConfig::new(&broker.host, broker.port, "test-lwt-victim")
+            .with_last_will(crate::config::LastWillConfig {
+                topic: "nest/mqtt/lwt".to_string(),
+                payload: b"gone".to_vec(),
+                qos: MqttQos::AtLeastOnce,
+                retain: false,
+            });
+        let _victim_client = victim_runtime
+            .spawn(async move { MqttClient::connect(&victim_config).await })
+            .await
+            .expect("victim connect task panicked")
+            .expect("victim client failed to connect");
+
+        // Give the victim's CONNECT (with its Will) time to be acknowledged
+        // by the broker before we pull the rug out from under it.
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+        victim_runtime.shutdown_background();
+
+        let received = tokio::time::timeout(std::time::Duration::from_secs(10), messages.next())
+            .await
+            .expect("timed out waiting for the LWT message")
+            .expect("message stream ended unexpectedly");
+
+        assert_eq!(received.topic, "nest/mqtt/lwt");
+        assert_eq!(received.payload, b"gone");
+    }
 }
