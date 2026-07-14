@@ -11,6 +11,8 @@ pub mod message;
 pub mod module;
 mod runtime;
 pub mod service;
+#[cfg(test)]
+mod test_support;
 
 pub use client::MqttClient;
 pub use config::{LastWillConfig, MqttConfig, MqttQos};
