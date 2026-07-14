@@ -1,0 +1,21 @@
+[package]
+name = "nest-ai-claude"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Claude (Anthropic) AI provider adapter for the Nest framework"
+
+[dependencies]
+nest-ai = { workspace = true }
+nest-claude = { workspace = true }
+nest-core = { workspace = true }
+nest-error = { workspace = true }
+async-trait = "0.1"
+futures-util = "0.3"
+serde_json = "1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wiremock = "0.6"
