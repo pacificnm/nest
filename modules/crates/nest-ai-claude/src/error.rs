@@ -44,4 +44,39 @@ mod tests {
         let mapped = claude_to_ai_error(error);
         assert_eq!(mapped.kind(), nest_ai::AiErrorKind::Request);
     }
+
+    #[test]
+    fn invalid_request_error_maps_to_invalid_input_kind() {
+        let error = nest_claude::ClaudeError::new(ClaudeErrorKind::InvalidRequest, "bad request");
+        let mapped = claude_to_ai_error(error);
+        assert_eq!(mapped.kind(), nest_ai::AiErrorKind::InvalidInput);
+    }
+
+    #[test]
+    fn auth_error_maps_to_request_kind() {
+        let error = nest_claude::ClaudeError::new(ClaudeErrorKind::Auth, "unauthorized");
+        let mapped = claude_to_ai_error(error);
+        assert_eq!(mapped.kind(), nest_ai::AiErrorKind::Request);
+    }
+
+    #[test]
+    fn rate_limit_error_maps_to_request_kind() {
+        let error = nest_claude::ClaudeError::new(ClaudeErrorKind::RateLimit, "rate limited");
+        let mapped = claude_to_ai_error(error);
+        assert_eq!(mapped.kind(), nest_ai::AiErrorKind::Request);
+    }
+
+    #[test]
+    fn server_error_maps_to_request_kind() {
+        let error = nest_claude::ClaudeError::new(ClaudeErrorKind::Server, "server error");
+        let mapped = claude_to_ai_error(error);
+        assert_eq!(mapped.kind(), nest_ai::AiErrorKind::Request);
+    }
+
+    #[test]
+    fn api_error_maps_to_request_kind() {
+        let error = nest_claude::ClaudeError::new(ClaudeErrorKind::Api, "other api error");
+        let mapped = claude_to_ai_error(error);
+        assert_eq!(mapped.kind(), nest_ai::AiErrorKind::Request);
+    }
 }
