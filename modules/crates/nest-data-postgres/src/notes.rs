@@ -155,22 +155,21 @@ mod tests {
     use crate::migration::PostgresMigrationRunner;
     use nest_data::{Migration, MigrationRunner};
 
-    async fn setup() -> NotesRepository {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-        let conn = PostgresConnection::connect(&PostgresConfig::new(url))
+    async fn setup() -> (crate::test_support::TestDb, NotesRepository) {
+        let db = crate::test_support::start_postgres().await;
+        let conn = PostgresConnection::connect(&PostgresConfig::new(db.url.clone()))
             .await
             .unwrap();
         let migrations: Vec<Box<dyn Migration>> = vec![Box::new(notes_migration())];
         PostgresMigrationRunner::new(conn.clone(), migrations)
             .apply_all()
             .unwrap();
-        NotesRepository::new(conn)
+        (db, NotesRepository::new(conn))
     }
 
-    #[tokio::test]
-    #[ignore = "requires DATABASE_URL and PostgreSQL"]
+    #[tokio::test(flavor = "multi_thread")]
     async fn crud_round_trip() {
-        let repo = setup().await;
+        let (_db, repo) = setup().await;
         let created = repo
             .insert(Note {
                 id: NoteId(0),
