@@ -281,6 +281,65 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn tool_result_uses_correct_tool_use_id() {
+        use nest_ai::ChatMessage;
+
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/messages"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "id": "msg_1",
+                "type": "message",
+                "role": "assistant",
+                "content": [{"type": "text", "text": "72F and sunny, it's noon."}],
+                "model": "claude-opus-4-8",
+                "stop_reason": "end_turn",
+                "stop_sequence": null,
+                "usage": {"input_tokens": 10, "output_tokens": 5}
+            })))
+            .mount(&server)
+            .await;
+
+        let provider = ClaudeAiProvider::new(test_config(server.uri())).unwrap();
+
+        let mut weather_call = ToolCall::new("get_weather", json!({"city": "Paris"}));
+        weather_call.id = "toolu_weather".to_string();
+        let mut time_call = ToolCall::new("get_time", json!({"tz": "UTC"}));
+        time_call.id = "toolu_time".to_string();
+
+        provider
+            .complete(CompletionRequest {
+                model: None,
+                messages: vec![
+                    ChatMessage::user("What's the weather and time?"),
+                    ChatMessage::assistant_tool_calls(vec![weather_call, time_call]),
+                    ChatMessage::tool_result("get_weather", "72F and sunny"),
+                    ChatMessage::tool_result("get_time", "noon"),
+                ],
+                format: None,
+                tools: vec![],
+            })
+            .await
+            .unwrap();
+
+        let requests = server.received_requests().await.unwrap();
+        assert_eq!(requests.len(), 1);
+        let body: serde_json::Value = requests[0].body_json().unwrap();
+        let messages = body["messages"].as_array().unwrap();
+
+        // [0] user, [1] assistant (two tool_use blocks), [2] tool_result(get_weather),
+        // [3] tool_result(get_time) - assert each result carries the DISTINCT id of
+        // the call it answers, not a shared/mixed-up one.
+        let weather_result = &messages[2]["content"][0];
+        assert_eq!(weather_result["type"], "tool_result");
+        assert_eq!(weather_result["tool_use_id"], "toolu_weather");
+
+        let time_result = &messages[3]["content"][0];
+        assert_eq!(time_result["type"], "tool_result");
+        assert_eq!(time_result["tool_use_id"], "toolu_time");
+    }
+
+    #[tokio::test]
     async fn stream_complete_emits_text_chunks() {
         let server = MockServer::start().await;
         let sse = concat!(
