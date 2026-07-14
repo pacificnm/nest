@@ -1,10 +1,12 @@
 //! `ClaudeAiProvider`: `nest_ai::AiProvider` implementation over `nest_claude::ClaudeClient`.
 
 use async_trait::async_trait;
+use futures_util::StreamExt;
 use nest_ai::{
-    AiError, AiProvider, AiResult, CompletionRequest, CompletionResponse, ResponseFormat, ToolCall,
+    AiError, AiProvider, AiResult, CompletionChunk, CompletionRequest, CompletionResponse,
+    CompletionStream, ResponseFormat, ToolCall,
 };
-use nest_claude::{ClaudeClient, ClaudeConfig, CreateMessageRequest};
+use nest_claude::{ClaudeClient, ClaudeConfig, ContentDelta, CreateMessageRequest, StreamEvent};
 use nest_error::NestResult;
 
 use crate::error::claude_to_ai_error;
@@ -89,6 +91,74 @@ impl AiProvider for ClaudeAiProvider {
             metrics: None,
         })
     }
+
+    async fn stream_complete(&self, request: CompletionRequest) -> AiResult<CompletionStream> {
+        // SCOPE LIMIT FOR THIS PHASE: only tool-free requests stream. Claude
+        // sends tool-call arguments as per-content-block partial-JSON deltas
+        // (`ContentDelta::InputJsonDelta`), which is a structurally different
+        // reassembly problem from Ollama's per-object incremental tool_calls -
+        // real, separate work deferred to a later iteration rather than
+        // shipped half-working here.
+        if !request.tools.is_empty() {
+            return Err(AiError::invalid_input(
+                "streaming with tools is not yet supported by nest-ai-claude",
+            ));
+        }
+        if request.messages.is_empty() {
+            return Err(AiError::invalid_input(
+                "completion request requires at least one message",
+            ));
+        }
+        if request.format == Some(ResponseFormat::Json) {
+            return Err(AiError::invalid_input(
+                "JSON response format is not yet supported by nest-ai-claude",
+            ));
+        }
+
+        let (system, messages) = to_claude_messages(&request.messages);
+        let mut claude_request = CreateMessageRequest::new(messages);
+        if let Some(system) = system {
+            claude_request = claude_request.system(system);
+        }
+        if let Some(model) = &request.model {
+            claude_request = claude_request.model(model);
+        }
+
+        let stream = self
+            .client
+            .stream_message(claude_request)
+            .await
+            .map_err(claude_to_ai_error)?;
+
+        Ok(map_claude_stream(stream))
+    }
+}
+
+/// Maps Claude's SSE [`StreamEvent`]s onto [`CompletionChunk`]s.
+///
+/// Only [`ContentDelta::TextDelta`] and [`StreamEvent::MessageStop`] are
+/// surfaced (the tool-free scope for this phase); `MessageStart`,
+/// `ContentBlockStart`/`Stop`, `MessageDelta`, and non-text content deltas
+/// (`InputJsonDelta`/`ThinkingDelta`/`SignatureDelta`) carry nothing this
+/// phase's `CompletionChunk` shape can represent and are dropped. A mid-stream
+/// `StreamEvent::Error` (e.g. `overloaded_error`) is surfaced as an `Err` so
+/// it isn't silently swallowed.
+fn map_claude_stream(stream: nest_claude::MessageStream) -> CompletionStream {
+    Box::pin(stream.filter_map(|event| async move {
+        match event {
+            Ok(StreamEvent::ContentBlockDelta {
+                delta: ContentDelta::TextDelta { text },
+                ..
+            }) => Some(Ok(CompletionChunk::delta(text))),
+            Ok(StreamEvent::MessageStop) => Some(Ok(CompletionChunk::finished())),
+            Ok(StreamEvent::Error { error }) => Some(Err(AiError::request(format!(
+                "{}: {}",
+                error.error_type, error.message
+            )))),
+            Ok(_) => None,
+            Err(error) => Some(Err(claude_to_ai_error(error))),
+        }
+    }))
 }
 
 #[cfg(test)]
@@ -208,5 +278,61 @@ mod tests {
         assert_eq!(response.tool_calls[0].id, "toolu_1");
         assert_eq!(response.tool_calls[0].name, "get_weather");
         assert_eq!(response.tool_calls[0].arguments, json!({"city": "Paris"}));
+    }
+
+    #[tokio::test]
+    async fn stream_complete_emits_text_chunks() {
+        let server = MockServer::start().await;
+        let sse = concat!(
+            "event: content_block_delta\n",
+            "data: {\"type\":\"content_block_delta\",\"index\":0,",
+            "\"delta\":{\"type\":\"text_delta\",\"text\":\"Hel\"}}\n\n",
+            "event: content_block_delta\n",
+            "data: {\"type\":\"content_block_delta\",\"index\":0,",
+            "\"delta\":{\"type\":\"text_delta\",\"text\":\"lo\"}}\n\n",
+            "event: message_stop\n",
+            "data: {\"type\":\"message_stop\"}\n\n",
+        );
+        Mock::given(method("POST"))
+            .and(path("/v1/messages"))
+            .respond_with(ResponseTemplate::new(200).set_body_raw(sse, "text/event-stream"))
+            .mount(&server)
+            .await;
+
+        let provider = ClaudeAiProvider::new(test_config(server.uri())).unwrap();
+        let stream = provider
+            .stream_complete(CompletionRequest::user_message("hi"))
+            .await
+            .unwrap();
+        let mut stream = std::pin::pin!(stream);
+
+        let mut content = String::new();
+        let mut saw_done = false;
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.unwrap();
+            content.push_str(&chunk.content_delta);
+            if chunk.done {
+                saw_done = true;
+                break;
+            }
+        }
+
+        assert_eq!(content, "Hello");
+        assert!(saw_done);
+    }
+
+    #[tokio::test]
+    async fn stream_complete_with_tools_returns_unsupported_error() {
+        let server = MockServer::start().await;
+        let provider = ClaudeAiProvider::new(test_config(server.uri())).unwrap();
+        let error = provider
+            .stream_complete(CompletionRequest::user_message("hi").with_tools(vec![
+                ToolDefinition::new("get_weather", "Gets the weather", json!({"type": "object"})),
+            ]))
+            .await
+            .err()
+            .unwrap();
+
+        assert_eq!(error.kind(), nest_ai::AiErrorKind::InvalidInput);
     }
 }
