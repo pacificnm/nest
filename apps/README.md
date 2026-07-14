@@ -63,3 +63,4 @@ export AIRTABLE_TOKEN="pat..."
 The product repo's `.cargo/config.toml` path-patches Nest crates from this layout (`../../core/…`, `../../modules/…`).
 
 **Dependency rule:** products depend on Nest core and modules only. See [docs/architecture.md](../docs/architecture.md) and [docs/app-standard.md](../docs/app-standard.md).
+# sparrow
