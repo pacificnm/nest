@@ -1,39 +1,50 @@
-# Nest agent workflow
+# Nest Codex workflow
 
-**Mandatory** for all agents in this repository. Cursor hooks enforce the memory gate
-and post-response saves.
+**Mandatory** for Codex in this repository. Codex loads this file as repository
+guidance and loads the three Nest MCP servers from `.codex/config.toml` in a trusted
+checkout. Codex does not currently have the Cursor memory hooks, so treat the memory
+gate and final-response save as hard workflow requirements.
 
-## Before implementation (required — hook-enforced)
+## Before implementation (required)
 
-1. **`search_project_memory`** (`nest-memory`) — Nest crate plans, docs, decisions.
+Do not edit files, run shell commands, or use other non-memory tools until both calls
+below succeed:
+
+1. **`search_project_memory`** (`nest-memory`) — search Nest plans, documentation,
+   crate boundaries, architecture decisions, and prior work relevant to the task.
 2. **`search_context_memory`** or **`list_context_memory`** (`nest-context-memory`)
-   with `session_key` set to the current git branch (e.g. `main`).
+   with `session_key` set to the current git branch (for example, `main`) or a stable
+   `branch:conversation` key.
 
-Hooks **block** file edits, shell commands, and other tools until both complete.
+If a required MCP server or tool is unavailable, stop before implementation and report
+the configuration problem. Do not silently substitute local file search for the memory
+calls.
 
-Optional when using Rust APIs: **`search_knowledge_base`** (`nest-knowledge`).
+Use **`search_knowledge_base`** (`nest-knowledge`) before relying on Rust, Tauri,
+React, Tailwind, or other indexed API behavior.
 
 When building **desktop UI** (`ui/`, Tauri): search collections `tauri`, `react`, `tailwind`.
 
 When editing **`apps/loon/client/`**: **`search_knowledge_base`** with
 `collection="webos-tv"` (hook-enforced). See `.cursor/rules/webos-tv-knowledge.mdc`.
 
-## After every agent response (required)
+## Before every final response (required)
 
-Call **`save_context_memory`** before the turn ends. The **stop** hook will prompt
-again if you skip it. Include:
+Call **`save_context_memory`** (`nest-context-memory`) before sending the final response.
+Save after read-only investigations as well as implementation turns. Include:
 
 - What you did this turn
 - Files changed or read
 - Decisions and blockers
 - Verification commands and results
 
-Use a stable `session_key` (git branch name or `branch:conversation`).
+Use the same stable `session_key` used at the start of the turn. If saving fails, say so
+in the final response.
 
 ## Before context compaction (required)
 
-Call **`save_context_memory`** with a full checkpoint. **preCompact** also saves an
-automatic transcript snapshot, but you must still save an explicit summary.
+Call **`save_context_memory`** with a full checkpoint before compaction. Codex has no
+repository hook that guarantees this save, so do it explicitly.
 
 ## Nest Framework Usage
 
@@ -63,10 +74,10 @@ If no suitable Nest crate exists, explain why before introducing a new dependenc
 1. [docs/architecture.md](docs/architecture.md) — layering and dependency rules
 2. [docs/app-standard.md](docs/app-standard.md) — product layout, hosts, IPC, command surface
 3. `docs/plan/` — implementation plans
-3. MCP project memory
-4. MCP knowledge base (Rust, Tauri, React, Tailwind APIs)
-5. MCP context memory (resume prior work)
-6. `docs/nest-<crate>/` and source under `core/crates/` and `modules/crates/` (apps are separate repos — see `apps/README.md`)
+4. MCP project memory
+5. MCP knowledge base (Rust, Tauri, React, Tailwind APIs)
+6. MCP context memory (resume prior work)
+7. `docs/nest-<crate>/` and source under `core/crates/` and `modules/crates/` (apps are separate repos — see `apps/README.md`)
 
 ## Re-index
 
@@ -78,4 +89,3 @@ If no suitable Nest crate exists, explain why before introducing a new dependenc
 ## Setup
 
 See [`tools/MCP-SETUP.md`](tools/MCP-SETUP.md).
-

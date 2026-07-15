@@ -1,7 +1,8 @@
 # Nest MCP Setup
 
 This guide covers local setup for the Nest MCP servers and wiring them into
-Cursor. The servers are development-time helpers only.
+Cursor, Codex, Claude Code, OpenCode, and Kiwi. The servers are development-time
+helpers only.
 
 Three MCP servers are provided:
 
@@ -377,7 +378,32 @@ Override the config file with `KIWI_CONFIG=/path/to/config.toml`.
 
 See [`apps/kiwi/docs/agent-mcp-v1.md`](../apps/kiwi/docs/agent-mcp-v1.md).
 
-## 8. Using MCP from Claude Code (Kiwi Agent panel)
+## 8. Using MCP from Codex
+
+Codex reads repository instructions from [`AGENTS.md`](../AGENTS.md) and project-scoped
+MCP configuration from [`.codex/config.toml`](../.codex/config.toml). Project configuration
+is loaded only when the checkout is trusted.
+
+The committed configuration uses absolute paths for `/home/jaimie/projects`. If the
+checkout moves, update `command`, `args`, and `cwd` for all three servers.
+
+Start a new Codex session after changing `.codex/config.toml`, then verify:
+
+```bash
+codex mcp list
+```
+
+In the Codex TUI, `/mcp` should show:
+
+- `nest-memory`
+- `nest-knowledge`
+- `nest-context-memory`
+
+All three are marked `required = true`, so a new Codex session fails early instead of
+silently working without project or context memory. See `AGENTS.md` for the mandatory
+search-before-work and save-before-final-response workflow.
+
+## 9. Using MCP from Claude Code (Kiwi Agent panel)
 
 When Kiwi launches **Claude Code** (`runtime = "claude"` in the Agent panel — direct account
 or `ollama launch claude`), MCP is configured via the repo [`.mcp.json`](../.mcp.json) at the
@@ -403,7 +429,7 @@ session in Kiwi after changing `.mcp.json`.
 (default `mcp.json` beside `config.toml`). Claude uses `.mcp.json` at the Nest project
 root separately — both point at the same Python servers.
 
-## 9. Using MCP from OpenCode (Kiwi Agent panel)
+## 10. Using MCP from OpenCode (Kiwi Agent panel)
 
 When Kiwi launches **OpenCode** via `ollama launch opencode`, MCP is configured separately
 from the Tools sidebar probe. OpenCode reads the `mcp` block in the workspace

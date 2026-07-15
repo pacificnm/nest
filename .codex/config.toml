@@ -1,0 +1,40 @@
+# Project-scoped Codex configuration. Codex loads this file only for trusted projects.
+# Paths are absolute for this checkout; update them if the repository moves.
+
+[mcp_servers.nest-memory]
+command = "/home/jaimie/projects/.venv/bin/python"
+args = ["/home/jaimie/projects/tools/mcp_memory_server.py"]
+cwd = "/home/jaimie/projects"
+enabled = true
+required = true
+enabled_tools = ["search_project_memory"]
+default_tools_approval_mode = "auto"
+
+[mcp_servers.nest-knowledge]
+command = "/home/jaimie/projects/.venv/bin/python"
+args = ["/home/jaimie/projects/tools/mcp_knowledge_server.py"]
+cwd = "/home/jaimie/projects"
+enabled = true
+required = true
+enabled_tools = ["search_knowledge_base", "list_knowledge_collections"]
+default_tools_approval_mode = "auto"
+
+[mcp_servers.nest-context-memory]
+command = "/home/jaimie/projects/.venv/bin/python"
+args = ["/home/jaimie/projects/tools/mcp_context_memory_server.py"]
+cwd = "/home/jaimie/projects"
+enabled = true
+required = true
+enabled_tools = [
+  "save_context_memory",
+  "search_context_memory",
+  "list_context_memory",
+  "get_context_memory",
+]
+default_tools_approval_mode = "auto"
+
+[mcp_servers.nest-context-memory.tools.search_context_memory]
+approval_mode = "approve"
+
+[mcp_servers.nest-context-memory.tools.save_context_memory]
+approval_mode = "approve"
