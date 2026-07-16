@@ -101,11 +101,12 @@ Tool: list_knowledge_collections
 ## Read Order (Per AGENTS.md)
 
 1. `docs/architecture.md` — layering and dependency rules
-2. `docs/plan/` — implementation plans
-3. MCP project memory (`search_project_memory`)
-4. MCP knowledge base (`search_knowledge_base` for Rust/Tauri/React/Tailwind APIs)
-5. MCP context memory (`search_context_memory` or `list_context_memory`)
-6. Source code under `core/crates/` and `modules/crates/`
+2. `docs/app-standard.md` — product layout, hosts, IPC, command surface
+3. `docs/plan/` — implementation plans
+4. MCP project memory (`search_project_memory`)
+5. MCP knowledge base (`search_knowledge_base` for Rust/Tauri/React/Tailwind APIs)
+6. MCP context memory (`search_context_memory` or `list_context_memory`)
+7. `docs/nest-<crate>/` and source code under `core/crates/` and `modules/crates/`
 
 ## Example Workflow
 
