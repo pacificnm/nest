@@ -42,48 +42,53 @@ export const NestContextMemoryPlugin: Plugin = async ({
 
   return {
     "experimental.session.compacting": async (input, output) => {
-      const inputRecord = input as UnknownRecord;
-      const sessionId = getSessionId(inputRecord);
+      try {
+        const inputRecord = input as UnknownRecord;
+        const sessionId = getSessionId(inputRecord);
 
-      const branchResult =
-        await $`git -C ${worktree || directory} branch --show-current`.quiet();
-      const branch = branchResult.text().trim() || "detached";
+        const branchResult =
+          await $`git -C ${worktree || directory} branch --show-current`.quiet();
+        const branch = branchResult.text().trim() || "detached";
 
-      const sessionKey = `${branch}:${sessionId.slice(0, 8)}`;
+        const sessionKey = `${branch}:${sessionId.slice(0, 8)}`;
 
-      const response = await client.session.messages({
-        path: {
-          id: sessionId,
-        },
-      });
+        const response = await client.session.messages({
+          path: {
+            id: sessionId,
+          },
+        });
 
-      const messages =
-        response && typeof response === "object" && "data" in response
-          ? response.data
-          : response;
+        const messages =
+          response && typeof response === "object" && "data" in response
+            ? response.data
+            : response;
 
-      const helperPayload = JSON.stringify({
-        messages: Array.isArray(messages) ? messages : [],
-      });
+        const helperPayload = JSON.stringify({
+          messages: Array.isArray(messages) ? messages : [],
+        });
 
-      const checkpoint =
-        await $`${root}/.venv/bin/python ${root}/tools/opencode_context_checkpoint.py --session-key ${sessionKey} --branch ${branch} --repository ${worktree || directory}`
-          .stdin(helperPayload)
-          .quiet();
+        // .nothrow(): the helper script reports its own failures as a JSON
+        // error on stdout (e.g. embedding-provider errors). Without this, a
+        // non-zero exit throws before that message can ever be read, and the
+        // raw shell error surfaces to the user as an opaque server error
+        // instead of the real reason — and blocks compaction entirely.
+        const checkpoint =
+          await $`${root}/.venv/bin/python ${root}/tools/opencode_context_checkpoint.py --session-key ${sessionKey} --branch ${branch} --repository ${worktree || directory}`
+            .stdin(helperPayload)
+            .quiet()
+            .nothrow();
 
-      const parsed = parseJsonOutput(checkpoint.text());
+        const parsed = parseJsonOutput(checkpoint.text());
 
-      if (typeof parsed.error === "string") {
-        throw new Error(
-          `Nest pre-compaction checkpoint failed: ${parsed.error}`,
-        );
-      }
+        if (typeof parsed.error === "string") {
+          throw new Error(parsed.error);
+        }
 
-      const entryId = parsed.entry_id;
-      const memoryContext =
-        typeof parsed.context === "string" ? parsed.context : "";
+        const entryId = parsed.entry_id;
+        const memoryContext =
+          typeof parsed.context === "string" ? parsed.context : "";
 
-      output.context.push(`
+        output.context.push(`
 ## Nest persistent context memory
 
 An automatic pre-compaction checkpoint was saved to
@@ -108,6 +113,22 @@ Recent persistent context entries:
 
 ${memoryContext}
 `);
+      } catch (error) {
+        // A failed automatic checkpoint must not block compaction — that
+        // would leave the user stuck at high context with no way to free it.
+        const message = error instanceof Error ? error.message : String(error);
+        output.context.push(`
+## Nest persistent context memory
+
+The automatic pre-compaction checkpoint to \`nest-context-memory\` FAILED:
+
+${message}
+
+Proceeding with compaction without a fresh checkpoint. The continuation
+summary should preserve as much of the current task, decisions, files
+touched, and next steps as possible, since this safety net was unavailable.
+`);
+      }
     },
   };
 };

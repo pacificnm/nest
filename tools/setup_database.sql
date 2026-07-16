@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS project_memory (
     source_path text NOT NULL,
     content text NOT NULL,
     content_hash text NOT NULL UNIQUE,
-    embedding vector(1536) NOT NULL,
+    embedding vector(768) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS agent_context_memory (
     title text NOT NULL DEFAULT '',
     content text NOT NULL,
     tags text[] NOT NULL DEFAULT '{}',
-    embedding vector(1536) NOT NULL,
+    embedding vector(768) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS knowledge_base (
     source_path text NOT NULL,
     content text NOT NULL,
     content_hash text NOT NULL,
-    embedding vector(1536) NOT NULL,
+    embedding vector(768) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 

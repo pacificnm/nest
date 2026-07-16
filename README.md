@@ -218,7 +218,7 @@ Quick start after PostgreSQL + `nest_memory` database:
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt
-cp .env.example .env   # set OPENAI_API_KEY
+cp .env.example .env   # set DATABASE_URL, OLLAMA_HOST, OLLAMA_EMBED_MODEL
 ./scripts/setup-memory.sh
 ./scripts/index-memory.sh
 ./scripts/index-knowledge.sh   # requires ~/nest-knowledge

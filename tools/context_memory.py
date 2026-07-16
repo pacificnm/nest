@@ -2,18 +2,8 @@
 
 from __future__ import annotations
 
-from memory_common import database_url, vector_literal
-
-
-EMBEDDING_MODEL = "text-embedding-3-small"
-
-
-def embed_text(text: str) -> str:
-    from openai import OpenAI
-
-    client = OpenAI()
-    result = client.embeddings.create(model=EMBEDDING_MODEL, input=text)
-    return vector_literal(result.data[0].embedding)
+from embedding import embed_text
+from memory_common import database_url
 
 
 def save_context(

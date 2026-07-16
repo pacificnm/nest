@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS agent_context_memory (
     title text NOT NULL DEFAULT '',
     content text NOT NULL,
     tags text[] NOT NULL DEFAULT '{}',
-    embedding vector(1536) NOT NULL,
+    embedding vector(768) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 

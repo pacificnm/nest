@@ -1,6 +1,7 @@
 import sys
 
-from memory_common import database_url, vector_literal
+from embedding import embed_text
+from memory_common import database_url
 
 
 query = " ".join(sys.argv[1:]).strip()
@@ -11,13 +12,8 @@ if not query:
 
 try:
     import psycopg
-    from openai import OpenAI
 
-    client = OpenAI()
-    embedding = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=query,
-    ).data[0].embedding
+    embedding = embed_text(query)
 
     with psycopg.connect(database_url()) as conn:
         rows = conn.execute(
@@ -27,7 +23,7 @@ try:
             ORDER BY embedding <=> %s::vector
             LIMIT 8
             """,
-            (vector_literal(embedding),),
+            (embedding,),
         ).fetchall()
 except Exception as error:
     print(f"ERROR: memory search failed: {error}", file=sys.stderr)

@@ -200,8 +200,9 @@ impl McpHub {
 - Loader resolves paths relative to config file directory.
 - Kiwi `[agent] mcp_config` in `config.toml` points at repo `.cursor/mcp.json`
   (or embeds inline server list).
-- Merge process env with repo `.env` (`DATABASE_URL`, `OPENAI_API_KEY`) for
-  memory servers — same as [MCP-SETUP.md](../../tools/MCP-SETUP.md).
+- Merge process env with repo `.env` (`DATABASE_URL`, `OLLAMA_HOST`,
+  `OLLAMA_EMBED_MODEL`) for memory servers — same as
+  [MCP-SETUP.md](../../tools/MCP-SETUP.md).
 
 ### 1.4 Process lifecycle
 
@@ -501,7 +502,7 @@ Add to root `Cargo.toml` workspace members + `[workspace.dependencies]`.
 | --- | --- |
 | Small models fail to call tools reliably | Document minimum model; agent mode warns if model is below recommended size |
 | FastMCP stdio framing differs from spec | Phase 0 spike; adapt line reader |
-| Memory MCP needs OpenAI key + Postgres | Surface clear errors in Agent sidebar; link MCP-SETUP |
+| Memory MCP needs reachable Ollama + Postgres | Surface clear errors in Agent sidebar; link MCP-SETUP |
 | Path resolution when Kiwi cwd ≠ repo root | Resolve `mcp_config` relative to config file / explicit `nest_root` setting |
 | Agent loop runaway | `max_steps` cap + cancellation on panel close |
 | Security (future write tools) | v1 read-only auto-run only |

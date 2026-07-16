@@ -9,8 +9,8 @@ Before writing new infrastructure code — config loading, error types, an HTTP
 client, a task scheduler, a data layer — check whether a Nest crate already
 provides it:
 
-- `search_project_memory` (`nest-memory` MCP) — prior architecture decisions and plans
-- `search_knowledge_base` (`nest-knowledge` MCP) — indexed Rust/Tauri/React/Tailwind API docs
+- `nest-memory_search_project_memory` — prior architecture decisions and plans
+- `nest-knowledge_search_knowledge_base` — indexed Rust/Tauri/React/Tailwind API docs
 - The `nest-crates` skill — full crate catalog by purpose
 
 If no suitable Nest crate exists, say so explicitly before introducing a new

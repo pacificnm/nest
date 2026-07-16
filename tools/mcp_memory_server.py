@@ -7,7 +7,8 @@ except ModuleNotFoundError as error:
         "Run it with .venv/bin/python or install the project Python dependencies."
     ) from error
 
-from memory_common import database_url, vector_literal
+from embedding import embed_text
+from memory_common import database_url
 
 
 mcp = FastMCP("nest-memory")
@@ -16,13 +17,7 @@ mcp = FastMCP("nest-memory")
 @mcp.tool()
 def search_project_memory(query: str, limit: int = 8) -> str:
     """Search Nest project memory for specs, plans, crate docs, and decisions."""
-    from openai import OpenAI
-
-    client = OpenAI()
-    embedding = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=query,
-    ).data[0].embedding
+    embedding = embed_text(query)
 
     with psycopg.connect(database_url()) as conn:
         rows = conn.execute(
@@ -32,7 +27,7 @@ def search_project_memory(query: str, limit: int = 8) -> str:
             ORDER BY embedding <=> %s::vector
             LIMIT %s
             """,
-            (vector_literal(embedding), limit),
+            (embedding, limit),
         ).fetchall()
 
     if not rows:

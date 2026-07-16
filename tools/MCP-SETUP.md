@@ -17,7 +17,7 @@ File tools (`read_file`, `write_file`, etc.) are **native Rust** in `nest-agent`
 the agent loop.
 
 All servers use the same PostgreSQL database (`nest_memory`), Python virtual
-environment, and OpenAI embedding key.
+environment, and Ollama embedding model.
 
 ## Quick Start Checklist
 
@@ -35,7 +35,8 @@ From the repository root:
 - PostgreSQL with the `pgvector` extension
 - Python 3
 - Git (for `./scripts/fetch-knowledge.sh`)
-- An OpenAI API key
+- An Ollama server reachable at `OLLAMA_HOST` with the embedding model pulled
+  (default `nomic-embed-text`; run `ollama pull nomic-embed-text`)
 - Cursor with MCP support
 
 Default database URL:
@@ -110,7 +111,8 @@ Edit `.env`:
 
 ```env
 DATABASE_URL="postgresql:///nest_memory?host=/var/run/postgresql"
-OPENAI_API_KEY="sk-..."
+OLLAMA_HOST="http://127.0.0.1:11434"
+OLLAMA_EMBED_MODEL="nomic-embed-text"
 ```
 
 Do not commit `.env`.
@@ -184,7 +186,7 @@ List indexed collections:
 .venv/bin/python tools/search_knowledge.py --list-collections
 ```
 
-Re-run after updating manual checkouts. Indexing uses OpenAI embeddings and may
+Re-run after updating manual checkouts. Indexing uses Ollama embeddings and may
 take several minutes.
 
 ## 3c. Context memory table
@@ -249,8 +251,8 @@ Replace `/absolute/path/to/nest` with your local clone path (`pwd` from repo roo
 Notes:
 
 - Use absolute paths for `command`, `args`, and `cwd`.
-- Keep secrets out of `mcp.json`. The servers read `DATABASE_URL` and
-  `OPENAI_API_KEY` from repo-root `.env`.
+- Keep secrets out of `mcp.json`. The servers read `DATABASE_URL`, `OLLAMA_HOST`,
+  and `OLLAMA_EMBED_MODEL` from repo-root `.env`.
 - The committed file may contain another developer's path. Update it locally
   after clone.
 
@@ -454,7 +456,7 @@ ollama launch opencode --model qwen3.5:397b-cloud
 Requirements (same as Cursor):
 
 - `.venv/bin/python` with `tools/requirements.txt` installed
-- Repo `.env` with `DATABASE_URL` and `OPENAI_API_KEY` (for embeddings)
+- Repo `.env` with `DATABASE_URL`, `OLLAMA_HOST`, and `OLLAMA_EMBED_MODEL` (for embeddings)
 - Indexed project memory (`./scripts/index-memory.sh`)
 
 The [Ollama tool-calling docs](https://docs.ollama.com/capabilities/tool-calling) describe
@@ -467,7 +469,7 @@ the inference API; OpenCode handles the tool loop and MCP stdio servers itself.
 | MCP server missing after reload | Wrong config file or invalid JSON | Confirm `.cursor/mcp.json` exists and parses as JSON. |
 | MCP server fails immediately | Bad Python path or missing venv | Update `command` to your local `.venv/bin/python`. |
 | `Missing Python dependency for Nest memory MCP` | Dependencies not installed | Run `pip install -r tools/requirements.txt` inside `.venv`. |
-| OpenAI authentication errors | Missing or invalid API key | Set `OPENAI_API_KEY` in `.env`. |
+| Ollama embedding errors / connection refused | `OLLAMA_HOST` unreachable or model not pulled | Confirm the Ollama server is running and reachable, and `ollama pull nomic-embed-text` (or your `OLLAMA_EMBED_MODEL`) has been run there. |
 | `relation "agent_context_memory" does not exist` | Context table not created | Run `./scripts/setup-context-memory.sh` or `./scripts/setup-database-postgres.sh`. |
 | `relation "project_memory" does not exist` | Schema not created | Run `./scripts/setup-database-postgres.sh`. |
 | `Permission denied` on `psql -f ~/.../setup_database.sql` | postgres cannot read your home dir | Pipe SQL: `sed ... \| sudo -u postgres psql nest_memory` or use `./scripts/setup-database-postgres.sh`. |

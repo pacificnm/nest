@@ -154,13 +154,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
-        raise SystemExit(main())
+        sys.exit(main())
     except Exception as error:
-        print(
-            json.dumps(
-                {
-                    "error": str(error),
-                }
-            )
-        )
-        raise
+        json.dump({"error": str(error)}, sys.stdout)
+        sys.stdout.write("\n")
+        sys.exit(1)

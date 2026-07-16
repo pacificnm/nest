@@ -1,8 +1,12 @@
 # Migrating Nest MCP to Remote Postgres + Ollama (192.168.88.10)
 
-Status: **Planned — not yet executed.** This is a runbook, not a description of the
-current setup. See `tools/MCP-SETUP.md` for how the servers work today (local
-Postgres over a Unix socket, OpenAI embeddings).
+Status: **Executed.** `DATABASE_URL` was already pointing at `192.168.88.10` before
+this migration (it was never on a local Unix socket in practice), so Phase 1
+networking was already done and Phase 2/6 became an in-place re-embed on the one
+existing database rather than an export/replay across two instances. The `postgres`
+role was reused directly rather than creating a dedicated `nest_app` role. Phases
+3-5 (schema resize to `vector(768)`, code changes, `.env`) ran as written below.
+See `tools/MCP-SETUP.md` for the current setup instructions.
 
 ## What's changing
 

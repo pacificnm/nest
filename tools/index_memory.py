@@ -2,7 +2,8 @@ import hashlib
 import sys
 from pathlib import Path
 
-from memory_common import database_url, vector_literal
+from embedding import chunks, embed_text
+from memory_common import database_url
 
 
 PATHS = [
@@ -14,22 +15,14 @@ PATHS = [
 ]
 
 
-def chunks(text, size=1800, overlap=200):
-    i = 0
-    while i < len(text):
-        yield text[i : i + size]
-        i += size - overlap
-
-
-def embed(text):
-    from openai import OpenAI
-
-    client = OpenAI()
-    result = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text,
-    )
-    return vector_literal(result.data[0].embedding)
+def app_doc_dirs(project_root: Path):
+    # apps/<name>/ are gitignored local product checkouts (see apps/README.md),
+    # so they aren't reachable via a fixed PATHS entry or a symlink under docs/
+    # (rglob doesn't follow symlinked directories during "**" traversal).
+    apps_dir = project_root / "apps"
+    if not apps_dir.is_dir():
+        return []
+    return sorted(p for p in apps_dir.glob("*/docs") if p.is_dir())
 
 
 def main() -> int:
@@ -37,10 +30,10 @@ def main() -> int:
 
     project_root = Path(__file__).resolve().parents[1]
 
-    with psycopg.connect(database_url()) as conn:
-        for root in PATHS:
-            path = project_root / root
+    all_paths = [project_root / root for root in PATHS] + app_doc_dirs(project_root)
 
+    with psycopg.connect(database_url()) as conn:
+        for path in all_paths:
             if path.is_dir():
                 files = list(path.rglob("*.md"))
             elif path.exists():
@@ -56,7 +49,7 @@ def main() -> int:
                     content_hash = hashlib.sha256(
                         f"{source_path}:{chunk}".encode()
                     ).hexdigest()
-                    vector = embed(chunk)
+                    vector = embed_text(chunk)
 
                     conn.execute(
                         """

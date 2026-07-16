@@ -26,7 +26,8 @@ through the MCP tool `search_project_memory`.
 | `tools/index_knowledge.py` | Index TOML-defined collections into knowledge_base. |
 | `tools/search_knowledge.py` | CLI semantic search against knowledge_base. |
 | `tools/memory_hooks.py` | Cursor `sessionStart` and `preCompact` hook handlers. |
-| `.env.example` | Template for `DATABASE_URL` and `OPENAI_API_KEY`. |
+| `tools/embedding.py` | Shared chunking + Ollama embedding helper used by all indexers/search. |
+| `.env.example` | Template for `DATABASE_URL`, `OLLAMA_HOST`, `OLLAMA_EMBED_MODEL`. |
 
 ## Database
 
@@ -44,7 +45,8 @@ Tables:
 | `agent_context_memory` | Agent session checkpoints and compaction snapshots. |
 | `knowledge_base` | External reference docs (indexer deferred). |
 
-Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).
+Embeddings use Ollama `nomic-embed-text` (768 dimensions), configured via
+`OLLAMA_HOST` and `OLLAMA_EMBED_MODEL` in `.env`.
 
 ## Indexed paths
 
@@ -55,6 +57,7 @@ Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).
 - `docs/**/*.md`
 - `tools/MCP-SETUP.md`
 - `tools/mcp-memory-setup.md`
+- `apps/*/docs/**/*.md` (local product checkouts, if present)
 
 Re-run `./scripts/index-memory.sh` after documentation changes.
 
@@ -105,6 +108,6 @@ Collections: `rust-book`, `rust-by-example`, `rust-reference`, `tauri`,
 | `Missing Python dependency for Nest memory MCP` | Run with `.venv/bin/python`; install `tools/requirements.txt`. |
 | `type "vector" does not exist` | Install `pgvector` and run `setup_database.sql`. |
 | `relation "project_memory" does not exist` | Run schema setup. |
-| OpenAI authentication errors | Set `OPENAI_API_KEY` in `.env`. |
+| Ollama embedding errors | Confirm `OLLAMA_HOST` is reachable and `OLLAMA_EMBED_MODEL` is pulled there. |
 | Empty search results (project) | Run `./scripts/index-memory.sh`. |
 | Empty search results (knowledge) | Run `./scripts/index-knowledge.sh`. |

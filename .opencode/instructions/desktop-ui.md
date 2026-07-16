@@ -4,7 +4,7 @@ When building or modifying desktop UI (`ui/`, `src-tauri/`, Tauri commands),
 search indexed API docs **before** guessing at Tauri, React, or Tailwind
 behavior:
 
-**`search_knowledge_base`** (`nest-knowledge` MCP) with collections `tauri`,
+**`nest-knowledge_search_knowledge_base`** with collections `tauri`,
 `react`, `tailwind`.
 
 Run at least one search per session before writing new UI or IPC code, and

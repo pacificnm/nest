@@ -63,6 +63,6 @@ When the user describes a need, search the crate catalog and recommend the appro
 
 ## Related Tools
 
-- `search_knowledge_base` - For API details and usage examples
-- `search_project_memory` - For prior decisions about crate usage
+- `nest-knowledge_search_knowledge_base` - For API details and usage examples
+- `nest-memory_search_project_memory` - For prior decisions about crate usage
 - `glob` - To find crate source files

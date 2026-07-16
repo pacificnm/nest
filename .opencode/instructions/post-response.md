@@ -1,6 +1,6 @@
 # Before ending any response
 
-Call `save_context_memory` (`nest-context-memory` MCP) before the turn ends —
+Call `nest-context-memory_save_context_memory` before the turn ends —
 after read-only investigations as well as after implementation turns. There
 is no hook that blocks the response if this is skipped, so treat it as
 mandatory self-discipline rather than something enforced for you.

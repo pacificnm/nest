@@ -11,7 +11,6 @@ DEFAULT_DATABASE_URL = "postgresql:///nest_memory?host=/var/run/postgresql"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 _PROVIDER_KEY_VARS = {
-    "OPENAI_API_KEY": "openai",
     "ANTHROPIC_API_KEY": "claude",
     "CURSOR_API_KEY": "cursor",
 }
