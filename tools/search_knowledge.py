@@ -7,6 +7,8 @@ import sys
 from embedding import embed_text
 from memory_common import database_url
 
+MAX_LIMIT = 15
+
 
 def search_knowledge(
     query: str,
@@ -19,6 +21,7 @@ def search_knowledge(
 
     embedding = embed_text(query)
     collection = collection.strip()
+    limit = min(limit, MAX_LIMIT)
 
     with psycopg.connect(database_url()) as conn:
         if collection:

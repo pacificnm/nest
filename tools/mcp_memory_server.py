@@ -13,11 +13,14 @@ from memory_common import database_url
 
 mcp = FastMCP("nest-memory")
 
+MAX_LIMIT = 15
+
 
 @mcp.tool()
 def search_project_memory(query: str, limit: int = 8) -> str:
-    """Search Nest project memory for specs, plans, crate docs, and decisions."""
+    """Search Nest project memory for specs, plans, crate docs, and decisions. limit is capped at 15."""
     embedding = embed_text(query)
+    limit = min(limit, MAX_LIMIT)
 
     with psycopg.connect(database_url()) as conn:
         rows = conn.execute(

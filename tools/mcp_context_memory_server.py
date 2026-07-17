@@ -35,7 +35,7 @@ def search_context_memory(
     limit: int = 8,
     session_key: str = "",
 ) -> str:
-    """Search saved agent context by semantic similarity."""
+    """Search saved agent context by semantic similarity. limit is capped at 15."""
     rows = search_context(query, limit=limit, session_key=session_key)
     if not rows:
         return "No matching context memory found."
@@ -45,7 +45,7 @@ def search_context_memory(
 
 @mcp.tool()
 def list_context_memory(limit: int = 20, session_key: str = "") -> str:
-    """List recent saved agent context entries, newest first."""
+    """List recent saved agent context entries, newest first. limit is capped at 15."""
     rows = list_context(limit=limit, session_key=session_key)
     if not rows:
         return "No context memory entries found."

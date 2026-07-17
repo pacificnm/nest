@@ -5,6 +5,8 @@ from __future__ import annotations
 from embedding import embed_text
 from memory_common import database_url
 
+MAX_LIMIT = 15
+
 
 def save_context(
     content: str,
@@ -48,6 +50,7 @@ def search_context(
 
     embedding = embed_text(query)
     session_key = session_key.strip()
+    limit = min(limit, MAX_LIMIT)
 
     with psycopg.connect(database_url()) as conn:
         if session_key:
@@ -83,6 +86,7 @@ def list_context(
     import psycopg
 
     session_key = session_key.strip()
+    limit = min(limit, MAX_LIMIT)
 
     with psycopg.connect(database_url()) as conn:
         if session_key:

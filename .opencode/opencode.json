@@ -1,53 +1,85 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama P40 (192.168.88.10)",
+      "options": {
+        "baseURL": "http://192.168.88.10:11434/v1",
+        "timeout": 300000,
+        "headerTimeout": 300000,
+        "chunkTimeout": 120000
+      },
+      "models": {
+        "qwen3.5:9b-p40": {
+          "name": "Qwen 3.5 9B (P40, fast)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          },
+          "options": {
+            "reasoningEffort": "none"
+          }
+        },
+        "qwen3.6:27b-p40": {
+          "name": "Qwen 3.6 27B (P40, smart)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 24576,
+            "output": 4096
+          },
+          "options": {
+            "reasoningEffort": "none"
+          }
+        },
+        "qwen3.5:9b": {
+          "name": "Qwen 3.5 9B (stock)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 16384,
+            "output": 8192
+          }
+        }
+      }
+    }
+  },
+  "model": "ollama/qwen3.6:27b-p40",
   "skills": {
-    "nest-crates": ".opencode/skills/nest-crates.md",
-    "nest-app-development": ".opencode/skills/nest-app-development.md",
-    "nest-mcp-workflow": ".opencode/skills/nest-mcp-workflow.md"
+    "paths": [".opencode/skills"]
   },
-  "tools": {
-    "find-nest-crate": true,
-    "check-nest-dependencies": true,
-    "add-nest-dependency": true
-  },
-  "instructions": [
-    ".opencode/instructions/nest-framework.md",
-    ".opencode/instructions/dependency-rules.md",
-    ".opencode/instructions/error-handling.md",
-    ".opencode/instructions/logging.md",
-    ".opencode/instructions/tauri-apps.md",
-    ".opencode/instructions/memory-workflow.md",
-    ".opencode/instructions/desktop-ui.md",
-    ".opencode/instructions/post-response.md"
-  ],
+  "instructions": ["/home/jaimie/projects/.opencode/instructions/nest.md"],
   "mcp": {
     "nest-memory": {
       "type": "local",
       "command": [
-        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
-        "{env:NEST_PROJECT_ROOT}/tools/mcp_memory_server.py"
+        "/home/jaimie/projects/.venv/bin/python",
+        "/home/jaimie/projects/tools/mcp_memory_server.py"
       ],
-      "cwd": "{env:NEST_PROJECT_ROOT}",
+      "cwd": "/home/jaimie/projects",
       "enabled": true,
       "timeout": 30000
     },
     "nest-context-memory": {
       "type": "local",
       "command": [
-        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
-        "{env:NEST_PROJECT_ROOT}/tools/mcp_context_memory_server.py"
+        "/home/jaimie/projects/.venv/bin/python",
+        "/home/jaimie/projects/tools/mcp_context_memory_server.py"
       ],
-      "cwd": "{env:NEST_PROJECT_ROOT}",
+      "cwd": "/home/jaimie/projects",
       "enabled": true,
       "timeout": 30000
     },
     "nest-knowledge": {
       "type": "local",
       "command": [
-        "{env:NEST_PROJECT_ROOT}/.venv/bin/python",
-        "{env:NEST_PROJECT_ROOT}/tools/mcp_knowledge_server.py"
+        "/home/jaimie/projects/.venv/bin/python",
+        "/home/jaimie/projects/tools/mcp_knowledge_server.py"
       ],
-      "cwd": "{env:NEST_PROJECT_ROOT}",
+      "cwd": "/home/jaimie/projects",
       "enabled": true,
       "timeout": 30000
     }

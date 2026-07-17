@@ -1,3 +1,8 @@
+---
+name: nest-app-development
+description: Use when developing an app under apps/ that uses the Nest framework — integrating Nest crates, choosing between crates, setting up app architecture, dependencies, or project structure.
+---
+
 # Nest App Development Skill
 
 **Purpose**: Guide developers in building applications using Nest shared crates from `core/crates/` and `modules/crates/`.

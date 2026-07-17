@@ -1,3 +1,8 @@
+---
+name: nest-mcp-workflow
+description: Use when calling the Nest MCP servers (nest-memory, nest-knowledge, nest-context-memory) — tool naming convention, when to search project memory vs context memory vs the knowledge base, and how to save context-memory checkpoints.
+---
+
 # Nest MCP Workflow Skill
 
 **Purpose**: Guide the opencode agent to use the three Nest MCP servers for memory, knowledge, and context management.

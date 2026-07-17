@@ -1,3 +1,8 @@
+---
+name: nest-crates
+description: Use when the user needs a Nest shared crate (core/crates/ or modules/crates/) for a feature in apps/ — error handling, config, HTTP client/server, logging, caching, tasks, Tauri, TUI, CLI, file I/O, images, theming, AI/agent/MCP integration — or asks "which crate should I use for...".
+---
+
 # Nest Crates Skill
 
 **Purpose**: Help developers use Nest shared crates from `core/crates/` and `modules/crates/` when building applications in `apps/`.
@@ -43,7 +48,7 @@
 ### Module Crates (`modules/crates/`)
 
 Adapters and integrations that wrap external systems — see
-[dependency-rules.md](../instructions/dependency-rules.md) for the layering
+[nest.md](../instructions/nest.md) for the layering
 rule (modules depend on core only, never on apps or other modules unless
 necessary).
 
@@ -66,7 +71,7 @@ necessary).
 3. **Core** → may depend on other core crates only
 4. Core/Modules must NEVER depend on apps
 
-Full detail: [dependency-rules.md](../instructions/dependency-rules.md), [docs/architecture.md](../../docs/architecture.md).
+Full detail: [nest.md](../instructions/nest.md), [docs/architecture.md](../../docs/architecture.md).
 
 ## Common Patterns
 
@@ -93,7 +98,7 @@ fn do_something() -> NestResult<MyType> {
 }
 ```
 
-See [error-handling.md](../instructions/error-handling.md) for the full
+See [nest.md](../instructions/nest.md) for the full
 pattern (codes, `.with_help`, `NestResultExt::nest_context`, and the
 `clippy::result_large_err` gotcha).
 
@@ -126,7 +131,7 @@ tracing::info!(target: "my_app", "application started");
 ```
 
 `init` requires a `LoggingConfig` argument — there is no zero-argument
-`init()`. See [logging.md](../instructions/logging.md).
+`init()`. See [nest.md](../instructions/nest.md).
 
 ### Building a Tauri desktop app
 
@@ -142,7 +147,7 @@ fn main() {
 ```
 
 The bootstrap type is `TauriApp` (`TauriApp::new(name).module(m).run(ctx)`),
-not a `TauriHost::builder()` pattern. See [tauri-apps.md](../instructions/tauri-apps.md).
+not a `TauriHost::builder()` pattern. See [nest.md](../instructions/nest.md).
 
 ## Workspace Setup
 
