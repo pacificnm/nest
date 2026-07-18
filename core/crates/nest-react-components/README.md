@@ -4,18 +4,32 @@ Reusable React component library for Nest desktop applications.
 
 ## Installation
 
-```bash
-npm install @nest/components
+Not published — consuming apps reference it as a local path dependency
+(this package is `"private": true`):
+
+```json
+// ui/package.json
+"dependencies": {
+  "@nest/components": "../../../core/crates/nest-react-components"
+}
 ```
+
+`npm install` in `ui/` alone is **not** enough the first time: this
+package ships raw TypeScript source (`"main": "./src/index.ts"`, no
+bundled dist), so its own bare imports (`clsx`, `tailwind-merge`, …) only
+resolve once `npm install` has also been run directly inside this
+package. `./build dev`/`./build` (see [docs/build.md](../../../docs/build.md))
+does this automatically; a manual `npm run dev` does not — run
+`npm install --prefix core/crates/nest-react-components` yourself first
+in that case.
 
 ## Quick Start
 
-1. Import the styles in your app's entry point:
-
-```ts
-// main.tsx
-import '@nest/components/styles.css';
-```
+1. No separate stylesheet import needed — `src/index.ts` already imports
+   its own theme-independent motion CSS (`runtime.css`) as a side effect.
+   Themable values (colors, spacing, radius) come from the host app at
+   runtime via `nest_theme_css` (see [nest-tauri](../nest-tauri/README.md)),
+   not from anything this package exports.
 
 2. Wrap your app with ThemeProvider:
 
@@ -62,6 +76,11 @@ function Example() {
 | `Button` | Action button with variants (contained, outlined, text) |
 | `IconButton` | Icon-only button for toolbar actions |
 | `TextField` | Text input with label, helper text, and error states |
+| `Select` | Dropdown selection |
+| `Checkbox` / `Radio` / `Switch` / `ToggleButton` | Selection controls |
+| `Slider` / `Rating` | Range/rating input |
+| `Autocomplete` | Combobox with filtering |
+| `ButtonGroup` / `FormControl` | Input grouping |
 
 ### Feedback
 
@@ -70,13 +89,31 @@ function Example() {
 | `Dialog` | Modal overlay for confirmations and forms |
 | `Alert` | Inline message with severity levels |
 | `Snackbar` | Brief toast message with auto-dismiss |
+| `Drawer` / `Modal` / `Popover` / `Backdrop` | Overlay primitives |
+| `CircularProgress` / `LinearProgress` / `Skeleton` | Loading indicators |
 
-### More Coming Soon
+### Navigation
 
-- Navigation: AppBar, Drawer, Tabs, Menu
-- Surface: Card, Accordion, Paper
-- Data Display: List, Table, Avatar, Badge, Tooltip
-- Layout: Box, Stack, Grid, Container
+`AppBar`, `Tabs`, `Menu`, `Stepper`, `Pagination`, `Link`, `Breadcrumbs`.
+
+### Surface
+
+`Card`, `Accordion`, `Paper`.
+
+### Data Display
+
+`Table` (+ `TableHead`/`TableBody`/`TableFooter`/`TableRow`/`TableCell`),
+`List` (+ `ListItem`/`ListItemButton`/`ListItemText`/`ListItemIcon`/
+`ListItemAvatar`), `Avatar`, `Badge`, `Chip`, `Tooltip`, `Typography`.
+
+### Layout
+
+`Box`, `Stack`, `Grid`, `Container`, `Divider`.
+
+Every component above has a `.tsx` implementation, a `.test.tsx` suite, and
+a `.demo.tsx` under `src/components/<category>/` — check there for exact
+props rather than this README if in doubt (this file has drifted from the
+real source before).
 
 ## Theming
 
@@ -110,20 +147,15 @@ See individual component documentation for full prop details.
 ## Development
 
 ```bash
-# Install dependencies
+# Install dependencies (required before anything below — see Installation)
 npm install
 
-# Run tests
-npm test
+# Run tests (vitest + @testing-library/react; no "test" script defined,
+# run vitest directly)
+npx vitest run
 
 # Build
 npm run build
-
-# Lint
-npm run lint
-
-# Format
-npm run format
 ```
 
 ## License
