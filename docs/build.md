@@ -69,6 +69,20 @@ This bit both `apps/sparrow`'s desktop UI and a plain `templates/desktop`
 checkout the same way — worth knowing before assuming a hung/erroring
 `vite dev` means something's actually broken in your own app code.
 
+To create a new Tauri desktop app from scratch, don't copy
+`templates/desktop/` by hand — use
+[`scripts/scaffold-desktop-app.sh`](../scripts/scaffold-desktop-app.sh):
+
+```bash
+scripts/scaffold-desktop-app.sh apps/<name> "Display Title"
+cd apps/<name>
+./build dev
+```
+
+It copies the template and renames every placeholder (Cargo package name,
+Tauri bundle identifier, window title, UI package name, cache dir) to match
+`<name>`. See [templates/desktop/README.md](../templates/desktop/README.md#scaffolding-a-new-app).
+
 **Example:** Loon Admin desktop
 
 ```bash

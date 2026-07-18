@@ -46,10 +46,18 @@ The scaffold lives in the repository under:
 templates/desktop/
 ```
 
-Copy this folder into your product repo and adapt paths, app IDs, and Tauri config as needed.
+Don't copy this folder by hand. Use `scripts/scaffold-desktop-app.sh`:
 
+```bash
+scripts/scaffold-desktop-app.sh apps/<name> "Display Title"
+cd apps/<name>
+./build dev
+```
 
-Use the [Copying to a product repo](#copying-to-a-product-repo) section in **README.md** for migration steps.
+It copies `ui/`, `src-tauri/`, `build`, `nest-app.toml`, and `.gitignore`,
+and renames every placeholder (Cargo package name, Tauri bundle identifier,
+window title, UI package name, cache dir) to match `<name>`. See the
+"Scaffolding a new app" section in **README.md** for details.
 
 ---
 *References*

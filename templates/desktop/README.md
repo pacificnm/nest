@@ -27,7 +27,7 @@ import { AppShell, Ribbon, RibbonGroup, RibbonButton, ConfirmDialog, DatePicker,
 
 | Component / API | File | Notes |
 |-----------------|------|-------|
-| `AppShell` | [`components/AppShell.tsx`](ui/src/components/AppShell.tsx) | Ribbon slot + main + optional rail + status + toasts |
+| `AppShell` | [`components/AppShell.tsx`](ui/src/components/AppShell.tsx) | Ribbon slot + main + optional left nav + optional right rail + status + toasts |
 | `Ribbon`, `RibbonGroup`, `RibbonButton`, `RibbonButtonStack`, `RibbonMenuButton` | [`components/Ribbon.tsx`](ui/src/components/Ribbon.tsx) | Tabs are passed as `tabs` prop (not hardcoded) |
 | `StatusBar` | [`components/StatusBar.tsx`](ui/src/components/StatusBar.tsx) | Slot-based (`left` / `right`); center shows live status |
 | `ToastProvider` / `useToast` / `ToastViewport` | [`context/ToastContext.tsx`](ui/src/context/ToastContext.tsx), [`components/ToastViewport.tsx`](ui/src/components/ToastViewport.tsx) | success/info/warning/error |
@@ -60,12 +60,41 @@ cd ui && npm install && npm run dev
 cd ../src-tauri && cargo run
 ```
 
-## Copying to a product repo
+`ui/package.json`'s `build` script is `vite build` only (no `tsc -b`): a
+standalone `tsc -b` type-checks `@nest/components`'s own source through the
+symlink, and since it has its own separately-installed `node_modules` (see
+[docs/build.md](../../docs/build.md)), that pulls in a second, structurally
+identical but nominally distinct copy of `@types/react`, producing spurious
+"two different types with this name exist" errors on ref callback types.
+This isn't a real type error in your code — `vite build` (esbuild-based, no
+cross-package type unification) builds fine. Run `npm run typecheck`
+(`tsc -b`) manually if you want project-wide type-checking and are aware of
+this limitation.
 
-1. Copy `ui/`, `src-tauri/`, and `build` into your app root.
-2. Point `src-tauri/Cargo.toml` Nest dependencies at the monorepo via `.cargo/config.toml` path patches (see [apps/README.md](../../apps/README.md)), or use git dependencies on [pacificnm/nest](https://github.com/pacificnm/nest).
-3. Rename the app id in `src-tauri/tauri.conf.json` and `TauriApp::new("…")` in `main.rs`.
-4. Enable `nest-tauri` features: `runtime` + `images` when using `RemoteImage`.
+## Scaffolding a new app
+
+From the Nest repo root:
+
+```bash
+scripts/scaffold-desktop-app.sh apps/<name> "Display Title"
+```
+
+This copies `ui/`, `src-tauri/`, `build`, `nest-app.toml`, and `.gitignore`
+into `apps/<name>/`, and renames every template placeholder (Cargo package
+name, Tauri bundle identifier, window title, UI package name, cache dir)
+to match. Then:
+
+```bash
+cd apps/<name>
+./build dev
+```
+
+Manual copy is still possible (copy `ui/`, `src-tauri/`, `build`, rename the
+app id in `src-tauri/tauri.conf.json` / `TauriApp::new("…")` in `main.rs`,
+point `src-tauri/Cargo.toml`'s Nest dependencies at the monorepo) but the
+script above does all of that consistently in one step.
+
+Enable `nest-tauri` features: `runtime` + `images` when using `RemoteImage`.
 
 ## Related
 
