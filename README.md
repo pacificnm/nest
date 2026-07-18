@@ -182,6 +182,13 @@ Planned: `kiwi`, `finch`, …
 
 Nest desktop apps use **Tauri + React + TypeScript + Tailwind**. Rust modules run in `src-tauri/`; UI lives in `ui/`.
 
+To scaffold a new one from [`templates/desktop`](templates/desktop/):
+
+```bash
+scripts/scaffold-desktop-app.sh apps/<name> "Display Title"
+cd apps/<name> && ./build dev
+```
+
 ```rust
 // src-tauri/src/main.rs
 use nest_tauri::TauriApp;

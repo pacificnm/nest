@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "typecheck": "tsc -b",
     "preview": "vite preview",
     "tauri": "cd .. && npm exec --prefix ui tauri",
     "tauri:dev": "cd .. && npm exec --prefix ui tauri dev",
