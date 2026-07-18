@@ -1,9 +1,9 @@
 ---
-name: add-nest-dependency
+name: nest-add-dependency
 description: Use when the user wants to add a Nest shared crate dependency to an app or module's Cargo.toml — choosing git vs path vs workspace dependency method, setting up patch overrides, or wiring a new app in apps/.
 ---
 
-# Tool: add-nest-dependency
+# Tool: nest-add-dependency
 
 **Purpose**: Add a Nest shared crate dependency to an app or module correctly.
 

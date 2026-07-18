@@ -43,6 +43,42 @@
             "context": 16384,
             "output": 8192
           }
+        },
+        "gpt-oss:20b": {
+          "name": "GPT-OSS 20B (MoE, fast)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          },
+          "options": {
+            "reasoningEffort": "low"
+          }
+        },
+        "qwen3.5:27b": {
+          "name": "Qwen 3.5 27B (vision, smart)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          },
+          "options": {
+            "reasoningEffort": "none"
+          }
+        },
+        "gpt-oss:120b-cloud": {
+          "name": "GPT-OSS 120B (cloud)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": {
+            "context": 131072,
+            "output": 8192
+          },
+          "options": {
+            "reasoningEffort": "low"
+          }
         }
       }
     }

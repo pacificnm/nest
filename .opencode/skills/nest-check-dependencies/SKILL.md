@@ -1,9 +1,9 @@
 ---
-name: check-nest-dependencies
+name: nest-check-dependencies
 description: Use when adding dependencies to a crate's Cargo.toml, verifying whether a dependency is architecturally allowed (core/modules/apps layering), or setting up a new crate or app's dependency graph.
 ---
 
-# Tool: check-nest-dependencies
+# Tool: nest-check-dependencies
 
 **Purpose**: Verify that Nest crate dependencies follow the architecture rules and help users configure them correctly.
 

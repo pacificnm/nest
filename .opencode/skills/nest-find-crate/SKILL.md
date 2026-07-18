@@ -1,9 +1,9 @@
 ---
-name: find-nest-crate
+name: nest-find-crate
 description: Use when the user asks which Nest crate to use for a need, wants to reuse existing shared functionality, or is unsure whether something already exists in core/crates/ or modules/crates/ before writing new infrastructure code.
 ---
 
-# Tool: find-nest-crate
+# Tool: nest-find-crate
 
 **Purpose**: Find the right Nest shared crate for a given task or feature need.
 
