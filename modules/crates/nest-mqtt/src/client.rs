@@ -112,9 +112,12 @@ async fn run_event_loop(mut eventloop: EventLoop, tx: broadcast::Sender<MqttMess
     }
 }
 
-/// Builds `rumqttc`'s `MqttOptions` from a [`MqttConfig`]. Pure and
-/// side-effect-free (no I/O, no connection attempt) so the TLS/LWT/auth
-/// plumbing is unit-testable without a live broker.
+/// Builds `rumqttc`'s `MqttOptions` from a [`MqttConfig`]. No I/O and no
+/// connection attempt, so the TLS/LWT/auth plumbing is unit-testable
+/// without a live broker — the one side effect (installing a rustls
+/// `CryptoProvider` the first time TLS is used, see
+/// [`ensure_crypto_provider_installed`]) is idempotent and process-global,
+/// not per-call.
 fn build_mqtt_options(config: &MqttConfig) -> MqttOptions {
     let mut opts = MqttOptions::new(&config.client_id, &config.broker_host, config.broker_port);
     opts.set_keep_alive(std::time::Duration::from_secs(u64::from(
@@ -132,6 +135,7 @@ fn build_mqtt_options(config: &MqttConfig) -> MqttOptions {
         ));
     }
     if let Some(tls) = &config.tls {
+        ensure_crypto_provider_installed();
         opts.set_transport(Transport::tls(
             tls.ca_cert.clone(),
             tls.client_auth.clone(),
@@ -139,6 +143,31 @@ fn build_mqtt_options(config: &MqttConfig) -> MqttOptions {
         ));
     }
     opts
+}
+
+/// Installs a process-wide rustls `CryptoProvider`, exactly once.
+///
+/// Found the hard way (Issue 12.3's live TLS+ACL test suite in
+/// `apps/sparrow`, not guessed): rustls 0.23 refuses to pick a default
+/// crypto backend on its own when more than one is linked into the binary
+/// (both `ring` and `aws-lc-rs` end up in `apps/sparrow`'s dependency
+/// graph, via different crates), and panics — inside the background
+/// event-loop task, not the caller — the first time it actually needs one
+/// (the real TLS handshake, not `MqttOptions` construction, which is why
+/// `build_mqtt_options`'s own unit tests never caught this). `tokio-rustls`
+/// (rumqttc's TLS backend)'s own `default` feature set enables
+/// `aws_lc_rs`, so that's the provider installed here too, for consistency
+/// with what rumqttc would otherwise fall back to if only its own feature
+/// graph existed in isolation.
+fn ensure_crypto_provider_installed() {
+    static INIT: std::sync::Once = std::sync::Once::new();
+    INIT.call_once(|| {
+        // Ok(()) means we installed it; Err means something else already
+        // did (e.g. another rustls-based client in the same process) -
+        // both are fine, only a repeated *attempt* after a successful
+        // install would be the (harmless) no-op this Once already prevents.
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    });
 }
 
 fn to_rumqttc_qos(qos: MqttQos) -> rumqttc::QoS {
