@@ -50,6 +50,25 @@ cd apps/loon
 ./build release  # full Tauri bundle (.deb, etc.) when NEST_TAURI_MODE=bundle
 ```
 
+`./build` installs `ui/`'s own npm dependencies automatically the first
+time (`nest_build_ensure_ui_deps`), *and* now also installs dependencies
+for any locally path-referenced `@nest/*` package your `ui/` depends on
+(e.g. `@nest/components` → `core/crates/nest-react-components`) —
+`npm install` in `ui/` alone does **not** do this, since those packages
+ship raw TypeScript source rather than a bundled dist, and their own bare
+imports (`clsx`, `tailwind-merge`, …) only resolve once `npm install` has
+been run directly inside that package too. If you're not going through
+`./build` (running `vite`/`npm run dev` by hand), you need that install
+step yourself:
+
+```bash
+npm install --prefix core/crates/nest-react-components
+```
+
+This bit both `apps/sparrow`'s desktop UI and a plain `templates/desktop`
+checkout the same way — worth knowing before assuming a hung/erroring
+`vite dev` means something's actually broken in your own app code.
+
 **Example:** Loon Admin desktop
 
 ```bash

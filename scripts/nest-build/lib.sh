@@ -29,6 +29,35 @@ nest_build_ensure_ui_deps() {
   if [[ ! -d "$APP_ROOT/$ui_dir/node_modules" ]]; then
     npm install --prefix "$APP_ROOT/$ui_dir"
   fi
+  nest_build_ensure_local_npm_deps "$APP_ROOT/$ui_dir"
+}
+
+# Locally path-referenced `@nest/*` packages (e.g. `@nest/components` ->
+# `../../../core/crates/nest-react-components`) ship raw TypeScript source,
+# not a bundled dist — their own bare imports (`import { clsx } from
+# "clsx"`) resolve relative to wherever that source *really* lives on disk
+# (npm symlinks it there, it isn't copied), which only works if
+# `npm install` has been run directly inside that package at least once.
+# `npm install --prefix ui_dir` does NOT do this on the consumer's behalf —
+# npm does not install a symlinked local dependency's own dependencies into
+# the consumer's tree. Every app hitting this independently (confirmed with
+# apps/sparrow's desktop UI, and separately by another tester on the plain
+# `templates/desktop` template) is what this function exists to prevent.
+nest_build_ensure_local_npm_deps() {
+  local ui_dir="$1"
+  local scoped_dir="$ui_dir/node_modules/@nest"
+  [[ -d "$scoped_dir" ]] || return 0
+
+  local link real_target
+  for link in "$scoped_dir"/*; do
+    [[ -e "$link" ]] || continue
+    [[ -L "$link" ]] || continue
+    real_target="$(cd "$(dirname "$link")" && readlink -f "$(basename "$link")")"
+    if [[ -f "$real_target/package.json" && ! -d "$real_target/node_modules" ]]; then
+      echo "nest-build: installing dependencies for locally-linked $(basename "$link") ($real_target)"
+      npm install --prefix "$real_target"
+    fi
+  done
 }
 
 nest_build_rust_packages() {

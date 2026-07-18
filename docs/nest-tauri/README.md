@@ -47,6 +47,15 @@ export function App() {
 }
 ```
 
+Run it with `./build dev` (from the app root, not `ui/`) — see
+[docs/build.md](../build.md#tauri-desktop-nest_build_profiletauri). If
+`ui/` depends on a locally path-referenced `@nest/*` package (e.g.
+`@nest/components`), `./build` installs *its* dependencies too, not just
+`ui/`'s own — a plain `npm install` inside `ui/` alone leaves that
+package's own `node_modules` empty (it ships raw TypeScript source, not a
+bundled dist) and Vite fails on its bare imports (`clsx`, `tailwind-merge`,
+…) in a way that looks like a broken app, not a missing install step.
+
 ## App layout
 
 | Path | Stack |

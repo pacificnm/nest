@@ -205,6 +205,12 @@ See [nest-tauri](docs/nest-tauri/README.md) and [architecture — desktop fronte
 
 Workspace dependencies use `{ workspace = true }` — paths are defined in the root [`Cargo.toml`](Cargo.toml).
 
+**First run:** use `./build dev` (see [docs/build.md](docs/build.md)), not
+`npm run dev` directly — it also installs dependencies for any locally
+path-referenced `@nest/*` package (e.g. `@nest/components`), which plain
+`npm install` in `ui/` does not do and which otherwise fails silently with
+a confusing Vite module-resolution error.
+
 ---
 
 ## Development / agent tools
