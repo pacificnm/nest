@@ -130,6 +130,22 @@ nest_build_run_binary() {
   exec "$bin" "${config_args[@]}" "$@"
 }
 
+# tauri::generate_context!() validates at COMPILE TIME that
+# `build.frontendDist` (ui/dist) exists on disk — it has no notion of dev
+# vs. build, so even `cargo check`/`clippy`/`tauri dev` panic on a fresh
+# checkout before the UI has ever been built once. ui/dist is gitignored
+# build output, so a fresh clone/scaffold/`./build clean` never has it.
+# Seed a placeholder so the macro's existence check passes; a real
+# `npm run build` (beforeBuildCommand, or nest_build_tauri_binary) always
+# overwrites it with the actual production build before it's served.
+nest_build_ensure_frontend_dist() {
+  local dist_dir="$APP_ROOT/${NEST_UI_DIR:-ui}/dist"
+  if [[ ! -e "$dist_dir/index.html" ]]; then
+    mkdir -p "$dist_dir"
+    echo "<!doctype html><title>placeholder</title>" > "$dist_dir/index.html"
+  fi
+}
+
 nest_build_tauri_dev() {
   nest_build_ensure_ui_deps
   if [[ -n "${NEST_TAURI_NPM_SCRIPT:-}" ]]; then
@@ -212,6 +228,7 @@ nest_build_profile_main() {
       esac
       ;;
     tauri)
+      nest_build_ensure_frontend_dist
       case "$cmd" in
         build)
           if [[ "${NEST_TAURI_MODE:-binary}" == bundle ]]; then

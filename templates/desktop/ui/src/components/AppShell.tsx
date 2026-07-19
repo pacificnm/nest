@@ -3,8 +3,8 @@ import { StatusBar } from "./StatusBar";
 import { ToastViewport } from "./ToastViewport";
 
 type AppShellProps = {
-  /** Ribbon (or other top chrome) rendered above the main region. */
-  ribbon?: ReactNode;
+  /** Title bar / menu bar (or other top chrome) rendered above the main region. */
+  titleBar?: ReactNode;
   /** Optional left-hand nav (e.g. a section/page menu). */
   nav?: ReactNode;
   /** Optional right-hand rail (e.g. an assistant/inspector panel). */
@@ -25,7 +25,7 @@ type AppShellProps = {
  * this component so `useToast` / `useStatusBar` are available.
  */
 export function AppShell({
-  ribbon,
+  titleBar,
   nav,
   rail,
   statusLeft,
@@ -34,7 +34,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="flex h-screen min-h-0 flex-col bg-nest-background text-nest-foreground">
-      {ribbon}
+      {titleBar}
 
       <div className="flex min-h-0 flex-1">
         {nav ? (

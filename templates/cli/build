@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Simple build helper for Nest CLI apps
+# Usage: ./build {dev|run|build}
+#   dev   – cargo run (debug)
+#   run   – cargo run --release
+#   build – cargo build --release
+
+set -euo pipefail
+
+case "${1:-}" in
+  dev)
+    cargo run
+    ;;
+  run)
+    cargo run --release
+    ;;
+  build)
+    cargo build --release
+    ;;
+  *)
+    echo "Usage: $0 {dev|run|build}"
+    exit 1
+    ;;
+esac

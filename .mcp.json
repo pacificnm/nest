@@ -2,21 +2,21 @@
   "mcpServers": {
     "nest-memory": {
       "type": "stdio",
-      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
-      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_memory_server.py"],
-      "cwd": "${NEST_PROJECT_ROOT}"
+      "command": "/home/jaimie/projects/.venv/bin/python",
+      "args": ["/home/jaimie/projects/tools/mcp_memory_server.py"],
+      "cwd": "/home/jaimie/projects"
     },
     "nest-context-memory": {
       "type": "stdio",
-      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
-      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_context_memory_server.py"],
-      "cwd": "${NEST_PROJECT_ROOT}"
+      "command": "/home/jaimie/projects/.venv/bin/python",
+      "args": ["/home/jaimie/projects/tools/mcp_context_memory_server.py"],
+      "cwd": "/home/jaimie/projects"
     },
     "nest-knowledge": {
       "type": "stdio",
-      "command": "${NEST_PROJECT_ROOT}/.venv/bin/python",
-      "args": ["${NEST_PROJECT_ROOT}/tools/mcp_knowledge_server.py"],
-      "cwd": "${NEST_PROJECT_ROOT}"
+      "command": "/home/jaimie/projects/.venv/bin/python",
+      "args": ["/home/jaimie/projects/tools/mcp_knowledge_server.py"],
+      "cwd": "/home/jaimie/projects"
     }
   }
 }

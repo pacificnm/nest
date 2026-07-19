@@ -12,10 +12,13 @@ import {
   faDoorOpen,
   faGear,
   faMagnifyingGlass,
+  faMinus,
   faPlus,
   faRotateRight,
   faTrash,
   faTriangleExclamation,
+  faWindowMaximize,
+  faWindowRestore,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -38,10 +41,13 @@ library.add(
   faDoorOpen,
   faGear,
   faMagnifyingGlass,
+  faMinus,
   faPlus,
   faRotateRight,
   faTrash,
   faTriangleExclamation,
+  faWindowMaximize,
+  faWindowRestore,
   faXmark,
 );
 
@@ -58,9 +64,12 @@ export {
   faDoorOpen,
   faGear,
   faMagnifyingGlass,
+  faMinus,
   faPlus,
   faRotateRight,
   faTrash,
   faTriangleExclamation,
+  faWindowMaximize,
+  faWindowRestore,
   faXmark,
 };

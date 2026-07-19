@@ -1,8 +1,8 @@
 /**
  * Shared Nest desktop shell.
  *
- * Product-agnostic UI promoted from the Swift app: ribbon chrome, status bar,
- * toasts, dialogs, and the date picker. Themed via `nest-react-theme` CSS
+ * Product-agnostic UI: app shell, status bar, toasts, dialogs, and the date
+ * picker. Themed via `nest-react-theme` CSS
  * variables (`--nest-color-*`) and the Tailwind preset.
  */
 
@@ -13,16 +13,6 @@ export { ConfirmDialog } from "../components/ConfirmDialog";
 export { DatePicker } from "../components/DatePicker";
 export { StatusBar } from "../components/StatusBar";
 export { ToastViewport } from "../components/ToastViewport";
-export {
-  Ribbon,
-  RibbonButton,
-  RibbonButtonStack,
-  RibbonGroup,
-  RibbonMenuButton,
-  type RibbonIconTint,
-  type RibbonTabDef,
-  type RibbonTabId,
-} from "../components/Ribbon";
 
 export {
   ToastProvider,

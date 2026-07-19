@@ -5,98 +5,52 @@ Starter layout for Nest **desktop** apps: **Tauri + React + TypeScript + Tailwin
 ```text
 templates/desktop/
 ├── ui/                 # React front end (Vite)
-└── src-tauri/          # Tauri shell + Nest modules
+├── src-tauri/          # Tauri shell + Nest modules
+├── build               # build helper script (mirrors the desktop workflow)
+└── README.md           # this file
 ```
 
 ## Features
 
 - [`nest-tauri`](../../core/crates/nest-tauri) bootstrap with `ThemeModule` + `ImageModule`
-- Built-in IPC: `nest_app_metadata`, `nest_theme_css`, `nest_image_fetch`, `nest_image_invalidate_tag`
+- Built‑in IPC: you can now call a CLI binary from the UI using the `run_cli` command (see the `src-tauri/src/main.rs` example).
 - [`RemoteImage`](ui/src/components/RemoteImage.tsx) React component (cached remote images via Rust)
-- [Font Awesome](https://fontawesome.com) icons (via [`Icon`](ui/src/components/Icon.tsx) + [`lib/fontawesome.ts`](ui/src/lib/fontawesome.ts))
-- Default **`cbre-light`** theme (Nest framework default) via `nest-react-theme` CSS variables
-- Shared desktop shell (see below)
+- Font Awesome icons via `Icon` component.
+- Default `cbre-light` theme via `nest-react-theme` CSS variables.
+- Shared desktop shell (ribbon, status bar, toasts, etc.).
 
-## Shared shell components
-
-Product-agnostic UI promoted from an app's desktop shell. Import from the [`shell`](ui/src/shell/index.ts) barrel:
-
-```tsx
-import { AppShell, Ribbon, RibbonGroup, RibbonButton, ConfirmDialog, DatePicker, useToast, useStatusBar } from "./shell";
-```
-
-| Component / API | File | Notes |
-|-----------------|------|-------|
-| `AppShell` | [`components/AppShell.tsx`](ui/src/components/AppShell.tsx) | Ribbon slot + main + optional left nav + optional right rail + status + toasts |
-| `Ribbon`, `RibbonGroup`, `RibbonButton`, `RibbonButtonStack`, `RibbonMenuButton` | [`components/Ribbon.tsx`](ui/src/components/Ribbon.tsx) | Tabs are passed as `tabs` prop (not hardcoded) |
-| `StatusBar` | [`components/StatusBar.tsx`](ui/src/components/StatusBar.tsx) | Slot-based (`left` / `right`); center shows live status |
-| `ToastProvider` / `useToast` / `ToastViewport` | [`context/ToastContext.tsx`](ui/src/context/ToastContext.tsx), [`components/ToastViewport.tsx`](ui/src/components/ToastViewport.tsx) | success/info/warning/error |
-| `StatusBarProvider` / `useStatusBar` | [`context/StatusBarContext.tsx`](ui/src/context/StatusBarContext.tsx) | Transient footer messages |
-| `ConfirmDialog` | [`components/ConfirmDialog.tsx`](ui/src/components/ConfirmDialog.tsx) | Confirm/delete modal (Esc to cancel) |
-| `DatePicker` | [`components/DatePicker.tsx`](ui/src/components/DatePicker.tsx) | Calendar popover; uses [`lib/date.ts`](ui/src/lib/date.ts) |
-| `ErrorBoundary` | [`components/ErrorBoundary.tsx`](ui/src/components/ErrorBoundary.tsx) | Recovery screen for render errors |
-| `Icon` | [`components/Icon.tsx`](ui/src/components/Icon.tsx) | Font Awesome wrapper |
-
-Wrap the app in `ToastProvider` + `StatusBarProvider` (and `ErrorBoundary`) at the root — see [`main.tsx`](ui/src/main.tsx). `App.tsx` demos the full shell.
-
-- Tailwind preset aligned with [`nest-react-theme`](../../core/crates/nest-react-theme)
-
-## Quick start
-
-From this directory (inside the Nest monorepo):
+## Quick start (desktop side)
 
 ```bash
-./build dev      # Tauri + Vite hot reload
-./build run      # production build + launch
-./build build    # production artifacts only
+# From the template directory (or after scaffolding a new app)
+./build dev        # hot‑reload UI + Tauri backend
+./build run        # production build + launch
+./build build      # produce production artifacts only
 ```
 
-See [Nest build standard](../../docs/build.md) for the full command list (`test`, `check`, `clean`). Runtime layout: [app standard](../../docs/app-standard.md).
+## Desktop ↔ CLI IPC flow
 
-Legacy manual flow (optional):
+1. The UI (React) calls `invoke('run_cli', { command: … })`.
+2. `src-tauri/src/main.rs` defines a Tauri command `run_cli` that forwards the request to the CLI binary via `nest_tauri::invoke`.
+3. The CLI binary (generated from the `templates/cli` scaffold) receives the `CliCommand` enum, runs the requested operation (system command, HTTP GET, etc.), and returns a `String` or a `NestError`.
+4. The Tauri command returns the result to the UI, where you can display it in a toast, dialog, or update state.
 
-```bash
-cd ui && npm install && npm run dev
-cd ../src-tauri && cargo run
-```
+## Adding new commands
 
-`ui/package.json`'s `build` script is `vite build` only (no `tsc -b`): a
-standalone `tsc -b` type-checks `@nest/components`'s own source through the
-symlink, and since it has its own separately-installed `node_modules` (see
-[docs/build.md](../../docs/build.md)), that pulls in a second, structurally
-identical but nominally distinct copy of `@types/react`, producing spurious
-"two different types with this name exist" errors on ref callback types.
-This isn't a real type error in your code — `vite build` (esbuild-based, no
-cross-package type unification) builds fine. Run `npm run typecheck`
-(`tsc -b`) manually if you want project-wide type-checking and are aware of
-this limitation.
+- Extend `cli_command::CliCommand` (shared between desktop and CLI).
+- Implement the handling logic in `handle_cli_command` inside the CLI crate.
+- Re‑run `cargo build` for the CLI, then the desktop will automatically pick up the new command.
 
-## Scaffolding a new app
-
-From the Nest repo root:
+## Scaffolding a new desktop app
 
 ```bash
 scripts/scaffold-desktop-app.sh apps/<name> "Display Title"
-```
-
-This copies `ui/`, `src-tauri/`, `build`, `nest-app.toml`, and `.gitignore`
-into `apps/<name>/`, and renames every template placeholder (Cargo package
-name, Tauri bundle identifier, window title, UI package name, cache dir)
-to match. Then:
-
-```bash
 cd apps/<name>
 ./build dev
 ```
-
-Manual copy is still possible (copy `ui/`, `src-tauri/`, `build`, rename the
-app id in `src-tauri/tauri.conf.json` / `TauriApp::new("…")` in `main.rs`,
-point `src-tauri/Cargo.toml`'s Nest dependencies at the monorepo) but the
-script above does all of that consistently in one step.
-
-Enable `nest-tauri` features: `runtime` + `images` when using `RemoteImage`.
 
 ## Related
 
 - [nest-tauri docs](../../docs/nest-tauri/README.md)
 - [nest-react-ui v1 plan](../../docs/plan/nest-react-ui-v1.md)
+

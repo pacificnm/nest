@@ -13,3 +13,36 @@
   2026-07-07T21:37:47.778922Z  INFO nest_app::lifecycle: app shutdown, app.name: my-app
     at core/crates/nest-app/src/lifecycle.rs:43
 
+  2026-07-18T13:47:51.052999Z  INFO nest_app::lifecycle: app startup, app.name: my-app, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:23
+
+  2026-07-18T15:31:49.641454Z  INFO nest_app::lifecycle: app startup, app.name: my-app, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:23
+
+  2026-07-18T15:31:49.641564Z  INFO nest_app::lifecycle: app shutdown, app.name: my-app
+    at core/crates/nest-app/src/lifecycle.rs:43
+
+  2026-07-18T15:31:49.644188Z  WARN nest_config::loader: no configuration file found in default search paths, config.app_name: my-app
+    at core/crates/nest-config/src/loader.rs:93
+
+  2026-07-18T15:31:49.644387Z  INFO nest_app::lifecycle: app startup, app.name: my-app, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:23
+
+  2026-07-18T15:31:49.644443Z  INFO nest_app::lifecycle: app shutdown, app.name: my-app
+    at core/crates/nest-app/src/lifecycle.rs:43
+
+  2026-07-18T15:33:53.735197Z  INFO nest_app::lifecycle: app startup, app.name: my-app, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:23
+
+  2026-07-18T15:33:53.735359Z  INFO nest_app::lifecycle: app shutdown, app.name: my-app
+    at core/crates/nest-app/src/lifecycle.rs:43
+
+  2026-07-18T15:33:53.738300Z  WARN nest_config::loader: no configuration file found in default search paths, config.app_name: my-app
+    at core/crates/nest-config/src/loader.rs:93
+
+  2026-07-18T15:33:53.738523Z  INFO nest_app::lifecycle: app startup, app.name: my-app, app.version: "", app.environment: "development"
+    at core/crates/nest-app/src/lifecycle.rs:23
+
+  2026-07-18T15:33:53.738582Z  INFO nest_app::lifecycle: app shutdown, app.name: my-app
+    at core/crates/nest-app/src/lifecycle.rs:43
+

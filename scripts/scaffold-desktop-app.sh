@@ -30,8 +30,8 @@ if [[ ! -d "$TEMPLATE_DIR" ]]; then
   exit 1
 fi
 
-if [[ -e "$TARGET_DIR/ui" || -e "$TARGET_DIR/src-tauri" ]]; then
-  echo "error: $TARGET_DIR already has ui/ or src-tauri/ — refusing to overwrite" >&2
+if [[ -e "$TARGET_DIR/ui" || -e "$TARGET_DIR/src-tauri" || -e "$TARGET_DIR/src-cli" ]]; then
+  echo "error: $TARGET_DIR already has ui/, src-tauri/, or src-cli/ — refusing to overwrite" >&2
   echo "       remove them first if you want to re-scaffold" >&2
   exit 1
 fi
@@ -66,6 +66,7 @@ echo "  bundle:  $tauri_identifier"
 mkdir -p "$TARGET_DIR"
 cp -r "$TEMPLATE_DIR/ui" "$TARGET_DIR/ui"
 cp -r "$TEMPLATE_DIR/src-tauri" "$TARGET_DIR/src-tauri"
+cp -r "$TEMPLATE_DIR/src-cli" "$TARGET_DIR/src-cli"
 cp "$TEMPLATE_DIR/build" "$TARGET_DIR/build"
 cp "$TEMPLATE_DIR/nest-app.toml" "$TARGET_DIR/nest-app.toml"
 cp "$TEMPLATE_DIR/.gitignore" "$TARGET_DIR/.gitignore"
@@ -88,13 +89,19 @@ replace_in_file() {
 }
 
 replace_in_file "$TARGET_DIR/src-tauri/Cargo.toml"
-sed -i "s/Nest desktop app template (Tauri + React)/${app_title} desktop app (Tauri + React)/" "$TARGET_DIR/src-tauri/Cargo.toml"
+sed -i "s/{{display_title}}/${app_title}/" "$TARGET_DIR/src-tauri/Cargo.toml"
 replace_in_file "$TARGET_DIR/src-tauri/tauri.conf.json"
 replace_in_file "$TARGET_DIR/src-tauri/src/main.rs"
+replace_in_file "$TARGET_DIR/src-tauri/build.rs"
+replace_in_file "$TARGET_DIR/src-tauri/capabilities/default.json"
+replace_in_file "$TARGET_DIR/src-cli/Cargo.toml"
+sed -i "s/{{display_title}}/${app_title}/" "$TARGET_DIR/src-cli/Cargo.toml"
+replace_in_file "$TARGET_DIR/src-cli/src/main.rs"
 replace_in_file "$TARGET_DIR/ui/package.json"
 replace_in_file "$TARGET_DIR/ui/package-lock.json"
 replace_in_file "$TARGET_DIR/ui/index.html"
 replace_in_file "$TARGET_DIR/ui/src/App.tsx"
+replace_in_file "$TARGET_DIR/ui/src/lib/nest.ts"
 
 # nest-app.toml uses a generic placeholder, not the template name.
 sed -i \
@@ -115,11 +122,22 @@ Nest desktop app (Tauri + React + Tailwind), scaffolded from
 ./build build    # production artifacts only
 \`\`\`
 
-See [Nest build standard](../../docs/build.md) and
-[nest-tauri docs](../../docs/nest-tauri/README.md).
+The desktop app is a thin client — command logic lives behind IPC, not in
+the UI. \`src-cli/\` is a standalone CLI binary exposing the same commands,
+runnable independently of Tauri (e.g. a future Ratatui frontend would be a
+third thin client the same way):
+
+\`\`\`bash
+cargo run --manifest-path src-cli/Cargo.toml -- about-version
+\`\`\`
+
+See [Nest build standard](../../docs/build.md),
+[nest-tauri docs](../../docs/nest-tauri/README.md), and
+[nest-cli docs](../../docs/nest-cli/README.md).
 EOF
 
 echo
 echo "Done. Next steps:"
 echo "  cd $TARGET_DIR"
-echo "  ./build dev"
+echo "  ./build dev                                          # desktop app"
+echo "  cargo run --manifest-path src-cli/Cargo.toml -- about-version   # CLI, independent of Tauri"
