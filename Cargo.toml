@@ -27,6 +27,7 @@ members = [
     "core/crates/nest-design",
     "core/crates/nest-theme",
     "core/crates/nest-image",
+    "core/crates/nest-logging",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
     "modules/crates/nest-data-postgres",
@@ -36,8 +37,8 @@ members = [
     "modules/crates/nest-transcode",
     "modules/crates/nest-cache-file",
     "modules/crates/nest-claude",
-    "modules/crates/nest-mqtt",
     "modules/crates/nest-ai-claude",
+    "core/crates/nest-version",
 ]
 
 [workspace.package]

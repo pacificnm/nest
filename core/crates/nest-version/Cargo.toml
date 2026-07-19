@@ -1,0 +1,8 @@
+[package]
+name = "nest-version"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nest-error = { path = "../nest-error" }
+toml = "0.8"

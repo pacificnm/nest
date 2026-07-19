@@ -20,7 +20,6 @@
     "@nest/components": "../../../core/crates/nest-react-components",
     "@tauri-apps/api": "^2.4.0",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.468.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.6.0"

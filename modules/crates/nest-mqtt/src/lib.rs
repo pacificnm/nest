@@ -16,7 +16,7 @@ pub mod service;
 mod test_support;
 
 pub use client::MqttClient;
-pub use config::{LastWillConfig, MqttConfig, MqttQos};
+pub use config::{LastWillConfig, MqttConfig, MqttQos, TlsConfig};
 pub use example::publish_and_receive;
 pub use message::{topic_matches_filter, MqttMessage};
 pub use module::{MqttModule, MQTT_MODULE_ID};

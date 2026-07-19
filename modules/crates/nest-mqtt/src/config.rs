@@ -37,6 +37,8 @@ pub struct MqttConfig {
     pub capacity: usize,
     /// Last-Will-and-Testament, published by the broker if this client disconnects uncleanly.
     pub last_will: Option<LastWillConfig>,
+    /// TLS transport configuration. `None` means a plaintext TCP connection.
+    pub tls: Option<TlsConfig>,
 }
 
 /// Last-Will-and-Testament configuration.
@@ -50,6 +52,51 @@ pub struct LastWillConfig {
     pub qos: MqttQos,
     /// Whether the broker retains the will message.
     pub retain: bool,
+}
+
+/// TLS transport configuration for the MQTT connection (Phase 12, Issue
+/// 12.1). Mirrors [`LastWillConfig`]'s shape: plain owned bytes, not
+/// paths — callers read cert/key files themselves (e.g. via
+/// [`TlsConfig::from_ca_file`]), keeping this crate free of any opinion
+/// about where certs live on disk.
+///
+/// Maps directly onto `rumqttc`'s `TlsConfiguration::Simple` (verified
+/// against the pinned `rumqttc = "0.25"` — actually `0.25.1` — source
+/// directly, not guessed): `ca` is the PEM-encoded CA certificate used to
+/// verify the broker's certificate, and `client_auth` is an optional
+/// `(cert, key)` PEM pair for mutual TLS. rumqttc's rustls-backed TLS
+/// support (`use-rustls-no-provider`) is part of its `default =
+/// ["use-rustls"]` feature set, so no `Cargo.toml` feature change was
+/// needed to use it here.
+#[derive(Debug, Clone)]
+pub struct TlsConfig {
+    /// PEM-encoded CA certificate bytes, used to verify the broker's certificate.
+    pub ca_cert: Vec<u8>,
+    /// Optional `(client certificate, client key)` PEM bytes pair for mutual TLS.
+    pub client_auth: Option<(Vec<u8>, Vec<u8>)>,
+}
+
+impl TlsConfig {
+    /// Builds a `TlsConfig` from a PEM-encoded CA certificate's bytes, with
+    /// no client certificate (server-authenticated TLS only — the common
+    /// case for a self-hosted broker with a self-signed CA).
+    pub fn new(ca_cert: impl Into<Vec<u8>>) -> Self {
+        Self {
+            ca_cert: ca_cert.into(),
+            client_auth: None,
+        }
+    }
+
+    /// Reads the CA certificate from `path` (PEM format).
+    pub fn from_ca_file(path: impl AsRef<std::path::Path>) -> std::io::Result<Self> {
+        Ok(Self::new(std::fs::read(path)?))
+    }
+
+    /// Sets a client certificate/key pair for mutual TLS.
+    pub fn with_client_auth(mut self, cert: impl Into<Vec<u8>>, key: impl Into<Vec<u8>>) -> Self {
+        self.client_auth = Some((cert.into(), key.into()));
+        self
+    }
 }
 
 /// Provider-agnostic QoS wrapper so callers don't need a direct `rumqttc`
@@ -81,6 +128,7 @@ impl MqttConfig {
             password: None,
             capacity: DEFAULT_CAPACITY,
             last_will: None,
+            tls: None,
         }
     }
 
@@ -109,6 +157,15 @@ impl MqttConfig {
     /// Sets the Last-Will-and-Testament.
     pub fn with_last_will(mut self, last_will: LastWillConfig) -> Self {
         self.last_will = Some(last_will);
+        self
+    }
+
+    /// Enables TLS for this connection. Callers must also point
+    /// `broker_port` at the broker's TLS listener (e.g. Mosquitto's
+    /// conventional `8883`, not the plaintext `1883`) — this method only
+    /// configures the transport, not the port.
+    pub fn with_tls(mut self, tls: TlsConfig) -> Self {
+        self.tls = Some(tls);
         self
     }
 
@@ -142,7 +199,7 @@ impl MqttConfig {
         if !section.enabled {
             return Ok(None);
         }
-        Ok(Some(section.into_config()))
+        section.into_config().map(Some)
     }
 }
 
@@ -164,18 +221,49 @@ struct MqttSection {
     password: Option<String>,
     #[serde(default = "default_capacity")]
     capacity: usize,
+    /// Path to a PEM-encoded CA certificate. Presence enables TLS —
+    /// pair with a `broker_port` pointed at the broker's TLS listener
+    /// (e.g. Mosquitto's conventional `8883`).
+    tls_ca_file: Option<String>,
+    /// Path to a PEM-encoded client certificate, for mutual TLS.
+    tls_client_cert_file: Option<String>,
+    /// Path to a PEM-encoded client key, for mutual TLS.
+    tls_client_key_file: Option<String>,
 }
 
 #[cfg(feature = "config")]
 impl MqttSection {
-    fn into_config(self) -> MqttConfig {
+    fn into_config(self) -> NestResult<MqttConfig> {
         let mut config = MqttConfig::new(self.broker_host, self.broker_port, self.client_id);
         config.keep_alive_secs = self.keep_alive_secs;
         config.capacity = self.capacity;
         if let (Some(username), Some(password)) = (self.username, self.password) {
             config = config.with_credentials(username, password);
         }
-        config
+        if let Some(ca_file) = self.tls_ca_file {
+            let mut tls = TlsConfig::from_ca_file(&ca_file).map_err(|error| {
+                nest_error::NestError::unknown(format!(
+                    "failed to read tls_ca_file {ca_file}: {error}"
+                ))
+            })?;
+            if let (Some(cert_file), Some(key_file)) =
+                (self.tls_client_cert_file, self.tls_client_key_file)
+            {
+                let cert = std::fs::read(&cert_file).map_err(|error| {
+                    nest_error::NestError::unknown(format!(
+                        "failed to read tls_client_cert_file {cert_file}: {error}"
+                    ))
+                })?;
+                let key = std::fs::read(&key_file).map_err(|error| {
+                    nest_error::NestError::unknown(format!(
+                        "failed to read tls_client_key_file {key_file}: {error}"
+                    ))
+                })?;
+                tls = tls.with_client_auth(cert, key);
+            }
+            config = config.with_tls(tls);
+        }
+        Ok(config)
     }
 }
 
@@ -197,6 +285,97 @@ fn default_broker_port() -> u16 {
 #[cfg(feature = "config")]
 fn default_client_id() -> String {
     DEFAULT_CLIENT_ID.to_string()
+}
+
+#[cfg(all(test, feature = "config"))]
+mod tests {
+    use nest_config::{ConfigDocument, ConfigSource, LoadedConfig};
+
+    use super::*;
+
+    fn config_service(input: &str) -> ConfigService {
+        let document = ConfigDocument::parse_toml(input).expect("valid toml");
+        let loaded = LoadedConfig {
+            document,
+            source: ConfigSource::SearchDefaults,
+            path: None,
+        };
+        ConfigService::new(loaded)
+    }
+
+    fn write_temp_file(name: &str, contents: &[u8]) -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
+
+        let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let dir =
+            std::env::temp_dir().join(format!("nest-mqtt-test-{}-{unique}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("temp dir");
+        let path = dir.join(name);
+        std::fs::write(&path, contents).expect("write temp file");
+        path
+    }
+
+    #[test]
+    fn from_config_service_enables_tls_when_tls_ca_file_is_set() {
+        let ca_path = write_temp_file("ca.pem", b"fake ca cert");
+        let toml = format!(
+            "[mqtt]\nbroker_host = \"broker.example\"\nbroker_port = 8883\ntls_ca_file = \"{}\"\n",
+            ca_path.display()
+        );
+
+        let config = MqttConfig::from_config_service(&config_service(&toml))
+            .expect("parse should succeed")
+            .expect("section should be present");
+
+        let tls = config.tls.expect("tls should be Some");
+        assert_eq!(tls.ca_cert, b"fake ca cert");
+        assert_eq!(tls.client_auth, None);
+    }
+
+    #[test]
+    fn from_config_service_enables_mutual_tls_when_client_cert_and_key_are_set() {
+        let ca_path = write_temp_file("ca.pem", b"fake ca cert");
+        let cert_path = write_temp_file("client.pem", b"fake client cert");
+        let key_path = write_temp_file("client.key", b"fake client key");
+        let toml = format!(
+            "[mqtt]\ntls_ca_file = \"{}\"\ntls_client_cert_file = \"{}\"\ntls_client_key_file = \"{}\"\n",
+            ca_path.display(),
+            cert_path.display(),
+            key_path.display()
+        );
+
+        let config = MqttConfig::from_config_service(&config_service(&toml))
+            .expect("parse should succeed")
+            .expect("section should be present");
+
+        let tls = config.tls.expect("tls should be Some");
+        assert_eq!(
+            tls.client_auth,
+            Some((b"fake client cert".to_vec(), b"fake client key".to_vec()))
+        );
+    }
+
+    #[test]
+    fn from_config_service_leaves_tls_none_when_tls_ca_file_is_absent() {
+        let config = MqttConfig::from_config_service(&config_service(
+            "[mqtt]\nbroker_host = \"broker.example\"\n",
+        ))
+        .expect("parse should succeed")
+        .expect("section should be present");
+
+        assert!(config.tls.is_none());
+    }
+
+    #[test]
+    fn from_config_service_errors_when_tls_ca_file_does_not_exist() {
+        let error = MqttConfig::from_config_service(&config_service(
+            "[mqtt]\ntls_ca_file = \"/nonexistent/ca.pem\"\n",
+        ))
+        .expect_err("a missing ca file should be an error, not a silent None");
+
+        assert!(error.to_string().contains("tls_ca_file"));
+    }
 }
 
 #[cfg(feature = "config")]

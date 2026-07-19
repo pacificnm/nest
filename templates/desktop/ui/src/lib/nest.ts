@@ -23,6 +23,14 @@ export type ImageFetchRequest = {
   tags?: string[] | null;
 };
 
+// Mirrors nest_cli_command::CliCommand (default serde externally-tagged
+// representation: unit variants serialize as a bare string, struct variants
+// as `{ VariantName: { ...fields } }`).
+export type CliCommand =
+  | "AboutVersion"
+  | { RunSystem: { cmd: string; args: string[] } }
+  | { HttpGet: { url: string } };
+
 export async function fetchAppMetadata(): Promise<AppMetadata> {
   return invoke<AppMetadata>("nest_app_metadata");
 }
@@ -44,6 +52,13 @@ export async function invalidateImageTag(tag: string): Promise<{ removed_count: 
   return invoke<{ removed_count: number }>("nest_image_invalidate_tag", {
     request: { tag },
   });
+}
+
+// App-specific commands are registered as a Tauri plugin (not the main
+// invoke_handler, which nest-tauri reserves for its built-in commands — see
+// src-tauri/src/main.rs), so the UI invokes them under the `plugin:` prefix.
+export async function runCli(command: CliCommand): Promise<string> {
+  return invoke<string>("plugin:nest-desktop-template|run_cli", { command });
 }
 
 export function applyThemeRootBlock(rootBlock: string): void {

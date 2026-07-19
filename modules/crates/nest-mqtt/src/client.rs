@@ -1,7 +1,7 @@
 //! MQTT client: owns the `rumqttc` handle and drives its event loop.
 
 use futures_util::StreamExt;
-use rumqttc::{AsyncClient, Event, EventLoop, Incoming, MqttOptions};
+use rumqttc::{AsyncClient, Event, EventLoop, Incoming, MqttOptions, Transport};
 use tokio::sync::broadcast;
 
 use crate::codes::{NEST_MQTT_PUBLISH_FAILED, NEST_MQTT_SUBSCRIBE_FAILED};
@@ -26,22 +26,7 @@ impl MqttClient {
     /// independently, or the bounded channel between them can fill and
     /// deadlock (see the crate-level docs).
     pub async fn connect(config: &MqttConfig) -> nest_error::NestResult<Self> {
-        let mut opts = MqttOptions::new(&config.client_id, &config.broker_host, config.broker_port);
-        opts.set_keep_alive(std::time::Duration::from_secs(u64::from(
-            config.keep_alive_secs,
-        )));
-        if let (Some(user), Some(pass)) = (&config.username, &config.password) {
-            opts.set_credentials(user, pass);
-        }
-        if let Some(lwt) = &config.last_will {
-            opts.set_last_will(rumqttc::LastWill::new(
-                &lwt.topic,
-                lwt.payload.clone(),
-                to_rumqttc_qos(lwt.qos),
-                lwt.retain,
-            ));
-        }
-
+        let opts = build_mqtt_options(config);
         let (client, eventloop) = AsyncClient::new(opts, config.capacity);
         let (tx, _rx) = broadcast::channel(config.capacity.max(16));
 
@@ -127,6 +112,64 @@ async fn run_event_loop(mut eventloop: EventLoop, tx: broadcast::Sender<MqttMess
     }
 }
 
+/// Builds `rumqttc`'s `MqttOptions` from a [`MqttConfig`]. No I/O and no
+/// connection attempt, so the TLS/LWT/auth plumbing is unit-testable
+/// without a live broker — the one side effect (installing a rustls
+/// `CryptoProvider` the first time TLS is used, see
+/// [`ensure_crypto_provider_installed`]) is idempotent and process-global,
+/// not per-call.
+fn build_mqtt_options(config: &MqttConfig) -> MqttOptions {
+    let mut opts = MqttOptions::new(&config.client_id, &config.broker_host, config.broker_port);
+    opts.set_keep_alive(std::time::Duration::from_secs(u64::from(
+        config.keep_alive_secs,
+    )));
+    if let (Some(user), Some(pass)) = (&config.username, &config.password) {
+        opts.set_credentials(user, pass);
+    }
+    if let Some(lwt) = &config.last_will {
+        opts.set_last_will(rumqttc::LastWill::new(
+            &lwt.topic,
+            lwt.payload.clone(),
+            to_rumqttc_qos(lwt.qos),
+            lwt.retain,
+        ));
+    }
+    if let Some(tls) = &config.tls {
+        ensure_crypto_provider_installed();
+        opts.set_transport(Transport::tls(
+            tls.ca_cert.clone(),
+            tls.client_auth.clone(),
+            None,
+        ));
+    }
+    opts
+}
+
+/// Installs a process-wide rustls `CryptoProvider`, exactly once.
+///
+/// Found the hard way (Issue 12.3's live TLS+ACL test suite in
+/// `apps/sparrow`, not guessed): rustls 0.23 refuses to pick a default
+/// crypto backend on its own when more than one is linked into the binary
+/// (both `ring` and `aws-lc-rs` end up in `apps/sparrow`'s dependency
+/// graph, via different crates), and panics — inside the background
+/// event-loop task, not the caller — the first time it actually needs one
+/// (the real TLS handshake, not `MqttOptions` construction, which is why
+/// `build_mqtt_options`'s own unit tests never caught this). `tokio-rustls`
+/// (rumqttc's TLS backend)'s own `default` feature set enables
+/// `aws_lc_rs`, so that's the provider installed here too, for consistency
+/// with what rumqttc would otherwise fall back to if only its own feature
+/// graph existed in isolation.
+fn ensure_crypto_provider_installed() {
+    static INIT: std::sync::Once = std::sync::Once::new();
+    INIT.call_once(|| {
+        // Ok(()) means we installed it; Err means something else already
+        // did (e.g. another rustls-based client in the same process) -
+        // both are fine, only a repeated *attempt* after a successful
+        // install would be the (harmless) no-op this Once already prevents.
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    });
+}
+
 fn to_rumqttc_qos(qos: MqttQos) -> rumqttc::QoS {
     match qos {
         MqttQos::AtMostOnce => rumqttc::QoS::AtMostOnce,
@@ -137,7 +180,61 @@ fn to_rumqttc_qos(qos: MqttQos) -> rumqttc::QoS {
 
 #[cfg(test)]
 mod tests {
+    use crate::config::TlsConfig;
+
     use super::*;
+
+    /// Proves the TLS config actually threads through to `rumqttc`'s
+    /// transport (no live broker needed — `build_mqtt_options` is pure).
+    /// `Transport`/`TlsConfiguration` don't derive `PartialEq`, so this
+    /// matches the variant and asserts on the extracted `ca`/`client_auth`
+    /// fields directly rather than a single `assert_eq!`.
+    #[test]
+    fn build_mqtt_options_sets_a_tls_transport_when_configured() {
+        let config = MqttConfig::new("broker.example", 8883, "tls-client")
+            .with_tls(TlsConfig::new(b"fake ca cert".to_vec()));
+
+        let opts = build_mqtt_options(&config);
+
+        match opts.transport() {
+            Transport::Tls(rumqttc::TlsConfiguration::Simple {
+                ca, client_auth, ..
+            }) => {
+                assert_eq!(ca, b"fake ca cert");
+                assert_eq!(client_auth, None);
+            }
+            _ => panic!("expected Transport::Tls(Simple), got a different transport"),
+        }
+    }
+
+    #[test]
+    fn build_mqtt_options_sets_client_auth_for_mutual_tls() {
+        let config = MqttConfig::new("broker.example", 8883, "tls-client").with_tls(
+            TlsConfig::new(b"fake ca cert".to_vec())
+                .with_client_auth(b"fake client cert".to_vec(), b"fake client key".to_vec()),
+        );
+
+        let opts = build_mqtt_options(&config);
+
+        match opts.transport() {
+            Transport::Tls(rumqttc::TlsConfiguration::Simple { client_auth, .. }) => {
+                assert_eq!(
+                    client_auth,
+                    Some((b"fake client cert".to_vec(), b"fake client key".to_vec()))
+                );
+            }
+            _ => panic!("expected Transport::Tls(Simple), got a different transport"),
+        }
+    }
+
+    #[test]
+    fn build_mqtt_options_defaults_to_plaintext_tcp_transport() {
+        let config = MqttConfig::new("broker.example", 1883, "plain-client");
+
+        let opts = build_mqtt_options(&config);
+
+        assert!(matches!(opts.transport(), Transport::Tcp));
+    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn publish_and_subscribe_round_trip() {

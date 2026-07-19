@@ -1,0 +1,16 @@
+[package]
+name = "nest-desktop-template-cli"
+version = "0.1.0"
+description = "{{display_title}} CLI — runs the same commands as the desktop app, independently of Tauri"
+edition = "2021"
+rust-version = "1.75"
+
+[workspace]
+# Prevent inclusion in the top‑level workspace.
+
+[dependencies]
+clap = "4"
+nest-cli = { path = "../../../core/crates/nest-cli" }
+nest-cli-command = { path = "../../../core/crates/nest-cli-command" }
+nest-error = { path = "../../../core/crates/nest-error" }
+nest-version = { path = "../../../core/crates/nest-version" }

@@ -1,0 +1,18 @@
+[package]
+name = "{{app_id}}"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+# Prevent inclusion in the top‑level workspace.
+
+[dependencies]
+nest-app = { path = "../../core/crates/nest-app" }
+nest-config = { path = "../../core/crates/nest-config" }
+nest-logging = { path = "../../core/crates/nest-logging" }
+nest-error = { path = "../../core/crates/nest-error" }
+nest-version = { path = "../../core/crates/nest-version" }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
