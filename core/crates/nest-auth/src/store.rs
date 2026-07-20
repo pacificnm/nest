@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use async_trait::async_trait;
+use tracing::{debug, warn};
 
 use crate::error::{AuthError, AuthResult};
 use crate::token::Token;
@@ -92,21 +93,40 @@ impl FileTokenStore {
 impl TokenStore for FileTokenStore {
     async fn get(&self, key: &str) -> AuthResult<Option<Token>> {
         let _guard = self.lock.read().expect("token store lock poisoned");
-        Ok(self.read_all()?.remove(key))
+        let tokens = match self.read_all() {
+            Ok(tokens) => tokens,
+            Err(error) => {
+                warn!(key = %key, error = %error, "failed to read token store");
+                return Err(error);
+            }
+        };
+        let token = tokens.get(key).cloned();
+        debug!(key = %key, found = token.is_some(), "token store get");
+        Ok(token)
     }
 
     async fn put(&self, key: &str, token: &Token) -> AuthResult<()> {
         let _guard = self.lock.write().expect("token store lock poisoned");
         let mut tokens = self.read_all()?;
         tokens.insert(key.to_string(), token.clone());
-        self.write_all(&tokens)
+        if let Err(error) = self.write_all(&tokens) {
+            warn!(key = %key, error = %error, "failed to write token store");
+            return Err(error);
+        }
+        debug!(key = %key, "token store put");
+        Ok(())
     }
 
     async fn delete(&self, key: &str) -> AuthResult<()> {
         let _guard = self.lock.write().expect("token store lock poisoned");
         let mut tokens = self.read_all()?;
         tokens.remove(key);
-        self.write_all(&tokens)
+        if let Err(error) = self.write_all(&tokens) {
+            warn!(key = %key, error = %error, "failed to write token store");
+            return Err(error);
+        }
+        debug!(key = %key, "token store delete");
+        Ok(())
     }
 }
 
