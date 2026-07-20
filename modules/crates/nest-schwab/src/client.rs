@@ -1,13 +1,12 @@
 //! Schwab API client.
 //!
-//! Response bodies are returned as [`serde_json::Value`] rather than typed
-//! structs: Schwab's actual API reference is gated behind a logged-in
-//! developer account, so account/quote/transaction schemas aren't
-//! independently verifiable from here. Typed request/response structs are
-//! a deliberate follow-up once real sample payloads are available (see
-//! `docs/nest-auth/plan.md`'s Schwab section) — building them now would
-//! mean guessing field names for a real brokerage API, which isn't a risk
-//! worth taking silently.
+//! Most response bodies are returned as [`serde_json::Value`] rather than
+//! typed structs: Schwab's actual API reference is gated behind a
+//! logged-in developer account, so most schemas aren't independently
+//! verifiable from here. Endpoints get typed structs (see
+//! [`crate::quotes`]) as real sample payloads are provided to verify
+//! against — building them without that would mean guessing field names
+//! for a real brokerage API, which isn't a risk worth taking silently.
 //!
 //! The generic [`SchwabClient::get_trader`]/[`SchwabClient::get_market_data`]
 //! /etc. methods work against any path today; the named wrappers
@@ -29,6 +28,7 @@ use serde_json::Value;
 
 use crate::config::SchwabConfig;
 use crate::error::SchwabResult;
+use crate::quotes::QuotesResponse;
 
 /// A client for Schwab's Accounts and Trading, and Market Data, APIs.
 ///
@@ -201,10 +201,11 @@ impl SchwabClient {
     }
 
     /// `GET /quotes?symbols=...` — quotes for one or more symbols.
-    pub async fn quotes(&self, symbols: &[&str]) -> SchwabResult<Value> {
+    pub async fn quotes(&self, symbols: &[&str]) -> SchwabResult<QuotesResponse> {
         let joined = symbols.join(",");
-        self.get_market_data("/quotes", &[("symbols", joined.as_str())])
-            .await
+        let mut url = self.market_data_url("/quotes");
+        append_query(&mut url, &[("symbols", joined.as_str())]);
+        Ok(self.http.get_json(&url).await?)
     }
 
     /// `GET /chains?symbol=...` — the option chain for a symbol.
@@ -270,14 +271,29 @@ mod tests {
         Mock::given(method("GET"))
             .and(path("/quotes"))
             .and(query_param("symbols", "AAPL,MSFT"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"AAPL": {}, "MSFT": {}})))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "AAPL": {
+                    "assetMainType": "EQUITY",
+                    "symbol": "AAPL",
+                    "realtime": true,
+                    "ssid": 1,
+                    "reference": {"description": "Apple Inc", "exchange": "Q", "exchangeName": "NASDAQ"}
+                },
+                "MSFT": {
+                    "assetMainType": "EQUITY",
+                    "symbol": "MSFT",
+                    "realtime": true,
+                    "ssid": 2,
+                    "reference": {"description": "Microsoft Corp", "exchange": "Q", "exchangeName": "NASDAQ"}
+                }
+            })))
             .mount(&server)
             .await;
 
         let client = client_for(&server).await;
         let response = client.quotes(&["AAPL", "MSFT"]).await.expect("quotes");
 
-        assert!(response.get("AAPL").is_some());
+        assert_eq!(response.get("AAPL").unwrap().symbol, "AAPL");
     }
 
     #[tokio::test]

@@ -9,8 +9,10 @@
 //!
 //! [`SchwabModule`] registers a Schwab-configured `OAuthClient`; app code
 //! builds a [`SchwabClient`] once a login (or a stored [`nest_auth::Token`])
-//! produces a live credential — see `client.rs` for why response bodies are
-//! `serde_json::Value` rather than typed structs in this first pass.
+//! produces a live credential. Endpoints get typed request/response structs
+//! (see [`quotes`]) as real sample payloads become available to verify
+//! against — see `client.rs` for why the rest still return
+//! `serde_json::Value`.
 
 #![deny(missing_docs)]
 
@@ -20,11 +22,16 @@ pub mod config;
 pub mod error;
 pub mod module;
 pub mod prelude;
+pub mod quotes;
 
 pub use client::SchwabClient;
 pub use config::SchwabConfig;
 pub use error::{SchwabError, SchwabErrorKind, SchwabResult};
 pub use module::{SchwabModule, SCHWAB_MODULE_ID};
+pub use quotes::{
+    AssetMainType, Quote, QuoteDetail, QuoteFundamental, QuoteReference, QuoteRegular,
+    QuotesResponse,
+};
 
 use nest_error::NestErrorKind;
 pub use nest_error::{NestError, NestResult};
