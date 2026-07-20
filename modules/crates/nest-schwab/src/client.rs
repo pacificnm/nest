@@ -90,6 +90,14 @@ impl SchwabClient {
         Ok(self.http.send(request).await?)
     }
 
+    /// `POST` against the Accounts and Trading API with a JSON body,
+    /// decoding the response as JSON — unlike [`Self::post_trader`], for
+    /// endpoints (e.g. preview order) that respond with a body instead of
+    /// `201 Created` + `Location`.
+    pub async fn post_trader_json(&self, path: &str, body: &Value) -> SchwabResult<Value> {
+        Ok(self.http.post_json(&self.trader_url(path), body).await?)
+    }
+
     /// `GET` against the Market Data API, decoded as JSON. `query` pairs
     /// are appended as `?key=value&...` (values are used as-is — callers
     /// are expected to pass values that don't need percent-encoding, e.g.
@@ -181,6 +189,13 @@ impl SchwabClient {
             .await
     }
 
+    /// `POST /accounts/{account_hash}/previewOrder` — dry-runs an order
+    /// (estimated commission, buying-power effect) without placing it.
+    pub async fn preview_order(&self, account_hash: &str, order: &Value) -> SchwabResult<Value> {
+        self.post_trader_json(&format!("/accounts/{account_hash}/previewOrder"), order)
+            .await
+    }
+
     /// `GET /accounts/{account_hash}/transactions` — transactions for an account.
     pub async fn transactions(&self, account_hash: &str) -> SchwabResult<Value> {
         self.get_trader(&format!("/accounts/{account_hash}/transactions"))
@@ -200,6 +215,12 @@ impl SchwabClient {
         .await
     }
 
+    /// `GET /userPreference` — user preference information for the logged
+    /// in user.
+    pub async fn user_preference(&self) -> SchwabResult<Value> {
+        self.get_trader("/userPreference").await
+    }
+
     /// `GET /quotes?symbols=...` — quotes for one or more symbols.
     pub async fn quotes(&self, symbols: &[&str]) -> SchwabResult<QuotesResponse> {
         let joined = symbols.join(",");
@@ -208,9 +229,56 @@ impl SchwabClient {
         Ok(self.http.get_json(&url).await?)
     }
 
+    /// `GET /{symbol_id}/quotes` — quote for a single symbol.
+    pub async fn quote(&self, symbol_id: &str) -> SchwabResult<Value> {
+        self.get_market_data(&format!("/{symbol_id}/quotes"), &[])
+            .await
+    }
+
     /// `GET /chains?symbol=...` — the option chain for a symbol.
     pub async fn option_chain(&self, symbol: &str) -> SchwabResult<Value> {
         self.get_market_data("/chains", &[("symbol", symbol)]).await
+    }
+
+    /// `GET /expirationchain?symbol=...` — the option expiration chain for
+    /// an optionable symbol.
+    pub async fn expiration_chain(&self, symbol: &str) -> SchwabResult<Value> {
+        self.get_market_data("/expirationchain", &[("symbol", symbol)])
+            .await
+    }
+
+    /// `GET /pricehistory` — price history for a single symbol over a date
+    /// range. `query` pairs are Schwab's documented params (`symbol`,
+    /// `periodType`, `period`, `frequencyType`, `frequency`, `startDate`,
+    /// `endDate`, `needExtendedHoursData`, `needPreviousClose`).
+    pub async fn price_history(&self, query: &[(&str, &str)]) -> SchwabResult<Value> {
+        self.get_market_data("/pricehistory", query).await
+    }
+
+    /// `GET /movers/{symbol_id}` — top movers for a specific index (e.g.
+    /// `$DJI`, `$COMPX`, `$SPX`). `query` pairs are Schwab's documented
+    /// params (`sort`, `frequency`).
+    pub async fn movers(&self, symbol_id: &str, query: &[(&str, &str)]) -> SchwabResult<Value> {
+        self.get_market_data(&format!("/movers/{symbol_id}"), query)
+            .await
+    }
+
+    /// `GET /markets` — market hours for different markets. `query` pairs
+    /// are Schwab's documented params (`markets`, `date`).
+    pub async fn market_hours(&self, query: &[(&str, &str)]) -> SchwabResult<Value> {
+        self.get_market_data("/markets", query).await
+    }
+
+    /// `GET /instruments` — instruments by symbol and projection. `query`
+    /// pairs are Schwab's documented params (`symbol`, `projection`).
+    pub async fn instruments(&self, query: &[(&str, &str)]) -> SchwabResult<Value> {
+        self.get_market_data("/instruments", query).await
+    }
+
+    /// `GET /instruments/{cusip_id}` — a single instrument by CUSIP.
+    pub async fn instrument_by_cusip(&self, cusip_id: &str) -> SchwabResult<Value> {
+        self.get_market_data(&format!("/instruments/{cusip_id}"), &[])
+            .await
     }
 }
 

@@ -116,8 +116,10 @@ fn build_loopback_tls_acceptor() -> OAuthResult<TlsAcceptor> {
             .with_source(err)
     })?;
     let cert = params.self_signed(&key_pair).map_err(|err| {
-        OAuthError::callback(format!("failed to generate a self-signed certificate: {err}"))
-            .with_source(err)
+        OAuthError::callback(format!(
+            "failed to generate a self-signed certificate: {err}"
+        ))
+        .with_source(err)
     })?;
     let key_der = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(key_pair.serialize_der()));
 
