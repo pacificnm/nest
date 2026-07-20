@@ -1,24 +1,34 @@
 #!/usr/bin/env bash
-# Simple build helper for Nest CLI apps
-# Usage: ./build {dev|run|build}
-#   dev   – cargo run (debug)
-#   run   – cargo run --release
-#   build – cargo build --release
-
+# Nest CLI app — standard ./build interface.
 set -euo pipefail
 
-case "${1:-}" in
-  dev)
-    cargo run
-    ;;
-  run)
-    cargo run --release
-    ;;
-  build)
-    cargo build --release
-    ;;
-  *)
-    echo "Usage: $0 {dev|run|build}"
-    exit 1
-    ;;
-esac
+APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+# Find the workspace/nest root: the nearest ancestor that contains
+# scripts/nest-build/lib.sh. Works at any depth under apps/. Falls back to a
+# `nest` checkout cloned beside a standalone app.
+NEST_ROOT=""
+dir="$APP_ROOT"
+while [[ "$dir" != "/" ]]; do
+  if [[ -f "$dir/scripts/nest-build/lib.sh" ]]; then
+    NEST_ROOT="$dir"
+    break
+  fi
+  dir="$(dirname "$dir")"
+done
+if [[ -z "$NEST_ROOT" && -f "$APP_ROOT/../nest/scripts/nest-build/lib.sh" ]]; then
+  NEST_ROOT="$(cd "$APP_ROOT/../nest" && pwd)"
+fi
+if [[ -z "$NEST_ROOT" ]]; then
+  echo "error: cannot find scripts/nest-build/lib.sh (no Nest workspace above this app, and no nest/ clone beside it)" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$NEST_ROOT/scripts/nest-build/lib.sh"
+
+export NEST_BUILD_PROFILE=rust
+export NEST_RUST_PACKAGE="{{app_id}}-cli"
+export NEST_RUST_BIN="{{app_id}}"
+
+nest_build_main "$@"

@@ -44,6 +44,13 @@ export function App() {
         <TitleBar
           title={appTitle}
           onQuit={() => void quitApp()}
+          onShowRecipes={() => {
+            void runCli("ListRecipes")
+              .then((recipes) => toast.info(recipes || "No recipes applied."))
+              .catch((error: unknown) =>
+                toast.error(`Failed to list recipes: ${String(error)}`),
+              );
+          }}
           onAbout={() => {
             void runCli("AboutVersion")
               .then((version) => toast.info(`${appTitle} v${version}`))

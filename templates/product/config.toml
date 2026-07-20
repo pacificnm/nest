@@ -1,0 +1,6 @@
+[logging]
+level = "info"
+directory = "./logs"
+
+[{{app_id}}]
+# Product-specific config goes here.

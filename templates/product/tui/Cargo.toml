@@ -1,0 +1,17 @@
+[package]
+name = "{{app_id}}-tui"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[[bin]]
+name = "{{app_id}}-tui"
+path = "src/main.rs"
+
+[dependencies]
+{{app_id}}-core = { path = "../crates/core" }
+nest-error = { workspace = true }
+nest-logging = { workspace = true }
+nest-tui = { workspace = true }
+crossterm = { workspace = true }
+ratatui = { workspace = true }

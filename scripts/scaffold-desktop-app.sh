@@ -12,7 +12,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NEST_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/nest-scaffold/lib.sh"
+
+nest_scaffold_find_root "$SCRIPT_DIR"
 TEMPLATE_DIR="$NEST_ROOT/templates/desktop"
 
 if [[ $# -lt 1 || $# -gt 2 ]]; then
@@ -38,9 +42,8 @@ fi
 
 app_name="$(basename "$TARGET_DIR")"
 
-# Sanitize to a kebab-case identifier: lowercase, non [a-z0-9-] -> '-',
-# squeeze repeats, trim leading/trailing '-'.
-app_id="$(echo "$app_name" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+# Sanitize to a kebab-case identifier.
+app_id="$(nest_scaffold_derive_app_id "$app_name")"
 if [[ -z "$app_id" ]]; then
   echo "error: could not derive an app id from directory name '$app_name'" >&2
   exit 1
@@ -50,7 +53,7 @@ fi
 if [[ -n "${2:-}" ]]; then
   app_title="$2"
 else
-  app_title="$(echo "$app_id" | sed -E 's/(^|-)([a-z])/\1\U\2/g; s/-/ /g')"
+  app_title="$(nest_scaffold_derive_app_title "$app_id")"
 fi
 
 tauri_identifier="com.nest.$app_id"

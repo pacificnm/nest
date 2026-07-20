@@ -252,6 +252,7 @@ nest_build_profile_main() {
           nest_build_cargo test "$@"
           if [[ -f "$APP_ROOT/${NEST_UI_DIR:-ui}/package.json" ]] \
             && grep -q '"test"' "$APP_ROOT/${NEST_UI_DIR:-ui}/package.json"; then
+            nest_build_ensure_ui_deps
             npm run test --prefix "$APP_ROOT/${NEST_UI_DIR:-ui}" "$@"
           fi
           ;;
@@ -259,6 +260,7 @@ nest_build_profile_main() {
           nest_build_cargo fmt --all -- --check
           nest_build_cargo clippy -- -D warnings
           nest_build_cargo test -- --test-threads=1 "$@"
+          nest_build_ensure_ui_deps
           npm run build --prefix "$APP_ROOT/${NEST_UI_DIR:-ui}"
           ;;
         clean)
