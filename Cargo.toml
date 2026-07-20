@@ -39,6 +39,7 @@ members = [
     "modules/crates/nest-cache-file",
     "modules/crates/nest-claude",
     "modules/crates/nest-ai-claude",
+    "modules/crates/nest-auth-oauth-client",
     "core/crates/nest-version",
 ]
 
@@ -84,3 +85,4 @@ nest-transcode = { path = "modules/crates/nest-transcode" }
 nest-cache-file = { path = "modules/crates/nest-cache-file" }
 nest-claude = { path = "modules/crates/nest-claude" }
 nest-ai-claude = { path = "modules/crates/nest-ai-claude" }
+nest-auth-oauth-client = { path = "modules/crates/nest-auth-oauth-client" }
