@@ -33,6 +33,7 @@ pub struct OAuthClient {
     inner: BasicClient,
     scopes: Vec<String>,
     redirect_port: u16,
+    use_https_callback: bool,
 }
 
 impl OAuthClient {
@@ -60,6 +61,7 @@ impl OAuthClient {
             inner,
             scopes: config.scopes.clone(),
             redirect_port: config.redirect_port,
+            use_https_callback: config.use_https_callback,
         })
     }
 
@@ -95,7 +97,8 @@ impl OAuthClient {
         request: AuthorizationRequest,
         timeout: Duration,
     ) -> OAuthResult<Token> {
-        let callback = wait_for_callback(self.redirect_port, timeout).await?;
+        let callback =
+            wait_for_callback(self.redirect_port, timeout, self.use_https_callback).await?;
 
         if callback.state != *request.csrf_token.secret() {
             return Err(OAuthError::state_mismatch(

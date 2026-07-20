@@ -15,8 +15,11 @@ nest-http = { workspace = true, features = ["serde"] }
 nest-http-client = { workspace = true }
 nest-config = { workspace = true, optional = true }
 oauth2 = "4"
+rcgen = "0.13"
+rustls = "0.23"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["net", "rt", "time"] }
+tokio-rustls = "0.26"
 tracing = "0.1"
 url = "2"
 
