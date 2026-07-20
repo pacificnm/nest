@@ -34,7 +34,7 @@ pub use startup::TauriStartupOptions;
 pub use state::NestHostState;
 
 #[cfg(feature = "runtime")]
-pub use commands::{AppMetadataResponse, ThemeCssResponse};
+pub use commands::{AppMetadataResponse, ThemeCssResponse, ThemeSetActiveRequest, ThemeSummary};
 
 #[cfg(feature = "images")]
 pub use image::{
