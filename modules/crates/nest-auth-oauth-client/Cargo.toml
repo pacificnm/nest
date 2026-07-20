@@ -12,12 +12,13 @@ nest-auth = { workspace = true }
 nest-core = { workspace = true }
 nest-error = { workspace = true }
 nest-http = { workspace = true, features = ["serde"] }
+nest-http-client = { workspace = true }
 nest-config = { workspace = true, optional = true }
-async-trait = "0.1"
 oauth2 = "4"
 serde = { version = "1", features = ["derive"] }
-tokio = { version = "1", features = ["net", "rt", "sync", "time"] }
+tokio = { version = "1", features = ["net", "rt", "time"] }
 tracing = "0.1"
+url = "2"
 
 [features]
 default = ["config"]
@@ -27,3 +28,4 @@ config = ["dep:nest-config"]
 nest-config = { workspace = true }
 nest-core = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wiremock = "0.6"
