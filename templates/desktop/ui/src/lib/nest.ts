@@ -28,6 +28,7 @@ export type ImageFetchRequest = {
 // as `{ VariantName: { ...fields } }`).
 export type CliCommand =
   | "AboutVersion"
+  | "ListRecipes"
   | { RunSystem: { cmd: string; args: string[] } }
   | { HttpGet: { url: string } };
 

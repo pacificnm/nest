@@ -24,6 +24,8 @@
 | Document | Link | Description | Revision |
 |----------|------|-------------|----------|
 | Scripts Overview | [scripts/README.md](scripts/README.md) | Utility scripts for Nest setup and management | 2026-07-18 |
+| App Scaffolding | [docs/scaffold.md](scaffold.md) | Scaffold scripts, templates, and shared helpers for new Nest apps | 2026-07-19 |
+| App Recipes | [docs/recipes.md](recipes.md) | Idempotent recipes for layering integrations onto existing apps | 2026-07-19 |
 | Desktop Template | [templates/desktop/README.md](templates/desktop/README.md) | Starter layout for Nest desktop apps (Tauri + React + TypeScript + Tailwind) | 2026-07-13 |
 
 ### Nest Data

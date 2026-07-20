@@ -11,5 +11,7 @@ pub enum CliCommand {
     HttpGet { url: String },
     /// Return the app version.
     AboutVersion,
+    /// List recipes applied to this app.
+    ListRecipes,
 }
 

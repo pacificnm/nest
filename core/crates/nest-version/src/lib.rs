@@ -1,7 +1,7 @@
 // src/lib.rs
 
-use std::path::Path;
 use nest_error::NestResult;
+use std::path::Path;
 use toml::Value;
 
 use nest_error::NestError;
@@ -12,12 +12,13 @@ pub fn app_version(app_path: &Path) -> NestResult<String> {
         app_path.join("Cargo.toml")
     } else {
         // Assume it's a file path; look at its parent.
-        app_path.parent().unwrap_or_else(|| Path::new(".")).join("Cargo.toml")
+        app_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join("Cargo.toml")
     };
-    let content = std::fs::read_to_string(&cargo_toml)
-        .map_err(|e| NestError::io(e.to_string()))?;
-    let toml: Value = toml::from_str(&content)
-        .map_err(|e| NestError::config(e.to_string()))?;
+    let content = std::fs::read_to_string(&cargo_toml).map_err(|e| NestError::io(e.to_string()))?;
+    let toml: Value = toml::from_str(&content).map_err(|e| NestError::config(e.to_string()))?;
     let version = toml
         .get("package")
         .and_then(|pkg| pkg.get("version"))

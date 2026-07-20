@@ -1,0 +1,32 @@
+{
+  "recipes": [
+    {
+      "id": "database-sqlite",
+      "name": "SQLite database",
+      "description": "Local SQLite data layer via nest-data-sqlite",
+      "script": "scripts/recipes/database-sqlite.sh",
+      "applies_to": ["product", "cli", "tui"]
+    },
+    {
+      "id": "database-postgres",
+      "name": "PostgreSQL database",
+      "description": "Async PostgreSQL + pgvector via nest-data-postgres",
+      "script": "scripts/recipes/database-postgres.sh",
+      "applies_to": ["product", "cli", "tui"]
+    },
+    {
+      "id": "http-client",
+      "name": "HTTP client",
+      "description": "Consume HTTP/HTTPS APIs via nest-http-client",
+      "script": "scripts/recipes/http-client.sh",
+      "applies_to": ["product", "cli", "tui"]
+    },
+    {
+      "id": "ai",
+      "name": "AI providers",
+      "description": "AI inference via nest-ai, Ollama, and Claude",
+      "script": "scripts/recipes/ai.sh",
+      "applies_to": ["product", "cli", "tui"]
+    }
+  ]
+}

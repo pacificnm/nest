@@ -1,0 +1,16 @@
+[package]
+name = "{{app_id}}-cli"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[[bin]]
+name = "{{app_id}}-cli"
+path = "src/main.rs"
+
+[dependencies]
+{{app_id}}-core = { path = "../crates/core" }
+nest-cli = { workspace = true }
+nest-error = { workspace = true }
+nest-logging = { workspace = true }
+clap = "4"

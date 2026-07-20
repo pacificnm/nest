@@ -1,0 +1,10 @@
+[workspace]
+members = ["crates/core", "crates/tui"]
+resolver = "2"
+
+[workspace.dependencies]
+nest-error = { path = "../../core/crates/nest-error" }
+nest-logging = { path = "../../core/crates/nest-logging" }
+nest-tui = { path = "../../core/crates/nest-tui" }
+crossterm = "0.28"
+ratatui = "0.29"
