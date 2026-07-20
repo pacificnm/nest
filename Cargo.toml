@@ -28,6 +28,7 @@ members = [
     "core/crates/nest-theme",
     "core/crates/nest-image",
     "core/crates/nest-logging",
+    "core/crates/nest-auth",
     "modules/crates/nest-airtable",
     "modules/crates/nest-data-sqlite",
     "modules/crates/nest-data-postgres",
@@ -72,6 +73,7 @@ nest-tauri = { path = "core/crates/nest-tauri" }
 nest-react-theme = { path = "core/crates/nest-react-theme" }
 nest-image = { path = "core/crates/nest-image" }
 nest-validation = { path = "core/crates/nest-validation" }
+nest-auth = { path = "core/crates/nest-auth" }
 nest-airtable = { path = "modules/crates/nest-airtable" }
 nest-data-sqlite = { path = "modules/crates/nest-data-sqlite" }
 nest-data-postgres = { path = "modules/crates/nest-data-postgres" }
