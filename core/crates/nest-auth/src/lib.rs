@@ -28,3 +28,28 @@ pub mod token;
 pub use error::{AuthError, AuthErrorKind, AuthResult};
 pub use store::{FileTokenStore, TokenStore};
 pub use token::Token;
+
+pub use nest_error::{NestError, NestResult};
+
+impl From<AuthError> for NestError {
+    fn from(error: AuthError) -> Self {
+        NestError::auth(error.message())
+            .with_code(error.nest_code())
+            .with_module("nest-auth")
+            .with_source(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nest_error::NestErrorKind;
+
+    #[test]
+    fn auth_error_converts_to_nest_error() {
+        let err = AuthError::not_found("no token stored for schwab");
+        let nest_error: NestError = err.into();
+        assert_eq!(nest_error.kind(), NestErrorKind::Auth);
+        assert_eq!(nest_error.code(), Some(codes::NEST_AUTH_NOT_FOUND));
+    }
+}

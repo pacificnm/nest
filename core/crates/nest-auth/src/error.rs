@@ -20,8 +20,9 @@ pub enum AuthErrorKind {
 }
 
 /// Structured error for nest-auth and its provider crates (mirrors
-/// `nest_ai::AiError`'s shape — see that crate if this one's conventions
-/// need cross-checking).
+/// `nest_data::DataError`'s shape: a domain-specific error for ergonomic
+/// construction, convertible to [`nest_error::NestError`] via
+/// `impl From<AuthError> for NestError` in `lib.rs`).
 #[derive(Debug)]
 pub struct AuthError {
     kind: AuthErrorKind,
@@ -83,7 +84,7 @@ impl AuthError {
         self.code.as_deref()
     }
 
-    /// Default code when a caller needs one and none was explicitly set.
+    /// Default code when converting to [`nest_error::NestError`].
     pub fn nest_code(&self) -> &str {
         self.code.as_deref().unwrap_or(NEST_AUTH_FAILED)
     }
