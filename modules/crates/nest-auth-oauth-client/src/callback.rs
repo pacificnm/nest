@@ -21,9 +21,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use rcgen::{generate_simple_self_signed, CertifiedKey};
+use rcgen::{CertificateParams, KeyPair};
 use rustls::pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::ServerConfig;
+use time::{Duration as TimeDuration, OffsetDateTime};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::time::timeout;
@@ -96,13 +97,30 @@ fn build_loopback_tls_acceptor() -> OAuthResult<TlsAcceptor> {
     // ignore: some provider is installed either way.
     let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
-    let CertifiedKey { cert, key_pair } =
-        generate_simple_self_signed(vec!["127.0.0.1".to_string()]).map_err(|err| {
-            OAuthError::callback(format!(
-                "failed to generate a self-signed certificate: {err}"
-            ))
+    // rcgen::generate_simple_self_signed defaults to a 1975-01-01 to
+    // 4096-01-01 validity period. Some TLS stacks (observed: Firefox/NSS)
+    // reject that outright with a fatal BadCertificate alert rather than
+    // the usual interactive self-signed-cert warning — curl/OpenSSL
+    // accepted it fine, which is why this wasn't caught by curl-based
+    // testing. A real, short-lived (this cert is regenerated fresh per
+    // login attempt anyway) validity window avoids the issue.
+    let mut params = CertificateParams::new(vec!["127.0.0.1".to_string()]).map_err(|err| {
+        OAuthError::callback(format!("failed to build certificate params: {err}")).with_source(err)
+    })?;
+    let now = OffsetDateTime::now_utc();
+    params.not_before = now - TimeDuration::days(1);
+    params.not_after = now + TimeDuration::days(365);
+
+    let key_pair = KeyPair::generate().map_err(|err| {
+        OAuthError::callback(format!("failed to generate a certificate key pair: {err}"))
             .with_source(err)
-        })?;
+    })?;
+    let cert = params.self_signed(&key_pair).map_err(|err| {
+        OAuthError::callback(format!(
+            "failed to generate a self-signed certificate: {err}"
+        ))
+        .with_source(err)
+    })?;
     let key_der = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(key_pair.serialize_der()));
 
     let server_config = ServerConfig::builder()

@@ -1,28 +1,23 @@
 [package]
-name = "nest-auth-oauth-client"
+name = "nest-schwab"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "OAuth2 authorization-code client module for the Nest framework"
+description = "Charles Schwab Trader API client module for the Nest framework"
 
 [dependencies]
 nest-auth = { workspace = true }
+nest-auth-oauth-client = { workspace = true }
 nest-core = { workspace = true }
 nest-error = { workspace = true }
 nest-http = { workspace = true, features = ["serde"] }
 nest-http-client = { workspace = true }
 nest-config = { workspace = true, optional = true }
-oauth2 = "4"
-rcgen = "0.13"
-rustls = "0.23"
 serde = { version = "1", features = ["derive"] }
-time = { version = "0.3", features = ["std"] }
-tokio = { version = "1", features = ["net", "rt", "time"] }
-tokio-rustls = "0.26"
+serde_json = "1"
 tracing = "0.1"
-url = "2"
 
 [features]
 default = ["config"]
