@@ -10,6 +10,7 @@ import {
   offset,
   flip,
   shift,
+  size as floatingSize,
   useMergeRefs,
 } from '@floating-ui/react';
 import { ChevronDown, Check } from 'lucide-react';
@@ -124,6 +125,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
       offset(4),
       flip(),
       shift({ padding: 8 }),
+      floatingSize({
+        apply({ rects, elements }: { rects: { reference: { width: number } }; elements: { floating: HTMLElement } }) {
+          elements.floating.style.minWidth = `${rects.reference.width}px`;
+        },
+      }),
     ],
   });
 
@@ -193,7 +199,6 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
               'rounded-nest-md',
               'shadow-lg',
               'py-1',
-              'min-w-[--reference-width]',
               'max-h-64 overflow-y-auto'
             )}
             style={floatingStyles}

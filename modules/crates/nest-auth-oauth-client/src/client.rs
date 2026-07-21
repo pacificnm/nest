@@ -28,6 +28,19 @@ pub struct AuthorizationRequest {
     pkce_verifier: PkceCodeVerifier,
 }
 
+impl AuthorizationRequest {
+    /// Consumes the request and returns its URL, CSRF state, and PKCE verifier.
+    /// Useful for UI flows that need to persist the state between generating
+    /// the authorization URL and receiving the authorization code.
+    pub fn into_parts(self) -> (Url, String, PkceCodeVerifier) {
+        (
+            self.url,
+            self.csrf_token.secret().to_string(),
+            self.pkce_verifier,
+        )
+    }
+}
+
 /// An OAuth2 authorization-code + PKCE client for a single provider.
 pub struct OAuthClient {
     inner: BasicClient,
@@ -118,6 +131,25 @@ impl OAuthClient {
         code: impl Into<String>,
         pkce_verifier: PkceCodeVerifier,
     ) -> OAuthResult<Token> {
+        self.exchange_code_inner(code, pkce_verifier).await
+    }
+
+    /// Exchanges an authorization code from a pending [`AuthorizationRequest`]
+    /// for a token. Useful for manual OAuth flows where the caller obtains the
+    /// code out-of-band instead of via the loopback listener.
+    pub async fn exchange_code_from_request(
+        &self,
+        request: AuthorizationRequest,
+        code: impl Into<String>,
+    ) -> OAuthResult<Token> {
+        self.exchange_code_inner(code, request.pkce_verifier).await
+    }
+
+    async fn exchange_code_inner(
+        &self,
+        code: impl Into<String>,
+        pkce_verifier: PkceCodeVerifier,
+    ) -> OAuthResult<Token> {
         let response = self
             .inner
             .exchange_code(AuthorizationCode::new(code.into()))
@@ -125,7 +157,16 @@ impl OAuthClient {
             .request_async(async_http_client)
             .await
             .map_err(|err| {
-                OAuthError::request(format!("token exchange failed: {err}")).with_source(err)
+                let detail = match &err {
+                    oauth2::RequestTokenError::Parse(_, body) => {
+                        format!("server response body: {}", String::from_utf8_lossy(body))
+                    }
+                    oauth2::RequestTokenError::ServerResponse(response) => {
+                        format!("server error response: {response:?}")
+                    }
+                    _ => err.to_string(),
+                };
+                OAuthError::request(format!("token exchange failed: {detail}")).with_source(err)
             })?;
 
         Ok(token_from_response(&response))

@@ -67,16 +67,21 @@ impl Module for PostgresDataModule {
     }
 
     fn configure(&self, app: &mut AppBuilder) -> NestResult<()> {
-        let conn = block_on(PostgresConnection::connect_named(
-            self.connection_id.clone(),
-            &self.config,
-        ))
+        // Connect and apply migrations inside a single async block so that the
+        // temporary Tokio runtime created by `block_on` stays alive for both
+        // steps. Otherwise the pool's background tasks are dropped between the
+        // two `block_on` calls and subsequent acquires time out.
+        let connection_id = self.connection_id.clone();
+        let config = self.config.clone();
+        let migrations: &[Box<dyn Migration>] = &self.migrations;
+        let conn = block_on(async move {
+            let conn = PostgresConnection::connect_named(connection_id, &config).await?;
+            if !migrations.is_empty() {
+                apply_migrations(conn.pool(), migrations).await?;
+            }
+            Ok::<_, nest_data::DataError>(conn)
+        })
         .map_err(|e| nest_error::NestError::data(e.to_string()).with_source(e))?;
-
-        if !self.migrations.is_empty() {
-            block_on(apply_migrations(conn.pool(), &self.migrations))
-                .map_err(|e| nest_error::NestError::data(e.to_string()).with_source(e))?;
-        }
 
         let data = app.service_mut::<DataService>()?;
         data.register_connection(conn.clone().as_data_connection())?;

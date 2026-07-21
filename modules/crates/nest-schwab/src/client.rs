@@ -137,14 +137,43 @@ impl SchwabClient {
     }
 
     /// `GET /accounts/{account_hash}` — a single account.
+    ///
+    /// By default Schwab omits position details from this response. Pass
+    /// `&["positions"]` to [`Self::account_with_fields`] to include them.
     pub async fn account(&self, account_hash: &str) -> SchwabResult<Value> {
         self.get_trader(&format!("/accounts/{account_hash}")).await
     }
 
+    /// `GET /accounts/{account_hash}?fields=...` — a single account with
+    /// extra fields such as `positions`.
+    pub async fn account_with_fields(
+        &self,
+        account_hash: &str,
+        fields: &[&str],
+    ) -> SchwabResult<Value> {
+        let mut url = self.trader_url(&format!("/accounts/{account_hash}"));
+        if !fields.is_empty() {
+            url.push_str("?fields=");
+            url.push_str(&fields.join(","));
+        }
+        Ok(self.http.get_json(&url).await?)
+    }
+
     /// `GET /accounts/{account_hash}/orders` — orders for an account.
     pub async fn orders_for_account(&self, account_hash: &str) -> SchwabResult<Value> {
-        self.get_trader(&format!("/accounts/{account_hash}/orders"))
-            .await
+        self.orders_for_account_query(account_hash, &[]).await
+    }
+
+    /// `GET /accounts/{account_hash}/orders?fromEnteredTime=...&toEnteredTime=...`
+    /// — orders for an account with date range filters.
+    pub async fn orders_for_account_query(
+        &self,
+        account_hash: &str,
+        query: &[(&str, &str)],
+    ) -> SchwabResult<Value> {
+        let mut url = self.trader_url(&format!("/accounts/{account_hash}/orders"));
+        append_query(&mut url, query);
+        Ok(self.http.get_json(&url).await?)
     }
 
     /// `GET /accounts/{account_hash}/orders/{order_id}` — a single order.
@@ -331,6 +360,28 @@ mod tests {
         let response = client.account_numbers().await.expect("account_numbers");
 
         assert_eq!(response[0]["hashValue"], "ABC123HASH");
+    }
+
+    #[tokio::test]
+    async fn account_with_fields_appends_comma_separated_fields_query() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/accounts/ABC123HASH"))
+            .and(query_param("fields", "positions,orders"))
+            .and(header("authorization", "Bearer test-access-token"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "securitiesAccount": {"positions": []}
+            })))
+            .mount(&server)
+            .await;
+
+        let client = client_for(&server).await;
+        let response = client
+            .account_with_fields("ABC123HASH", &["positions", "orders"])
+            .await
+            .expect("account_with_fields");
+
+        assert_eq!(response["securitiesAccount"]["positions"].as_array().unwrap().len(), 0);
     }
 
     #[tokio::test]
