@@ -166,6 +166,7 @@ fn map_chat_stream(stream: ChatStream) -> CompletionStream {
                 ready(matches!(
                     chunk,
                     Ok(item) if !item.content.is_empty()
+                        || !item.thinking.is_empty()
                         || item.done
                         || !item.tool_calls.is_empty()
                 ))
@@ -173,6 +174,7 @@ fn map_chat_stream(stream: ChatStream) -> CompletionStream {
             .map(|chunk| match chunk {
                 Ok(chunk) => Ok(CompletionChunk {
                     content_delta: chunk.content,
+                    thinking_delta: chunk.thinking,
                     done: chunk.done,
                     metrics: chunk.metrics,
                     tool_calls: chunk.tool_calls,
@@ -275,6 +277,46 @@ mod tests {
         }
 
         assert_eq!(content, "Hello");
+    }
+
+    #[tokio::test]
+    async fn stream_complete_surfaces_thinking_only_chunks() {
+        // A "thinking" turn commonly has empty content on every chunk until
+        // the model transitions to its final answer (or a tool call) — those
+        // chunks must not be dropped by the stream filter, or the UI goes
+        // silent for as long as the model reasons.
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/chat"))
+            .respond_with(ResponseTemplate::new(200).set_body_string(concat!(
+                "{\"message\":{\"content\":\"\",\"thinking\":\"Let me \"},\"done\":false}\n",
+                "{\"message\":{\"content\":\"\",\"thinking\":\"check the tools.\"},\"done\":false}\n",
+                "{\"message\":{\"content\":\"Done.\"},\"done\":false}\n",
+                "{\"message\":{\"content\":\"\"},\"done\":true}\n",
+            )))
+            .mount(&server)
+            .await;
+
+        let config = OllamaConfig::new(server.uri(), "qwen3:14b-q4_K_M");
+        let provider = OllamaProvider::new(config).unwrap();
+        let mut stream = provider
+            .stream_complete(CompletionRequest::user_message("hi"))
+            .await
+            .unwrap();
+
+        let mut thinking = String::new();
+        let mut content = String::new();
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.unwrap();
+            thinking.push_str(&chunk.thinking_delta);
+            content.push_str(&chunk.content_delta);
+            if chunk.done {
+                break;
+            }
+        }
+
+        assert_eq!(thinking, "Let me check the tools.");
+        assert_eq!(content, "Done.");
     }
 
     #[tokio::test]

@@ -16,6 +16,13 @@ use crate::message::{tool_calls_from_ollama, OllamaToolCall};
 struct StreamMessage {
     #[serde(default)]
     content: String,
+    /// Extended thinking/reasoning text, present when the request set `think`
+    /// on a model that supports it (e.g. qwen3, deepseek-r1). Streams before
+    /// `content` — surfacing it is what keeps a "thinking" turn from looking
+    /// frozen while the model reasons before producing (or instead of)
+    /// visible content.
+    #[serde(default)]
+    thinking: String,
     #[serde(default)]
     tool_calls: Option<Vec<OllamaToolCall>>,
 }
@@ -25,6 +32,8 @@ struct StreamMessage {
 pub struct ChatStreamChunk {
     /// Assistant text fragment.
     pub content: String,
+    /// Extended thinking/reasoning text fragment, when `think` is enabled.
+    pub thinking: String,
     /// Whether generation finished.
     pub done: bool,
     /// Token and timing stats on the final chunk.
@@ -120,7 +129,7 @@ fn parse_line(line: &str) -> OllamaResult<ChatStreamChunk> {
         OllamaError::parse(format!("failed to parse ollama stream line: {error}"))
     })?;
 
-    let (content, tool_calls) = payload
+    let (content, thinking, tool_calls) = payload
         .message
         .map(|message| {
             let calls = message
@@ -128,7 +137,7 @@ fn parse_line(line: &str) -> OllamaResult<ChatStreamChunk> {
                 .as_ref()
                 .map(|calls| tool_calls_from_ollama(calls))
                 .unwrap_or_default();
-            (message.content, calls)
+            (message.content, message.thinking, calls)
         })
         .unwrap_or_default();
 
@@ -145,6 +154,7 @@ fn parse_line(line: &str) -> OllamaResult<ChatStreamChunk> {
 
     Ok(ChatStreamChunk {
         content,
+        thinking,
         done: payload.done,
         metrics,
         tool_calls,
@@ -186,6 +196,25 @@ mod tests {
         assert_eq!(metrics.prompt_tokens, 37);
         assert_eq!(metrics.completion_tokens, 98);
         assert_eq!(metrics.total_tokens, 135);
+    }
+
+    #[test]
+    fn parse_line_extracts_thinking_separately_from_content() {
+        let line = r#"{
+            "message": {
+                "role": "assistant",
+                "content": "",
+                "thinking": "The user wants a trade setup, I should call calculate_trade_setup."
+            },
+            "done": false
+        }"#;
+
+        let chunk = parse_line(line).unwrap();
+        assert_eq!(
+            chunk.thinking,
+            "The user wants a trade setup, I should call calculate_trade_setup."
+        );
+        assert_eq!(chunk.content, "");
     }
 
     #[test]

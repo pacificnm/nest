@@ -13,6 +13,10 @@ use crate::tools::ToolCall;
 pub struct CompletionChunk {
     /// Assistant text fragment to append.
     pub content_delta: String,
+    /// Extended thinking/reasoning text fragment to append, for providers
+    /// that support it (e.g. Ollama's `think` mode). Empty for providers or
+    /// requests that don't produce reasoning output.
+    pub thinking_delta: String,
     /// Whether the provider marked the response complete.
     pub done: bool,
     /// Timing and token stats when the provider includes them on the final chunk.
@@ -26,6 +30,7 @@ impl CompletionChunk {
     pub fn delta(content: impl Into<String>) -> Self {
         Self {
             content_delta: content.into(),
+            thinking_delta: String::new(),
             done: false,
             metrics: None,
             tool_calls: Vec::new(),
@@ -36,6 +41,7 @@ impl CompletionChunk {
     pub fn finished() -> Self {
         Self {
             content_delta: String::new(),
+            thinking_delta: String::new(),
             done: true,
             metrics: None,
             tool_calls: Vec::new(),
@@ -46,6 +52,7 @@ impl CompletionChunk {
     pub fn finished_with_metrics(metrics: CompletionMetrics) -> Self {
         Self {
             content_delta: String::new(),
+            thinking_delta: String::new(),
             done: true,
             metrics: Some(metrics),
             tool_calls: Vec::new(),

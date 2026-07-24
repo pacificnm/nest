@@ -22,6 +22,17 @@ pub struct OllamaConfig {
     pub base_url: String,
     /// Default model id.
     pub model: String,
+    /// Context window size in tokens (Ollama `options.num_ctx`). `None` uses
+    /// the model's/Ollama's own default, which is often far smaller than a
+    /// model actually supports.
+    pub num_ctx: Option<u32>,
+    /// Sampling temperature (Ollama `options.temperature`). `None` uses
+    /// Ollama's default.
+    pub temperature: Option<f32>,
+    /// Enables extended thinking/reasoning mode (Ollama `think`) on models
+    /// that support it (e.g. qwen3, deepseek-r1). Improves tool-selection
+    /// accuracy at the cost of latency — off by default.
+    pub think: bool,
 }
 
 impl OllamaConfig {
@@ -30,7 +41,28 @@ impl OllamaConfig {
         Self {
             base_url: trim_trailing_slash(base_url.into()),
             model: model.into(),
+            num_ctx: None,
+            temperature: None,
+            think: false,
         }
+    }
+
+    /// Sets the context window size in tokens.
+    pub fn with_num_ctx(mut self, num_ctx: u32) -> Self {
+        self.num_ctx = Some(num_ctx);
+        self
+    }
+
+    /// Sets the sampling temperature.
+    pub fn with_temperature(mut self, temperature: f32) -> Self {
+        self.temperature = Some(temperature);
+        self
+    }
+
+    /// Enables (or disables) extended thinking/reasoning mode.
+    pub fn with_think(mut self, think: bool) -> Self {
+        self.think = think;
+        self
     }
 
     /// Creates configuration from defaults.
@@ -108,6 +140,13 @@ pub struct AiSection {
     /// Available model ids for the agent.
     #[serde(default)]
     pub models: Vec<String>,
+    /// Context window size in tokens (Ollama `options.num_ctx`).
+    pub num_ctx: Option<u32>,
+    /// Sampling temperature (Ollama `options.temperature`).
+    pub temperature: Option<f32>,
+    /// Enables extended thinking/reasoning mode (Ollama `think`).
+    #[serde(default)]
+    pub think: bool,
 }
 
 #[cfg(feature = "config")]
@@ -123,7 +162,11 @@ impl AiSection {
     }
 
     fn into_config(self) -> OllamaConfig {
-        OllamaConfig::new(self.resolved_base_url(), self.model)
+        let mut config = OllamaConfig::new(self.resolved_base_url(), self.model);
+        config.num_ctx = self.num_ctx;
+        config.temperature = self.temperature;
+        config.think = self.think;
+        config
     }
 }
 
@@ -139,12 +182,23 @@ pub struct OllamaSection {
     /// Default model id.
     #[serde(default = "default_model")]
     pub model: String,
+    /// Context window size in tokens (Ollama `options.num_ctx`).
+    pub num_ctx: Option<u32>,
+    /// Sampling temperature (Ollama `options.temperature`).
+    pub temperature: Option<f32>,
+    /// Enables extended thinking/reasoning mode (Ollama `think`).
+    #[serde(default)]
+    pub think: bool,
 }
 
 #[cfg(feature = "config")]
 impl OllamaSection {
     fn into_config(self) -> OllamaConfig {
-        OllamaConfig::new(self.base_url, self.model)
+        let mut config = OllamaConfig::new(self.base_url, self.model);
+        config.num_ctx = self.num_ctx;
+        config.temperature = self.temperature;
+        config.think = self.think;
+        config
     }
 }
 
@@ -170,4 +224,60 @@ fn default_port() -> u16 {
 
 fn trim_trailing_slash(value: String) -> String {
     value.trim_end_matches('/').to_string()
+}
+
+#[cfg(all(test, feature = "config"))]
+mod tests {
+    use super::*;
+    use nest_config::{ConfigDocument, ConfigService, LoadedConfig};
+
+    fn service_from_toml(toml: &str) -> ConfigService {
+        let document = ConfigDocument::parse_toml(toml).unwrap();
+        let loaded = LoadedConfig {
+            document: document.clone(),
+            source: nest_config::ConfigSource::Memory(document),
+            path: None,
+        };
+        ConfigService::new(loaded)
+    }
+
+    #[test]
+    fn from_config_service_reads_num_ctx_temperature_and_think() {
+        let service = service_from_toml(
+            r#"
+[ai]
+enabled = true
+provider = "ollama"
+model = "qwen3:32b-q4_K_M"
+num_ctx = 40960
+temperature = 0.2
+think = true
+"#,
+        );
+
+        let config = OllamaConfig::from_config_service(&service).unwrap().unwrap();
+
+        assert_eq!(config.model, "qwen3:32b-q4_K_M");
+        assert_eq!(config.num_ctx, Some(40960));
+        assert_eq!(config.temperature, Some(0.2));
+        assert!(config.think);
+    }
+
+    #[test]
+    fn from_config_service_defaults_num_ctx_temperature_and_think_when_absent() {
+        let service = service_from_toml(
+            r#"
+[ai]
+enabled = true
+provider = "ollama"
+model = "llama3"
+"#,
+        );
+
+        let config = OllamaConfig::from_config_service(&service).unwrap().unwrap();
+
+        assert_eq!(config.num_ctx, None);
+        assert_eq!(config.temperature, None);
+        assert!(!config.think);
+    }
 }
